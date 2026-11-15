@@ -43,6 +43,17 @@ def deals_table() -> str:
     )
 
 
+def insert_deal_sql() -> str:
+    """INSERT of one deal from a JSON object, with each value cast to its column type.
+
+    Bind parameters, in order: doc id, continent, deal category, extractor, attempts, outcome, the row as JSON."""
+    fields = all_fields()
+    columns = ", ".join(f.name.upper() for f in fields)
+    values = ", ".join(f"v:{f.name}::{f.sql_type}" for f in fields)
+    return (f"INSERT INTO MOTHERLODE.CORE.DEALS (DOC_ID, {columns}, CONTINENT, DEAL_CATEGORY, EXTRACTOR, ATTEMPTS, OUTCOME)\n"
+            f"SELECT ?, {values}, ?, ?, ?, ?, ? FROM (SELECT PARSE_JSON(?) AS v)")
+
+
 if __name__ == "__main__":
     if "--write" in sys.argv:
         TARGET.write_text(deals_table())

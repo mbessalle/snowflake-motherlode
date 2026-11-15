@@ -1,6 +1,197 @@
-# snowflake-motherlode
+# Mining M&A announcements → a checked deal table, inside Snowflake
 
-Mining M&A announcements to a structured deal table inside Snowflake.
+[![CI](https://github.com/mbessalle/snowflake-motherlode/actions/workflows/ci.yml/badge.svg)](https://github.com/mbessalle/snowflake-motherlode/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Work in progress. Nothing in this repository has run against a Snowflake account yet; the status section of
-the full README will list what was and was not tested.
+A rebuild of [motherlode-data-pipeline](https://github.com/mbessalle/motherlode-data-pipeline) on Snowflake.
+Deal announcements land on a stage, Cortex AI functions read them, Snowpark Python holds the pipeline, code
+checks every extracted number against the announcement before it is written, and a Cortex Agent answers
+questions over the result.
+
+> **Status: groundwork only. Nothing in this repository has run against a Snowflake account yet.**
+> The Python logic is tested offline. Every SQL statement and every Snowflake call is written from the
+> documentation and is unverified. [What was and was not tested](#status) is listed below and will be
+> updated with measured results as each part runs.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    D(["Announcements<br/>HTML, PDF or saved text"]) -->|"upload from outside:<br/>a trial has no external network access"| S[("Stage with a directory table<br/>RAW.ANNOUNCEMENTS")]
+    S --> P["AI_PARSE_DOCUMENT<br/>file to text"]
+    P --> T{{"Screening<br/>AI_COMPLETE: project deal? which project?<br/>AI_CLASSIFY: deal type, continent"}}
+    T -->|"not a project deal,<br/>or project name not in the text"| X(["stop"])
+    T --> E{{"Extraction<br/>AI_COMPLETE with the original prompt<br/>or AI_EXTRACT, one question per field"}}
+    E --> V{"Validation<br/>Python, no model"}
+    V -->|"unsupported, first attempt"| E
+    V -->|"every number supported"| DEALS[("CORE.DEALS")]
+    V -->|"still unsupported"| Q[("CORE.REVIEW_QUEUE<br/>values withheld")]
+    Q -->|"the supported values"| DEALS
+    DEALS --> SV["Semantic view"]
+    P --> CS["Cortex Search service"]
+    SV --> A{{"Cortex Agent<br/>DEAL_ANALYST"}}
+    CS --> A
+    A --> R(["REST API client"])
+
+    classDef llm fill:#5b4bdb,stroke:#2f2496,color:#ffffff
+    classDef stop fill:#f3f3f3,stroke:#999999,color:#333333
+    class T,E,A llm
+    class X stop
+```
+
+## What each Snowflake service does here
+
+| Service | Its job in this project | Where |
+|---|---|---|
+| Stage, directory table, stream | Announcements land as files; the stream tells the pipeline which are new | [`sql/01_objects.sql`](sql/01_objects.sql) |
+| `AI_PARSE_DOCUMENT` | Turns an HTML or PDF announcement into the text everything else reads | [`motherlode/cortex.py`](motherlode/cortex.py) |
+| `AI_COMPLETE` | Screening (project deal or not, which project) and extraction with the original pipeline's prompt | [`motherlode/cortex.py`](motherlode/cortex.py) |
+| `AI_CLASSIFY`, `AI_FILTER` | Deal type and continent from fixed lists; a second way to screen, for comparison | [`motherlode/cortex.py`](motherlode/cortex.py) |
+| `AI_EXTRACT` | Document extraction with one question per field, measured against `AI_COMPLETE` on the same cases | [`motherlode/cortex.py`](motherlode/cortex.py) |
+| Snowpark Python, stored procedure, task | The pipeline code; the procedure runs it inside Snowflake when new files arrive | [`motherlode/pipeline.py`](motherlode/pipeline.py), [`sql/03_pipeline_procedure.sql`](sql/03_pipeline_procedure.sql) |
+| Cortex Search | Retrieval over the announcement texts | [`sql/04_search_semantic_view_agent.sql`](sql/04_search_semantic_view_agent.sql) |
+| Semantic view | Tells the agent what the deal table's columns mean | same file |
+| Cortex Agent | Answers questions using the semantic view and the search service; called over REST | same file, [`scripts/agent.py`](scripts/agent.py) |
+| Resource monitor, budget, one AI role | Spending controls | [`sql/00_account_guardrails.sql`](sql/00_account_guardrails.sql) |
+
+A note on names: Snowflake's Document AI product (its UI and the `!PREDICT` method) was
+[decommissioned on 16 March 2026](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-2156).
+Document extraction is now `AI_EXTRACT`, with `AI_PARSE_DOCUMENT` for text and layout, so those are what
+this project uses.
+
+## The model extracts, code decides
+
+This is carried over unchanged from the original pipeline, and it is the part that does not depend on which
+model or platform runs the extraction.
+
+- [`motherlode/validate.py`](motherlode/validate.py) gives every extracted number a status: written in the
+  announcement, derived from written amounts by a rule (a sum of tranches, a total split across projects,
+  shares × price), or unsupported. Only unsupported values block a write.
+- [`motherlode/process.py`](motherlode/process.py) gives an unsupported value one retry that names it. If it
+  is still unsupported it is withheld and queued for a person, and the rest of the record is stored. A
+  record that breaks the [Pydantic schema](motherlode/schema.py) is not written at all.
+- The field list lives in one place, the prompt. The table DDL, the insert statement and the `AI_EXTRACT`
+  questions are generated from it ([`motherlode/fields.py`](motherlode/fields.py),
+  [`motherlode/ddl.py`](motherlode/ddl.py)), and tests fail if any of them drift.
+- Every model reply is kept in `CORE.EXTRACTION_ATTEMPTS` with its validation report.
+
+## Evals
+
+**Extraction.** [`evals/score.py`](evals/score.py) scores saved extractions on the original pipeline's 33
+real press releases ([`evals/cases.jsonl`](evals/cases.jsonl)): how many extracted numbers the announcement
+supports, and agreement with an analyst's hand-entered values.
+
+The only numbers measured so far are the baseline. Pointed at the original pipeline's saved `gpt-6.1-terra`
+replies, the scorer reproduces what that repository published, which shows the scorer and the ported
+validator behave as the originals do:
+
+| | First attempt | After the corrected retry |
+|---|---|---|
+| Extracted numbers supported by the article | 122 of 126 (97%) | 123 of 126 (98%) |
+| Records with every number supported | 30 of 33 | 31 of 33 |
+| Agreement with the analyst, where both have a value | | 83 of 108 (77%) |
+
+These are OpenAI results from the original pipeline, not Snowflake results. The Snowflake rows
+(`AI_COMPLETE` and `AI_EXTRACT` on the same cases) will be added when they have been run.
+
+**Screening.** 43 labelled announcements ([`evals/screening_cases.jsonl`](evals/screening_cases.jsonl)).
+Only 3 of them are not project deals, so this set says little about false positives until more negatives
+are labelled.
+
+**Agent.** [`evals/agent_questions.jsonl`](evals/agent_questions.jsonl) holds 10 questions, each with a SQL
+query that computes the true answer from the deal table. An answer passes only if it contains that number.
+
+## Documents
+
+[`scripts/fetch_documents.py`](scripts/fetch_documents.py) made one plain request per case to the public
+press-release URL. Of 43 cases, 14 were downloaded as published (13 HTML, 1 PDF). The other 29 sites
+refused the request, timed out or served a page without the headline; for those, the text saved by the
+original pipeline is used as a `.txt` file. Nothing was done to get around a refusal.
+[`data/manifest.jsonl`](data/manifest.jsonl) records which is which. The documents themselves are other
+people's press releases and are not committed.
+
+## Cost
+
+A trial account's resource monitor covers warehouses only, and a budget on AI services notifies without
+stopping anything. So the cap is enforced in code: [`motherlode/cost.py`](motherlode/cost.py) estimates a
+step from Snowflake's published rates (Service Consumption Table effective 12 November 2026) and
+`SpendGuard.authorise` refuses to start a step that would pass the cap, from a local ledger.
+
+Estimate from the documents on disk (`python scripts/estimate_cost.py`), not a measurement:
+
+| Step | Estimated USD of trial balance |
+|---|---|
+| `AI_PARSE_DOCUMENT`, layout mode, 14 files, about 106 pages | 0.78 |
+| Screening, `AI_COMPLETE` claude-haiku-4-5, 43 documents | 0.08 |
+| Deal type and continent, `AI_CLASSIFY`, 43 documents | 0.30 |
+| Screening comparison, `AI_FILTER`, 43 documents | 0.15 |
+| Extraction, `AI_COMPLETE` claude-sonnet-5, 33 cases, one pass | 0.83 |
+| Extraction, `AI_EXTRACT`, 33 cases, one pass | 1.73 |
+| **One full pass** | **3.86** |
+| Warehouse, extra small, per hour running | 2.00 |
+
+Agent runs, the search service and repeated passes come on top. Measured spend will replace this table.
+
+## Status
+
+Tested, offline, in CI (115 tests, no account or network needed):
+
+- The validator and schema, with the original pipeline's tests.
+- The extract, validate, retry, quarantine loop, at every exit.
+- Building each Cortex statement and reading each documented reply shape.
+- The Snowpark steps end to end against a stand-in session that records every statement and its parameters.
+- The spending guard, the generated DDL, the agent answer check and the eval scorer.
+- Locally only (it needs the original pipeline's cache): the scorer reproduces the published baseline.
+
+Not tested, because there is no Snowflake account yet:
+
+- Every file in [`sql/`](sql/) and every statement in [`motherlode/cortex.py`](motherlode/cortex.py).
+  In particular: whether named arguments accept bind parameters as written, and whether
+  `AI_PARSE_DOCUMENT` accepts HTML files.
+- Whether Cortex Agents can be used on a trial account. The trial documentation does not exclude it.
+- The stored procedure and task, the search service, the semantic view and the agent.
+- The REST call in [`scripts/agent.py`](scripts/agent.py): the authentication header and the response shape.
+- `METERING_HISTORY` column names in [`scripts/spend_report.py`](scripts/spend_report.py).
+- No extraction, screening or agent result has been measured on Snowflake.
+
+[`scripts/smoke_test.py`](scripts/smoke_test.py) is the first thing to run on an account: one small call
+per service, printing Snowflake's own message for each.
+
+Not built: the optional ML model, Snowflake's native agent evaluations, and automatic discovery of new
+announcements (the original pipeline does that outside Snowflake).
+
+## Run it
+
+```bash
+python -m venv .venv && . .venv/bin/activate
+pip install ".[dev]"
+pytest                               # 115 tests, offline
+ruff check .
+python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
+```
+
+With an account (untested, see Status): run `sql/00` to `sql/02`, copy `.env.example` to `.env`, then
+
+```bash
+pip install ".[snowflake]"
+python scripts/smoke_test.py
+python scripts/run_pipeline.py upload
+python scripts/run_pipeline.py run --extractor claude-sonnet-5 --limit 3
+python scripts/run_pipeline.py export --extractor claude-sonnet-5
+```
+
+## Layout
+
+| Path | What it holds |
+|---|---|
+| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Byte-identical copies from the original pipeline |
+| [`motherlode/process.py`](motherlode/process.py) | The extract, validate, retry, quarantine loop |
+| [`motherlode/cortex.py`](motherlode/cortex.py) | Cortex statements and reply parsing |
+| [`motherlode/pipeline.py`](motherlode/pipeline.py) | The Snowpark steps and the stored procedure's handler |
+| [`motherlode/cost.py`](motherlode/cost.py) | Published rates, estimates and the spending guard |
+| [`motherlode/fields.py`](motherlode/fields.py), [`ddl.py`](motherlode/ddl.py) | The field list and what is generated from it |
+| [`sql/`](sql/) | Guardrails, objects, the deal table, the procedure and task, search, semantic view and agent, teardown |
+| [`scripts/`](scripts/) | Fetch documents, estimate cost, smoke test, run the pipeline, spend report, agent client |
+| [`evals/`](evals/) | Cases, the scorer and the agent question set |
+| [`tests/`](tests/) | Offline tests |

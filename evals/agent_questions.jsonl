@@ -1,0 +1,10 @@
+{"id": "count_all", "question": "How many deals are in the table?", "tool": "deal_table", "truth_sql": "SELECT COUNT(*) FROM MOTHERLODE.CORE.DEALS"}
+{"id": "count_option", "question": "How many deals are options or earn-ins?", "tool": "deal_table", "truth_sql": "SELECT COUNT(*) FROM MOTHERLODE.CORE.DEALS WHERE DEAL_CATEGORY = 'option or earn-in'"}
+{"id": "count_full_interest", "question": "In how many deals was a 100% interest acquired?", "tool": "deal_table", "truth_sql": "SELECT COUNT(*) FROM MOTHERLODE.CORE.DEALS WHERE INTEREST_ACQUIRED_PERCENT = 100"}
+{"id": "count_with_nsr", "question": "How many deals include a net smelter royalty?", "tool": "deal_table", "truth_sql": "SELECT COUNT(*) FROM MOTHERLODE.CORE.DEALS WHERE NSR_PERCENT > 0"}
+{"id": "max_cash_cad", "question": "What is the largest total cash payment in Canadian dollars in any single deal?", "tool": "deal_table", "truth_sql": "SELECT MAX(CASH_PAYMENTS_VALUE) FROM MOTHERLODE.CORE.DEALS WHERE CASH_PAYMENTS_CURRENCY = 'CAD'"}
+{"id": "max_shares", "question": "What is the largest number of shares issued as payment in a single deal?", "tool": "deal_table", "truth_sql": "SELECT MAX(SHARES_AMOUNT) FROM MOTHERLODE.CORE.DEALS"}
+{"id": "count_gold", "question": "How many deals are for projects whose primary commodity is gold?", "tool": "deal_table", "truth_sql": "SELECT COUNT(*) FROM MOTHERLODE.CORE.DEALS WHERE PRIMARY_COMMODITY = 'Au'"}
+{"id": "count_partial", "question": "How many deals were stored with some values withheld for review?", "tool": "deal_table", "truth_sql": "SELECT COUNT(*) FROM MOTHERLODE.CORE.DEALS WHERE OUTCOME = 'stored_partial'"}
+{"id": "max_nsr", "question": "What is the highest net smelter royalty percentage in any deal?", "tool": "deal_table", "truth_sql": "SELECT MAX(NSR_PERCENT) FROM MOTHERLODE.CORE.DEALS"}
+{"id": "count_canada", "question": "How many deals are for projects in Canada?", "tool": "deal_table", "truth_sql": "SELECT COUNT(*) FROM MOTHERLODE.CORE.DEALS WHERE PROJECT_COUNTRY ILIKE 'Canada'"}

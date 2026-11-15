@@ -36,3 +36,4 @@ select = ["E", "F", "I", "B", "UP"]
 "motherlode/cortex.py" = ["E501"]    # prompt text
 "tests/*" = ["E501"]
 "evals/*" = ["E501"]
+"scripts/*" = ["E501"]
