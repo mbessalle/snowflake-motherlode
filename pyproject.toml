@@ -1,0 +1,38 @@
+[project]
+name = "snowflake-motherlode"
+version = "0.1.0"
+description = "Mining M&A announcements to a structured deal table inside Snowflake: Cortex AI functions for extraction, Snowpark for the pipeline, deterministic validation, a Cortex Agent over the result."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "pydantic>=2.7,<3",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+# Needed only to talk to a Snowflake account. The tests do not need it.
+snowflake = ["snowflake-snowpark-python>=1.18", "snowflake-cli>=3.24"]
+# Needed only to download the source documents.
+fetch = ["requests>=2.32", "trafilatura>=2.3"]
+dev = ["pytest>=9", "ruff>=0.17"]
+
+[tool.setuptools.packages.find]
+include = ["motherlode*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"motherlode/prompts.py" = ["E501"]   # prompts are kept byte-for-byte
+"motherlode/cortex.py" = ["E501"]    # prompt text
+"tests/*" = ["E501"]
+"evals/*" = ["E501"]
