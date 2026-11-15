@@ -33,6 +33,8 @@ DEAL_TYPES = {
 
 PARSE_SQL = "SELECT AI_PARSE_DOCUMENT(TO_FILE(?, ?), {'mode': 'LAYOUT'})"
 COMPLETE_SQL = "SELECT AI_COMPLETE(model => ?, prompt => ?, model_parameters => {'temperature': 0}, show_details => TRUE)"
+COMPLETE_STRUCTURED_SQL = ("SELECT AI_COMPLETE(model => ?, prompt => ?, model_parameters => {'temperature': 0}, "
+                           "response_format => PARSE_JSON(?), show_details => TRUE)")
 EXTRACT_TEXT_SQL = "SELECT AI_EXTRACT(text => ?, responseFormat => PARSE_JSON(?))"
 EXTRACT_FILE_SQL = "SELECT AI_EXTRACT(file => TO_FILE(?, ?), responseFormat => PARSE_JSON(?))"
 FILTER_SQL = "SELECT AI_FILTER(PROMPT(?, ?))"
@@ -95,6 +97,38 @@ def extract_questions(project_name: str | None) -> dict[str, str]:
     unit = {"numeric": " Give one number without currency signs or units.", "date": " Use the format YYYY-MM-DD.", "text": ""}
     return {f.name: f"{f.description}{unit[f.kind]}{scope} If the document does not state it, answer None."
             for f in extracted_fields()}
+
+
+_JSON_TYPE = {"text": "string", "numeric": "number", "date": "string"}
+
+
+def response_format() -> dict:
+    """Snowflake structured output for AI_COMPLETE: a JSON schema the model's reply must follow.
+
+    Two layers check a reply. This schema is Snowflake's own: it constrains the model while it writes, so
+    the reply has the right keys and JSON types. The Pydantic model in motherlode/schema.py then checks
+    what a JSON schema cannot express here (percentage and coordinate ranges, ISO currency codes, real
+    dates) before anything is stored. Both are built from the one field list in the prompt.
+
+    Every field is nullable and listed as required, and additionalProperties is false, which is what the
+    Snowflake documentation asks for with OpenAI models. Whether a ["number", "null"] type is accepted is
+    unverified until the AI functions can be called."""
+    updates = {
+        "type": "object",
+        "properties": {f.name: {"type": [_JSON_TYPE[f.kind], "null"], "description": f.description} for f in extracted_fields()},
+        "required": [f.name for f in extracted_fields()],
+        "additionalProperties": False,
+    }
+    return {"type": "json", "schema": {"type": "object", "properties": {"database_updates": updates},
+                                       "required": ["database_updates"], "additionalProperties": False}}
+
+
+def parse_structured(reply) -> tuple[dict, dict]:
+    """(the `database_updates` object, token usage) from AI_COMPLETE called with a response format."""
+    details = _as_object(reply)
+    outputs = details.get("structured_output") or [{}]
+    updates = _as_object(outputs[0].get("raw_message")).get("database_updates")
+    return (updates if isinstance(updates, dict) else {}), details.get("usage") or {}
 
 
 # --- replies --------------------------------------------------------------------------------------------

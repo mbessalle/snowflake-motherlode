@@ -100,15 +100,18 @@ def screen_with_filter(session, text: str) -> bool:
 
 
 def extract_and_store(session, doc_id: str, text: str, screening: dict, extractor: str, max_attempts: int = 2,
-                      replay: list[dict] | None = None) -> Result:
+                      replay: list[dict] | None = None, structured: bool = False) -> Result:
     """Run the extract, validate, retry, quarantine loop for one document and write what it decides.
 
     `extractor` is "AI_EXTRACT" or the name of a model for AI_COMPLETE. AI_EXTRACT takes questions, not a
     prompt, so it has no way to receive the correction and gets a single attempt.
 
+    With `structured`, AI_COMPLETE is given Snowflake's structured-output schema (cortex.response_format), so
+    the reply is constrained to the right keys and JSON types before Pydantic checks the values.
+
     With `replay`, no model is called: the saved extractions are used in order (first attempt, then retry)
     and the rows are marked "REPLAY <extractor>". This runs everything after the model call for real."""
-    name = AI_EXTRACT if extractor == AI_EXTRACT else f"AI_COMPLETE {extractor}"
+    name = AI_EXTRACT if extractor == AI_EXTRACT else f"AI_COMPLETE {extractor}" + (" structured" if structured else "")
     if replay is not None:
         name = f"REPLAY {extractor}"
     attempts = {"n": 0}
@@ -120,6 +123,10 @@ def extract_and_store(session, doc_id: str, text: str, screening: dict, extracto
         elif extractor == AI_EXTRACT:
             questions = json.dumps(cortex.extract_questions(project_name))
             extraction, usage = cortex.parse_extract(_value(session, cortex.EXTRACT_TEXT_SQL, [article, questions])), {}
+        elif structured:
+            prompt = cortex.extraction_prompt(article, project_name, feedback)
+            reply = _value(session, cortex.COMPLETE_STRUCTURED_SQL, [extractor, prompt, json.dumps(cortex.response_format())])
+            extraction, usage = cortex.parse_structured(reply)
         else:
             reply = _value(session, cortex.COMPLETE_SQL, [extractor, cortex.extraction_prompt(article, project_name, feedback)])
             extraction, usage = cortex.parse_completion(reply)

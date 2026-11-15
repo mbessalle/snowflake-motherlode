@@ -72,6 +72,25 @@ def test_a_downloaded_page_must_carry_the_headline():
     assert fetch_documents.headline_share(title, "Please enable JavaScript and cookies to continue") == 0.0
 
 
+def test_headlines_are_parsed_flagged_and_merged_without_duplicates():
+    collect = load("collect_headlines")
+    xml = """<?xml version="1.0"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <url><loc>https://example.com/company/acme-gold-corp/news/acme-options-big-onion-property-101</loc>
+        <news:news><news:publication_date>2026-11-15T08:00:00Z</news:publication_date><news:title>Acme Options Big Onion Property</news:title></news:news></url>
+      <url><loc>https://example.com/company/beta-metals/news/beta-reports-drill-results-102</loc>
+        <news:news><news:publication_date>2026-11-15T09:00:00Z</news:publication_date><news:title>Beta Reports Drill Results</news:title></news:news></url>
+      <url><loc>https://example.com/about</loc></url>
+    </urlset>"""
+    rows = collect.parse(xml)
+    assert rows == [
+        {"id": 101, "date": "2026-11-15", "company": "acme gold corp", "title": "Acme Options Big Onion Property", "deal_words": True},
+        {"id": 102, "date": "2026-11-15", "company": "beta metals", "title": "Beta Reports Drill Results", "deal_words": False},
+    ]
+    merged = collect.merge([rows[1]], rows)
+    assert [r["id"] for r in merged] == [101, 102] and collect.merge(merged, rows) == merged
+
+
 def test_manifest_lists_every_screening_case_and_holds_no_text():
     manifest = [json.loads(line) for line in (ROOT / "data" / "manifest.jsonl").read_text().splitlines() if line.strip()]
     cases = [json.loads(line) for line in (ROOT / "evals" / "screening_cases.jsonl").read_text().splitlines() if line.strip()]

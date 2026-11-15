@@ -78,6 +78,32 @@ def test_ai_extract_error_reply_gives_nothing():
     assert cortex.parse_extract(json.dumps({"error": "The provided file isn't in the expected format or is corrupted."})) == {}
 
 
+def test_structured_output_schema_matches_the_pydantic_model_and_the_documented_rules():
+    from motherlode import fields
+    from motherlode.schema import DealExtraction
+
+    fmt = cortex.response_format()
+    updates = fmt["schema"]["properties"]["database_updates"]
+    assert fmt["type"] == "json" and fmt["schema"]["required"] == ["database_updates"]
+    assert set(updates["properties"]) == set(DealExtraction.model_fields) - set(fields.NOT_EXTRACTED)
+    # Snowflake's rule for OpenAI models: every property required, additionalProperties false at every node
+    assert updates["required"] == list(updates["properties"]) and updates["additionalProperties"] is False
+    assert fmt["schema"]["additionalProperties"] is False
+    assert updates["properties"]["cash_payments_value"]["type"] == ["number", "null"]
+    assert updates["properties"]["news_date"]["type"] == ["string", "null"]
+    json.dumps(fmt)                                    # must be serialisable: it is sent as a bind parameter
+
+
+def test_structured_reply_is_read_and_still_goes_through_the_pydantic_gate():
+    reply = json.dumps({"structured_output": [{"raw_message": {"database_updates": {"nsr_percent": 150, "project_name": "Acme"}},
+                                               "type": "json"}], "usage": {"prompt_tokens": 100, "completion_tokens": 49}})
+    updates, usage = cortex.parse_structured(reply)
+    assert updates == {"nsr_percent": 150, "project_name": "Acme"} and usage["completion_tokens"] == 49
+    # the JSON schema allows any number; the range is Pydantic's job
+    assert [issue.split(":")[0] for issue in schema.issues(updates)] == ["nsr_percent"]
+    assert cortex.parse_structured(None) == ({}, {}) and cortex.parse_structured('{"structured_output": []}')[0] == {}
+
+
 def test_classify_and_parse_document_replies():
     assert cortex.parse_label('{"labels": ["North America"]}') == "North America"
     assert cortex.parse_label('{"labels": []}') is None and cortex.parse_label(None) is None

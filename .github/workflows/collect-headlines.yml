@@ -1,0 +1,29 @@
+name: Collect headlines
+
+# Once a day, add the public news sitemap's headlines to data/headlines.jsonl.
+# The feed only holds recent items, so the dataset for the headline classifier grows by running this daily.
+on:
+  schedule:
+    - cron: '40 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - run: python scripts/collect_headlines.py
+      - name: Commit new headlines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/headlines.jsonl
+          git diff --cached --quiet || git commit -m "Add headlines from the news sitemap ($(date -u +%F))"
+          git push

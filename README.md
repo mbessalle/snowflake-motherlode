@@ -77,6 +77,13 @@ model or platform runs the extraction.
 - The field list lives in one place, the prompt. The table DDL, the insert statement and the `AI_EXTRACT`
   questions are generated from it ([`motherlode/fields.py`](motherlode/fields.py),
   [`motherlode/ddl.py`](motherlode/ddl.py)), and tests fail if any of them drift.
+- Schema checking has two layers, both generated from that field list. Snowflake's structured outputs
+  (`response_format` on `AI_COMPLETE`, built in [`motherlode/cortex.py`](motherlode/cortex.py)) constrain
+  the model's reply to the right keys and JSON types while it is written. Pydantic then checks what a JSON
+  schema does not express here: percentage and coordinate ranges, ISO currency codes, real dates. Pydantic
+  runs inside the Snowflake stored procedure, from Snowflake's own package channel. Snowflake's Data
+  Quality Monitoring would be a third layer on the table, but it needs Enterprise edition and is not
+  available on a trial.
 - Every model reply is kept in `CORE.EXTRACTION_ATTEMPTS` with its validation report.
 
 ## Evals
@@ -154,7 +161,7 @@ Agent runs, the search service and repeated passes come on top. Measured spend w
 
 ## Status
 
-Tested, offline, in CI (116 tests, no account or network needed):
+Tested, offline, in CI (119 tests, no account or network needed):
 
 - The validator and schema, with the original pipeline's tests.
 - The extract, validate, retry, quarantine loop, at every exit.
@@ -201,15 +208,21 @@ Not tested yet, all waiting on the AI features being enabled:
 [`scripts/smoke_test.py`](scripts/smoke_test.py) is the first thing to run on an account: one small call
 per service, printing Snowflake's own message for each.
 
-Not built: the optional ML model, Snowflake's native agent evaluations, and automatic discovery of new
-announcements (the original pipeline does that outside Snowflake).
+Not built: Snowflake's native agent evaluations, and automatic discovery of new announcements (the original
+pipeline does that outside Snowflake).
+
+Not built yet, data being collected: a small ML model trained and served in Snowflake (a headline
+classifier: project transaction or not). The 43 labelled cases are too few to train on, so
+[`scripts/collect_headlines.py`](scripts/collect_headlines.py) adds the public news sitemap's headlines to
+[`data/headlines.jsonl`](data/headlines.jsonl) once a day through a GitHub Actions workflow. Its
+`deal_words` flag is a weak label from a regular expression, not a human judgement.
 
 ## Run it
 
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 116 tests, offline
+pytest                               # 119 tests, offline
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```
