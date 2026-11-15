@@ -11,7 +11,7 @@ def test_estimates_follow_the_published_rates():
     assert cost.function_usd("AI_EXTRACT", 1_000_000) == pytest.approx(11.10)
     assert cost.function_usd("AI_CLASSIFY", 500_000) == pytest.approx(1.62)
     assert cost.parse_usd(1000) == pytest.approx(7.32) and cost.parse_usd(1000, "OCR") == pytest.approx(1.36)
-    assert cost.warehouse_usd(1.5) == pytest.approx(3.00)
+    assert cost.warehouse_usd(1.5) == pytest.approx(5.40)
     assert cost.tokens("abcdefgh") == 2 and cost.tokens(9) == 3
 
 

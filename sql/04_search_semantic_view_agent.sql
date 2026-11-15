@@ -26,7 +26,7 @@ CREATE OR REPLACE SEMANTIC VIEW MOTHERLODE.CORE.DEALS_SEMANTIC
   TABLES (
     deals AS MOTHERLODE.CORE.DEALS
       PRIMARY KEY (DOC_ID)
-      WITH SYNONYMS ('transactions', 'project deals', 'M&A deals')
+      WITH SYNONYMS ('transactions', 'project deals', 'mergers and acquisitions')
       COMMENT = 'One row per mineral project transaction. Every number was checked against its announcement.'
   )
   FACTS (

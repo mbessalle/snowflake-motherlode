@@ -9,10 +9,11 @@ Deal announcements land on a stage, Cortex AI functions read them, Snowpark Pyth
 checks every extracted number against the announcement before it is written, and a Cortex Agent answers
 questions over the result.
 
-> **Status: groundwork only. Nothing in this repository has run against a Snowflake account yet.**
-> The Python logic is tested offline. Every SQL statement and every Snowflake call is written from the
-> documentation and is unverified. [What was and was not tested](#status) is listed below and will be
-> updated with measured results as each part runs.
+> **Status: the account is set up; no Cortex AI function has run yet.**
+> On a trial account, the spending guardrails, the database objects and the document upload have run.
+> Every AI function call was refused with "not available for trial accounts", so there are no extraction,
+> screening or agent results. [What was and was not tested](#status) is listed below and will be updated
+> with measured results as each part runs.
 
 ## Architecture
 
@@ -129,7 +130,7 @@ Estimate from the documents on disk (`python scripts/estimate_cost.py`), not a m
 | Extraction, `AI_COMPLETE` claude-sonnet-5, 33 cases, one pass | 0.83 |
 | Extraction, `AI_EXTRACT`, 33 cases, one pass | 1.73 |
 | **One full pass** | **3.86** |
-| Warehouse, extra small, per hour running | 2.00 |
+| Warehouse, extra small, per hour running | 3.60 |
 
 Agent runs, the search service and repeated passes come on top. Measured spend will replace this table.
 
@@ -144,12 +145,26 @@ Tested, offline, in CI (115 tests, no account or network needed):
 - The spending guard, the generated DDL, the agent answer check and the eval scorer.
 - Locally only (it needs the original pipeline's cache): the scorer reproduces the published baseline.
 
-Not tested, because there is no Snowflake account yet:
+Run on a Snowflake trial account (Enterprise edition, AWS Asia Pacific Thailand) on 16 November 2026:
 
-- Every file in [`sql/`](sql/) and every statement in [`motherlode/cortex.py`](motherlode/cortex.py).
-  In particular: whether named arguments accept bind parameters as written, and whether
-  `AI_PARSE_DOCUMENT` accepts HTML files.
-- Whether Cortex Agents can be used on a trial account. The trial documentation does not exclude it.
+- [`sql/00_account_guardrails.sql`](sql/00_account_guardrails.sql): every statement succeeded. Read back:
+  all three warehouses are under the 20-credit resource monitor with a 60 second auto-suspend.
+- [`sql/01_objects.sql`](sql/01_objects.sql) and [`sql/02_deals_table.sql`](sql/02_deals_table.sql): the
+  stage, the stream and the eight tables exist and are owned by the pipeline role. Two mistakes in the
+  first version were found by running it and fixed (a `GRANT` on three schemas in one statement; an `&`
+  in a comment that the Snowflake CLI read as a variable).
+- Key-pair login through Snowpark, and the upload of the 43 documents to the stage.
+- [`scripts/smoke_test.py`](scripts/smoke_test.py): creating and dropping a Cortex Agent object works on
+  the trial. `AI_COMPLETE`, `AI_CLASSIFY`, `AI_FILTER`, `AI_EXTRACT`, `AI_PARSE_DOCUMENT` and
+  `AI_COUNT_TOKENS` were each refused with error 399258, "is not available for trial accounts", which
+  matches the documentation: AI features on a trial need a credit card on file.
+
+Not tested yet:
+
+- Every statement in [`motherlode/cortex.py`](motherlode/cortex.py): whether named arguments accept bind
+  parameters as written, and whether `AI_PARSE_DOCUMENT` accepts HTML files. The refusal above came before
+  Snowflake looked at the arguments.
+- Running a Cortex Agent (only creating the object was checked).
 - The stored procedure and task, the search service, the semantic view and the agent.
 - The REST call in [`scripts/agent.py`](scripts/agent.py): the authentication header and the response shape.
 - `METERING_HISTORY` column names in [`scripts/spend_report.py`](scripts/spend_report.py).
