@@ -186,3 +186,24 @@ def process_new_announcements(session, extractor: str, screen_model: str, max_do
     summary = f"run {run_id}: {len(pending)} documents; " + ", ".join(f"{k}={v}" for k, v in sorted(outcomes.items()))
     log(session, run_id, None, "SUMMARY", summary)
     return summary
+
+
+# --- the hierarchical index, as the stored procedure BUILD_OUTLINES calls it ---------------------------------
+
+
+def build_outlines(session) -> str:
+    """Cut every document in DOCUMENT_TEXT into sections and rewrite DOCUMENT_SECTIONS. No model is called.
+
+    This is level 1 and 2 of the index the agent navigates (motherlode/outline.py explains the levels)."""
+    from .outline import sections
+
+    documents = session.sql("SELECT DOC_ID, TEXT FROM MOTHERLODE.RAW.DOCUMENT_TEXT ORDER BY DOC_ID").collect()
+    _run(session, "DELETE FROM MOTHERLODE.RAW.DOCUMENT_SECTIONS")
+    total = 0
+    for doc_id, text in documents:
+        for part in sections(text or ""):
+            _run(session, "INSERT INTO MOTHERLODE.RAW.DOCUMENT_SECTIONS "
+                          "(DOC_ID, SECTION_NO, HEADING, FIRST_SENTENCE, TEXT, CHARS) VALUES (?, ?, ?, ?, ?, ?)",
+                 [doc_id, part.number, part.heading, part.first_sentence, part.text, len(part.text)])
+            total += 1
+    return f"{len(documents)} documents, {total} sections"

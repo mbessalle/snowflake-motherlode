@@ -110,6 +110,26 @@ def test_replay_uses_saved_extractions_and_calls_no_model():
     assert (alone.outcome, alone.row) == ("no_data", None)
 
 
+def test_build_outlines_rewrites_the_section_table_without_any_model_call():
+    paragraph = "The Company will pay $250,000 in cash on closing and the vendor retains a 2% NSR royalty. " * 8
+
+    class Documents(FakeSession):
+        def sql(self, statement, params=None):
+            if statement.startswith("SELECT DOC_ID, TEXT"):
+                self.calls.append((statement, params or []))
+                return Rows([("7", f"Terms of the Option\n\n{paragraph}\n\nAbout Acme Gold\n\n{paragraph}"), ("8", "")])
+            return super().sql(statement, params)
+
+    session = Documents([])
+    assert pipeline.build_outlines(session) == "2 documents, 2 sections"
+    rows = session.written("RAW.DOCUMENT_SECTIONS")
+    assert [(r[0], r[1], r[2]) for r in rows] == [("7", 1, "Terms of the Option"), ("7", 2, "About Acme Gold")]
+    assert rows[0][3].startswith("The Company will pay $250,000") and rows[0][5] == len(rows[0][4])
+    statements = [statement for statement, _ in session.calls]
+    assert "DELETE FROM MOTHERLODE.RAW.DOCUMENT_SECTIONS" in statements
+    assert not any(statement.startswith("SELECT AI_") for statement in statements)
+
+
 def test_a_document_that_is_not_a_deal_stops_before_extraction():
     session = FakeSession([GOOD], pending=[("8", "8.html", "Drill results", "acme")])
     TRIAGE["is_project_deal"] = False

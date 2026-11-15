@@ -31,10 +31,10 @@ flowchart TD
     V -->|"every number supported"| DEALS[("CORE.DEALS")]
     V -->|"still unsupported"| Q[("CORE.REVIEW_QUEUE<br/>values withheld")]
     Q -->|"the supported values"| DEALS
-    DEALS --> SV["Semantic view"]
-    P --> CS["Cortex Search service"]
+    DEALS --> SV["Semantic view<br/>level 0: which deal?"]
+    P --> IX["Hierarchical index, built by code<br/>level 1: outline of a document<br/>level 2: one section"]
     SV --> A{{"Cortex Agent<br/>DEAL_ANALYST"}}
-    CS --> A
+    IX --> A
     A --> R(["REST API client"])
 
     classDef llm fill:#5b4bdb,stroke:#2f2496,color:#ffffff
@@ -53,9 +53,9 @@ flowchart TD
 | `AI_CLASSIFY`, `AI_FILTER` | Deal type and continent from fixed lists; a second way to screen, for comparison | [`motherlode/cortex.py`](motherlode/cortex.py) |
 | `AI_EXTRACT` | Document extraction with one question per field, measured against `AI_COMPLETE` on the same cases | [`motherlode/cortex.py`](motherlode/cortex.py) |
 | Snowpark Python, stored procedure, task | The pipeline code; the procedure runs it inside Snowflake when new files arrive | [`motherlode/pipeline.py`](motherlode/pipeline.py), [`sql/03_pipeline_procedure.sql`](sql/03_pipeline_procedure.sql) |
-| Cortex Search | Retrieval over the announcement texts | [`sql/04_search_semantic_view_agent.sql`](sql/04_search_semantic_view_agent.sql) |
-| Semantic view | Tells the agent what the deal table's columns mean | same file |
-| Cortex Agent | Answers questions using the semantic view and the search service; called over REST | same file, [`scripts/agent.py`](scripts/agent.py) |
+| Semantic view | Tells the agent what the deal table's columns mean; the top level of the index | [`sql/04_semantic_view_agent.sql`](sql/04_semantic_view_agent.sql) |
+| SQL functions and a Snowpark procedure | The hierarchical index over the announcement texts: outline, section, exact lookup. No embeddings | [`sql/05_hierarchical_index.sql`](sql/05_hierarchical_index.sql), [`motherlode/outline.py`](motherlode/outline.py) |
+| Cortex Agent | Answers questions with the semantic view and the index functions as custom tools; called over REST | [`sql/04_semantic_view_agent.sql`](sql/04_semantic_view_agent.sql), [`scripts/agent.py`](scripts/agent.py) |
 | Resource monitor, budget, one AI role | Spending controls | [`sql/00_account_guardrails.sql`](sql/00_account_guardrails.sql) |
 
 A note on names: Snowflake's Document AI product (its UI and the `!PREDICT` method) was
@@ -85,6 +85,41 @@ model or platform runs the extraction.
   Quality Monitoring would be a third layer on the table, but it needs Enterprise edition and is not
   available on a trial.
 - Every model reply is kept in `CORE.EXTRACTION_ATTEMPTS` with its validation report.
+
+## Retrieval: an index to walk, not embeddings
+
+The agent does not search the announcements by vector similarity. It reads them the way a person reads a
+long paper: start from the table of contents and go only where the answer is.
+
+| Level | What it holds | How the agent reaches it |
+|---|---|---|
+| 0 | The deal table: one row per transaction | The semantic view, or `FIND_DEALS(term)` |
+| 1 | The outline of one announcement: number, heading, size and first sentence of each section | `DOCUMENT_OUTLINE(doc_id)` |
+| 2 | One section | `READ_SECTION(doc_id, section)` |
+
+`FIND_IN_DOCUMENT(doc_id, term)` adds an exact word or number lookup inside one document. Every step is a
+plain SQL function, so each answer can be traced to the rows it read, and the whole index is built by a
+Snowpark procedure with no model call ([`motherlode/outline.py`](motherlode/outline.py)).
+
+Measured on the 33 eval announcements, built inside Snowflake on 16 November 2026:
+
+| | |
+|---|---|
+| Sections | 223, between 401 and 3,164 characters, median 1,309 |
+| Values written in the announcements that sit inside a single section | 96 of 96 |
+| That section as a share of its document | median 16% |
+| The outline as a share of its document | median 16% |
+| Outline plus one median section, against reading the whole document | about 32% |
+
+The last row is the best case: it assumes the reader picks the right section first. How often an agent
+does that is not measured yet, because the agent cannot run until the AI features are enabled. Two limits
+are also known: the outline's "summaries" are first sentences cut by code, and a press release with no
+headings gets sections labelled by their first words. Model-written summaries can replace both later
+without changing the structure.
+
+Embedding search (Cortex Search) is left out on purpose for this corpus: the questions are about exact
+terms and numbers in a few dozen structured documents, where a traceable lookup fits better than a
+similarity ranking. It has not been measured against the index here.
 
 ## Evals
 
@@ -157,11 +192,11 @@ Estimate from the documents on disk (`python scripts/estimate_cost.py`), not a m
 | **One full pass** | **3.86** |
 | Warehouse, extra small, per hour running | 2.60 |
 
-Agent runs, the search service and repeated passes come on top. Measured spend will replace this table.
+Agent runs and repeated passes come on top. Measured spend will replace this table.
 
 ## Status
 
-Tested, offline, in CI (119 tests, no account or network needed):
+Tested, offline, in CI (128 tests, no account or network needed):
 
 - The validator and schema, with the original pipeline's tests.
 - The extract, validate, retry, quarantine loop, at every exit.
@@ -187,12 +222,16 @@ Run on a Snowflake trial account (Standard edition, AWS EU Frankfurt) on 16 Nove
   imports the package, runs and writes its summary to `RUN_LOG`. The **task** is created and suspended,
   and the stage stream reports the uploaded files.
 - **The semantic view** is created and answers a `SEMANTIC_VIEW(...)` query with metrics by dimension.
-  **The agent object** `DEAL_ANALYST` is created from its specification.
+  **The agent object** `DEAL_ANALYST` is created from its specification, with the semantic view and the
+  four index functions as its tools.
+- **The hierarchical index**: `BUILD_OUTLINES` runs inside Snowflake and writes 223 sections for 33
+  documents; `FIND_DEALS`, `DOCUMENT_OUTLINE`, `FIND_IN_DOCUMENT` and `READ_SECTION` were called in that
+  order for a real deal and returned the matching deal, its outline, the section naming the royalty, and
+  that section's text.
 - The 10 agent eval queries all run and return values from the deal table.
 - [`scripts/smoke_test.py`](scripts/smoke_test.py): `AI_COMPLETE`, `AI_CLASSIFY`, `AI_FILTER`, `AI_EXTRACT`,
   `AI_PARSE_DOCUMENT` and `AI_COUNT_TOKENS` were each refused with error 399258, "is not available for
-  trial accounts". Creating the **Cortex Search service** is refused the same way, because it embeds text
-  (`EMBED_TEXT_768`). This matches the documentation: AI features on a trial need a payment card on file.
+  trial accounts". This matches the documentation: AI features on a trial need a payment card on file.
 
 Not tested yet, all waiting on the AI features being enabled:
 
@@ -201,7 +240,8 @@ Not tested yet, all waiting on the AI features being enabled:
   Snowflake looked at the arguments.
 - Extraction and screening by Cortex: no `AI_COMPLETE` or `AI_EXTRACT` result has been measured. The
   `CONTINENT` and `DEAL_CATEGORY` columns are empty because they come from `AI_CLASSIFY`.
-- The search service, and running the agent (only creating the object was checked).
+- Running the agent: only creating the object was checked, so whether it walks the index well, and
+  whether the custom tool specification is accepted at run time, is unknown.
 - The REST call in [`scripts/agent.py`](scripts/agent.py): the authentication header and the response shape.
 - `METERING_HISTORY` column names in [`scripts/spend_report.py`](scripts/spend_report.py).
 
@@ -222,7 +262,7 @@ classifier: project transaction or not). The 43 labelled cases are too few to tr
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 119 tests, offline
+pytest                               # 128 tests, offline
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```

@@ -40,10 +40,11 @@ def main() -> None:
     outcomes: dict[str, int] = {}
     for case in score.load_cases():
         doc_id = case["id"]
-        text = " ".join((texts / f"{doc_id}.txt").read_text().split())
+        original = (texts / f"{doc_id}.txt").read_text()     # stored with its line breaks, which the outline needs
+        text = " ".join(original.split())                    # the validator reads it with whitespace collapsed
         saved = [json.loads(p.read_text()) for p in (replies / "attempt1" / f"{doc_id}.json", replies / "attempt2" / f"{doc_id}.json")
                  if p.exists()]
-        pipeline.parse(session, doc_id, f"{doc_id}.txt", saved_text=text)
+        pipeline.parse(session, doc_id, f"{doc_id}.txt", saved_text=original)
         result = pipeline.extract_and_store(session, doc_id, text, {"project_name": case["project"]}, MODEL, replay=saved)
         outcomes[result.outcome] = outcomes.get(result.outcome, 0) + 1
         print(f"{doc_id:>7}  {result.outcome:<15} attempts {result.attempts}  withheld {sorted(result.withheld)}")

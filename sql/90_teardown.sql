@@ -3,8 +3,8 @@
 
 USE ROLE MOTHERLODE_PIPELINE;
 
--- The search service is billed while it exists, even when nobody queries it.
-DROP CORTEX SEARCH SERVICE IF EXISTS MOTHERLODE.CORE.ANNOUNCEMENT_SEARCH;
+-- Nothing in this project is billed while idle: there is no search service, and the task and the
+-- warehouse are suspended here.
 ALTER TASK IF EXISTS MOTHERLODE.CORE.PROCESS_NEW_ANNOUNCEMENTS SUSPEND;
 ALTER WAREHOUSE MOTHERLODE_XS SUSPEND;
 
