@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Credentials: never committed
+.env
+*.p8
+*.pem
+rsa_key*
+
+# Source documents and model replies: downloaded or produced locally, not redistributed
+data/documents/
+data/replies/
+evals/.cache/
+
+# Local run output
+spend_ledger.jsonl
+run_report.json
