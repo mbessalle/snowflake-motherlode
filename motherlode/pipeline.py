@@ -99,17 +99,25 @@ def screen_with_filter(session, text: str) -> bool:
     return bool(_value(session, cortex.FILTER_SQL, [cortex.IS_DEAL_PREDICATE, text[:cortex.TRIAGE_CHAR_LIMIT]]))
 
 
-def extract_and_store(session, doc_id: str, text: str, screening: dict, extractor: str, max_attempts: int = 2) -> Result:
+def extract_and_store(session, doc_id: str, text: str, screening: dict, extractor: str, max_attempts: int = 2,
+                      replay: list[dict] | None = None) -> Result:
     """Run the extract, validate, retry, quarantine loop for one document and write what it decides.
 
     `extractor` is "AI_EXTRACT" or the name of a model for AI_COMPLETE. AI_EXTRACT takes questions, not a
-    prompt, so it has no way to receive the correction and gets a single attempt."""
+    prompt, so it has no way to receive the correction and gets a single attempt.
+
+    With `replay`, no model is called: the saved extractions are used in order (first attempt, then retry)
+    and the rows are marked "REPLAY <extractor>". This runs everything after the model call for real."""
     name = AI_EXTRACT if extractor == AI_EXTRACT else f"AI_COMPLETE {extractor}"
+    if replay is not None:
+        name = f"REPLAY {extractor}"
     attempts = {"n": 0}
 
     def extract(article: str, project_name: str | None, feedback: str | None) -> dict:
         attempts["n"] += 1
-        if extractor == AI_EXTRACT:
+        if replay is not None:
+            extraction, usage = (replay[attempts["n"] - 1] if attempts["n"] <= len(replay) else {}), {}
+        elif extractor == AI_EXTRACT:
             questions = json.dumps(cortex.extract_questions(project_name))
             extraction, usage = cortex.parse_extract(_value(session, cortex.EXTRACT_TEXT_SQL, [article, questions])), {}
         else:

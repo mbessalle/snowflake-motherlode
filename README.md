@@ -9,11 +9,13 @@ Deal announcements land on a stage, Cortex AI functions read them, Snowpark Pyth
 checks every extracted number against the announcement before it is written, and a Cortex Agent answers
 questions over the result.
 
-> **Status: the account is set up; no Cortex AI function has run yet.**
-> On a trial account, the spending guardrails, the database objects and the document upload have run.
-> Every AI function call was refused with "not available for trial accounts", so there are no extraction,
-> screening or agent results. [What was and was not tested](#status) is listed below and will be updated
-> with measured results as each part runs.
+> **Status: everything except the model calls runs on Snowflake; no Cortex AI function has run yet.**
+> On a trial account, the pipeline's Snowpark code has written 33 deals to the deal table from extractions
+> saved by the original pipeline, with validation, retry and the review queue all running in Snowflake.
+> The stored procedure, the task, the semantic view and the agent object exist. The Cortex AI functions are
+> still refused with "not available for trial accounts" (a trial needs an accepted payment card), so there
+> are no Cortex extraction, screening or agent results yet. [What was and was not tested](#status) is listed
+> below and is updated as each part runs.
 
 ## Architecture
 
@@ -100,6 +102,22 @@ These are OpenAI results from the original pipeline, not Snowflake results. The 
 Only 3 of them are not project deals, so this set says little about false positives until more negatives
 are labelled.
 
+**The same cases, replayed through Snowflake.** [`scripts/replay_baseline.py`](scripts/replay_baseline.py)
+feeds those saved replies into the pipeline code running against the Snowflake account, in place of the
+model call. Measured on 16 November 2026 and read back from the tables:
+
+| | Count |
+|---|---|
+| Deals written to `CORE.DEALS` | 33 |
+| Complete (every number supported) | 31 |
+| Partial (unsupported values withheld) | 2 |
+| Second attempts recorded in `CORE.EXTRACTION_ATTEMPTS` | 3 |
+| Entries in `CORE.REVIEW_QUEUE` | 2 |
+
+These match the scorer's numbers above (31 of 33 records fully supported, 3 retried), which is the point:
+the validation, retry, quarantine and storage path behaves on Snowflake as it does offline. The rows are
+marked `REPLAY gpt-6.1-terra`. They are not Cortex output.
+
 **Agent.** [`evals/agent_questions.jsonl`](evals/agent_questions.jsonl) holds 10 questions, each with a SQL
 query that computes the true answer from the deal table. An answer passes only if it contains that number.
 
@@ -130,13 +148,13 @@ Estimate from the documents on disk (`python scripts/estimate_cost.py`), not a m
 | Extraction, `AI_COMPLETE` claude-sonnet-5, 33 cases, one pass | 0.83 |
 | Extraction, `AI_EXTRACT`, 33 cases, one pass | 1.73 |
 | **One full pass** | **3.86** |
-| Warehouse, extra small, per hour running | 3.60 |
+| Warehouse, extra small, per hour running | 2.60 |
 
 Agent runs, the search service and repeated passes come on top. Measured spend will replace this table.
 
 ## Status
 
-Tested, offline, in CI (115 tests, no account or network needed):
+Tested, offline, in CI (116 tests, no account or network needed):
 
 - The validator and schema, with the original pipeline's tests.
 - The extract, validate, retry, quarantine loop, at every exit.
@@ -145,30 +163,40 @@ Tested, offline, in CI (115 tests, no account or network needed):
 - The spending guard, the generated DDL, the agent answer check and the eval scorer.
 - Locally only (it needs the original pipeline's cache): the scorer reproduces the published baseline.
 
-Run on a Snowflake trial account (Enterprise edition, AWS Asia Pacific Thailand) on 16 November 2026:
+Run on a Snowflake trial account (Standard edition, AWS EU Frankfurt) on 16 November 2026:
 
 - [`sql/00_account_guardrails.sql`](sql/00_account_guardrails.sql): every statement succeeded. Read back:
   all three warehouses are under the 20-credit resource monitor with a 60 second auto-suspend.
 - [`sql/01_objects.sql`](sql/01_objects.sql) and [`sql/02_deals_table.sql`](sql/02_deals_table.sql): the
-  stage, the stream and the eight tables exist and are owned by the pipeline role. Two mistakes in the
-  first version were found by running it and fixed (a `GRANT` on three schemas in one statement; an `&`
-  in a comment that the Snowflake CLI read as a variable).
+  stage, the stream and the tables exist and are owned by the pipeline role. Two mistakes in the first
+  version were found by running it and fixed (a `GRANT` on three schemas in one statement; an `&` in a
+  comment that the Snowflake CLI read as a variable).
 - Key-pair login through Snowpark, and the upload of the 43 documents to the stage.
-- [`scripts/smoke_test.py`](scripts/smoke_test.py): creating and dropping a Cortex Agent object works on
-  the trial. `AI_COMPLETE`, `AI_CLASSIFY`, `AI_FILTER`, `AI_EXTRACT`, `AI_PARSE_DOCUMENT` and
-  `AI_COUNT_TOKENS` were each refused with error 399258, "is not available for trial accounts", which
-  matches the documentation: AI features on a trial need a credit card on file.
+- **The pipeline after the model call**, through [`scripts/replay_baseline.py`](scripts/replay_baseline.py):
+  `DOCUMENT_TEXT`, `EXTRACTION_ATTEMPTS`, `DEALS` and `REVIEW_QUEUE` are written by the Snowpark code with
+  bind parameters, `PARSE_JSON` and one typed cast per column. Counts are in [Evals](#evals).
+- **The stored procedure**: the package is uploaded as a zip, `PROCESS_NEW_ANNOUNCEMENTS` is created with
+  Python 3.12 and `pydantic` from Snowflake's package channel, and a call with a limit of 0 documents
+  imports the package, runs and writes its summary to `RUN_LOG`. The **task** is created and suspended,
+  and the stage stream reports the uploaded files.
+- **The semantic view** is created and answers a `SEMANTIC_VIEW(...)` query with metrics by dimension.
+  **The agent object** `DEAL_ANALYST` is created from its specification.
+- The 10 agent eval queries all run and return values from the deal table.
+- [`scripts/smoke_test.py`](scripts/smoke_test.py): `AI_COMPLETE`, `AI_CLASSIFY`, `AI_FILTER`, `AI_EXTRACT`,
+  `AI_PARSE_DOCUMENT` and `AI_COUNT_TOKENS` were each refused with error 399258, "is not available for
+  trial accounts". Creating the **Cortex Search service** is refused the same way, because it embeds text
+  (`EMBED_TEXT_768`). This matches the documentation: AI features on a trial need a payment card on file.
 
-Not tested yet:
+Not tested yet, all waiting on the AI features being enabled:
 
 - Every statement in [`motherlode/cortex.py`](motherlode/cortex.py): whether named arguments accept bind
   parameters as written, and whether `AI_PARSE_DOCUMENT` accepts HTML files. The refusal above came before
   Snowflake looked at the arguments.
-- Running a Cortex Agent (only creating the object was checked).
-- The stored procedure and task, the search service, the semantic view and the agent.
+- Extraction and screening by Cortex: no `AI_COMPLETE` or `AI_EXTRACT` result has been measured. The
+  `CONTINENT` and `DEAL_CATEGORY` columns are empty because they come from `AI_CLASSIFY`.
+- The search service, and running the agent (only creating the object was checked).
 - The REST call in [`scripts/agent.py`](scripts/agent.py): the authentication header and the response shape.
 - `METERING_HISTORY` column names in [`scripts/spend_report.py`](scripts/spend_report.py).
-- No extraction, screening or agent result has been measured on Snowflake.
 
 [`scripts/smoke_test.py`](scripts/smoke_test.py) is the first thing to run on an account: one small call
 per service, printing Snowflake's own message for each.
@@ -181,7 +209,7 @@ announcements (the original pipeline does that outside Snowflake).
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 115 tests, offline
+pytest                               # 116 tests, offline
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```

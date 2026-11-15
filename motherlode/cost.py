@@ -18,7 +18,7 @@ from pathlib import Path
 
 RATES_AS_OF = "2026-11-12"
 USD_PER_AI_CREDIT = 2.00            # Table 2(b), on demand, global routing (2.20 for regional routing)
-USD_PER_PLATFORM_CREDIT = 3.60      # Table 2(a), Enterprise edition, AWS Asia Pacific (Thailand): the trial account's
+USD_PER_PLATFORM_CREDIT = 2.60      # Table 2(a), Standard edition, AWS EU (Frankfurt): the trial account's
 WAREHOUSE_XS_CREDITS_PER_HOUR = 1   # Table 1(a)
 
 # AI credits per one million tokens: (input, output). Table 6(a).

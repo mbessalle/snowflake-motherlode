@@ -97,6 +97,19 @@ def test_ai_extract_answers_are_typed_and_get_a_single_attempt():
     assert json.loads(session.written("CORE.DEALS")[0][6]) == {"project_name": "Big Onion", "cash_payments_value": 250000.0, "nsr_percent": 2.0}
 
 
+def test_replay_uses_saved_extractions_and_calls_no_model():
+    invented = {**GOOD, "shares_amount": 3500000}
+    session = FakeSession([])
+    result = pipeline.extract_and_store(session, "7", TEXT, {"project_name": "Big Onion"}, "gpt-6.1-terra", replay=[invented, GOOD])
+    assert (result.outcome, result.attempts) == ("stored", 2)
+    assert not any(statement.startswith("SELECT AI_") for statement, _ in session.calls)
+    assert [a[1] for a in session.written("CORE.EXTRACTION_ATTEMPTS")] == ["REPLAY gpt-6.1-terra"] * 2
+    assert session.written("CORE.DEALS")[0][3] == "REPLAY gpt-6.1-terra"
+    # a failed first attempt with no saved retry ends as "no data" on the second attempt, never as a model call
+    alone = pipeline.extract_and_store(FakeSession([]), "8", TEXT, {"project_name": "Big Onion"}, "gpt-6.1-terra", replay=[invented])
+    assert (alone.outcome, alone.row) == ("no_data", None)
+
+
 def test_a_document_that_is_not_a_deal_stops_before_extraction():
     session = FakeSession([GOOD], pending=[("8", "8.html", "Drill results", "acme")])
     TRIAGE["is_project_deal"] = False
