@@ -133,6 +133,13 @@ def test_calculated_fields_are_checked_by_the_analysts_formulas():
     assert cases.formula_checks(good) == {"aggregate": True, "shares_value": True}
     assert cases.formula_checks({**good, "aggregate_deal_value": 999999})["aggregate"] is False
     assert cases.formula_checks({"nsr_percent": 2}) == {}                 # nothing to check without the inputs
+    # a shares value is either stated in the announcement or computed from the number of shares and a price
+    text = "Consideration is 2,000,000 shares with a deemed value of $75,000."
+    assert cases.shares_value_source({"shares_value": 75000, "shares_amount": 2000000, "share_price": 0.03}, text) == "stated"
+    assert cases.shares_value_source({"shares_value": 60000, "shares_amount": 2000000, "share_price": 0.03}, text) == "computed"
+    assert cases.shares_value_source({"shares_value": 75000, "shares_amount": 2000000, "share_price": 0.0375}, text) == "both"
+    assert cases.shares_value_source({"shares_value": 91000, "shares_amount": 2000000, "share_price": 0.03}, text) == "unexplained"
+    assert cases.shares_value_source({"shares_amount": 2000000}, text) is None
     assert cases.normalise("Yarri / Bunjarra (West)") == "yarri_bunjarra_west"
 
 

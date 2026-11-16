@@ -183,7 +183,7 @@ is market data from the announcement date and is not in the document at all.
 | Case documents: digital / mixed | 214 / 22 |
 | Projects with several PDFs where the chosen one holds every value any of them holds | 89 of 95 |
 | Aggregate equals cash + exploration commitment + shares value | 182 of 182 rows |
-| Shares value equals shares × share price | 18 of 58 rows |
+| Shares value, 109 rows: stated in the document / computed as shares × price / both / unexplained | 43 / 15 / 3 / 48 |
 
 | Scraped field | Analyst value written in the case document |
 |---|---|
@@ -197,10 +197,15 @@ is market data from the announcement date and is not in the document at all.
 
 This table is not an extraction score. It measures the ground truth: how many of the analyst's values can
 be found as written in the document, which is the ceiling for scoring an extractor against these rows by
-exact match. The low rows have known causes: the area is stored in hectares whatever unit the announcement
-uses, and a cash or commitment figure is a sum of tranches that the announcement lists separately. The
-shares-value formula holding in only 18 of 58 rows means the stored share price is often not the one the
-value was computed with. Scoring an extractor on this set therefore needs the validator's derivation rules
+exact match. The low rows have known causes: the area column was carried over in hectares from the analyst's
+original dataset rather than read from the announcement, and a cash or commitment figure is a sum of
+tranches that the announcement lists separately. A
+shares value has two legitimate origins, as the original pipeline's extraction rules set out in order of
+priority: the announcement states what the share payment is worth, or it is computed from the number of
+shares and a share price, taken from the announcement or, failing that, the last traded price on the
+listing site.
+61 of the 109 rows are explained by one of the two; the other 48 match neither the document nor the
+stored price, most likely because the price used was not the one kept in the row. Scoring an extractor on this set therefore needs the validator's derivation rules
 (sums, unit conversion) and not only exact matches; that scoring is not built yet.
 
 **Converted amounts.** An earlier sheet holds the same deals converted to US dollars, by the rule

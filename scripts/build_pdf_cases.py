@@ -88,6 +88,22 @@ def formula_checks(row: dict) -> dict[str, bool]:
     return out
 
 
+def shares_value_source(row: dict, text: str) -> str | None:
+    """Where a row's shares value comes from. The analyst's sheet allows two origins: the announcement states
+    the value of the share payment directly, or it is computed as number of shares x a share price (taken
+    from the announcement or from the listing site).
+
+    stated: the value is written in the document. computed: it equals shares x the stored share price.
+    both, or unexplained when neither holds (for example a price that was used but not stored)."""
+    value = number(row.get("shares_value"))
+    if value is None:
+        return None
+    shares, price = number(row.get("shares_amount")), number(row.get("share_price"))
+    computed = shares is not None and price is not None and close(shares * price, value)
+    stated = bool(find_number(text, value, kind="money"))
+    return "both" if computed and stated else "computed" if computed else "stated" if stated else "unexplained"
+
+
 def document_text(project: str, file: str, directory: Path) -> str:
     cache = TEXT_CACHE / f"{Path(file).stem}.txt"
     if cache.exists():
@@ -122,11 +138,11 @@ def main() -> None:
         if project not in documents:
             no_folder += 1
             continue
-        candidates, kinds = [], {}
+        candidates, kinds, texts = [], {}, {}
         for entry in documents[project]:
             text = " ".join(document_text(project, entry["file"], directory).split())
             candidates.append((entry["file"], written_fields(row, text), len(text)))
-            kinds[entry["file"]] = entry["kind"]
+            kinds[entry["file"]], texts[entry["file"]] = entry["kind"], text
         file, written = choose(candidates)
         anywhere = sorted({f for _, fields, _ in candidates for f in fields})
         cases.append({
@@ -135,6 +151,7 @@ def main() -> None:
             "analyst": {k: row[k] for k in KEPT if row.get(k) not in (None, "")},
             "scraped_values": sum(1 for k in SCRAPED if number(row.get(k)) is not None),
             "written_in_document": written, "written_in_any_document": anywhere, "formulas": formula_checks(row),
+            "shares_value_source": shares_value_source(row, texts[file]),
         })
     CASES.write_text("".join(json.dumps(case, ensure_ascii=False) + "\n" for case in cases))
 
@@ -151,9 +168,10 @@ def main() -> None:
         print(f"  {name:<28} {hit:>3} of {len(have):>3}  ({100 * hit / max(1, len(have)):.0f}%)")
     one_holds_all = sum(1 for c in several if len(c["written_in_document"]) == len(c["written_in_any_document"]))
     print(f"projects with several PDFs: {len(several)}; the chosen PDF holds every value any of them holds: {one_holds_all}")
-    for name in ("aggregate", "shares_value"):
-        checked = [c["formulas"][name] for c in cases if name in c["formulas"]]
-        print(f"formula {name}: {sum(checked)} of {len(checked)} rows consistent")
+    checked = [c["formulas"]["aggregate"] for c in cases if "aggregate" in c["formulas"]]
+    print(f"formula aggregate: {sum(checked)} of {len(checked)} rows consistent")
+    sources = [c["shares_value_source"] for c in cases if c["shares_value_source"]]
+    print(f"shares value, {len(sources)} rows: " + ", ".join(f"{k} {sources.count(k)}" for k in ("stated", "computed", "both", "unexplained")))
     print(f"chosen PDFs: digital {sum(c['kind'] == 'digital' for c in cases)}, mixed {sum(c['kind'] == 'mixed' for c in cases)}")
 
 
