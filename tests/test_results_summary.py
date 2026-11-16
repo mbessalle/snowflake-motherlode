@@ -45,7 +45,7 @@ def test_readme_example_table_matches_the_sample_rows():
         r = json.loads(line)
         analyst = f"{r['analyst_value']:,.2f}" if r["field"] == "share_price" else f"{r['analyst_value']:,.0f}"
         tier3 = f"{r['tier3_value']:,.2f}" if r["field"] == "share_price" else f"{r['tier3_value']:,.0f}"
-        row = next((l for l in readme.splitlines() if l.startswith(f"| {r['project']} |")), None)
+        row = next((line for line in readme.splitlines() if line.startswith(f"| {r['project']} |")), None)
         assert row, r["project"]
         cells = [c.strip() for c in row.strip("|").split("|")]
         assert cells[2] == analyst and cells[3] == r["tier2_verdict"] and cells[4] == r["tier2_proposal"], row
