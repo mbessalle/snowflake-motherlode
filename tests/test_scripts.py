@@ -110,6 +110,43 @@ def test_identical_files_are_marked_as_copies_of_the_first_one():
     assert entries[1]["duplicate_of"] == "yalgoo/yalgoo_451.pdf"
 
 
+def test_the_case_document_is_the_pdf_with_the_most_scraped_values_written_in_it():
+    cases = load("build_pdf_cases")
+    row = {"nsr_percent": 2, "interest_acquired_percent": 80, "cash_payments_value": 250000, "share_price": 0.03,
+           "aggregate_deal_value": 750000, "shares_amount": None}
+    terms = "The Company will pay $250,000 in cash for an 80% interest. The vendor retains a 2% NSR royalty."
+    notice = "Completion of due diligence on the project. The Company holds an 80% interest."
+    assert cases.written_fields(row, terms) == ["nsr_percent", "interest_acquired_percent", "cash_payments_value"]
+    assert cases.written_fields(row, notice) == ["interest_acquired_percent"]
+    # share price and the aggregate are never looked for in the text: one is market data, the other is calculated
+    assert "share_price" not in cases.SCRAPED and "aggregate_deal_value" not in cases.SCRAPED
+    chosen = cases.choose([("a_1.pdf", cases.written_fields(row, notice), len(notice)), ("a_2.pdf", cases.written_fields(row, terms), len(terms))])
+    assert chosen == ("a_2.pdf", ["nsr_percent", "interest_acquired_percent", "cash_payments_value"])
+    assert cases.choose([]) is None
+    assert cases.choose([("short.pdf", [], 10), ("long.pdf", [], 900)])[0] == "long.pdf"      # a tie goes to the longer text
+
+
+def test_calculated_fields_are_checked_by_the_analysts_formulas():
+    cases = load("build_pdf_cases")
+    good = {"cash_payments_value": 250000, "exp_comit_value": 100000, "shares_value": 60000, "aggregate_deal_value": 410000,
+            "shares_amount": 2000000, "share_price": 0.03}
+    assert cases.formula_checks(good) == {"aggregate": True, "shares_value": True}
+    assert cases.formula_checks({**good, "aggregate_deal_value": 999999})["aggregate"] is False
+    assert cases.formula_checks({"nsr_percent": 2}) == {}                 # nothing to check without the inputs
+    assert cases.normalise("Yarri / Bunjarra (West)") == "yarri_bunjarra_west"
+
+
+def test_a_converted_value_is_compared_with_the_amount_times_the_rate_of_the_day():
+    conversion = load("check_conversion")
+    rates = {"2025-03-07": {"USD": 0.63}, "2025-03-10": {"USD": 0.628}}
+    assert conversion.rate_on(rates, "2025-03-09") == 0.63               # a Sunday uses the Friday before
+    assert conversion.rate_on(rates, "2025-03-10T00:00:00") == 0.628
+    assert conversion.classify(1000.0, 1000.0, 0.63) == "same"
+    assert conversion.classify(1000.0, 632.0, 0.63) == "within 2%"
+    assert conversion.classify(1000.0, 655.0, 0.63) == "within 5%"
+    assert conversion.classify(1000.0, 700.0, 0.63) == "further off"
+
+
 def test_manifest_lists_every_screening_case_and_holds_no_text():
     manifest = [json.loads(line) for line in (ROOT / "data" / "manifest.jsonl").read_text().splitlines() if line.strip()]
     cases = [json.loads(line) for line in (ROOT / "evals" / "screening_cases.jsonl").read_text().splitlines() if line.strip()]

@@ -166,6 +166,51 @@ These match the scorer's numbers above (31 of 33 records fully supported, 3 retr
 the validation, retry, quarantine and storage path behaves on Snowflake as it does offline. The rows are
 marked `REPLAY gpt-6.1-terra`. They are not Cortex output.
 
+**A larger set: 236 cases built from the source PDFs.** 33 cases give 126 checked values, which leaves
+the 97% figure uncertain by about three points. [`scripts/build_pdf_cases.py`](scripts/build_pdf_cases.py)
+pairs each row of the analyst's deal table for one region with its project's PDFs and writes
+[`evals/pdf_cases.jsonl`](evals/pdf_cases.jsonl). A project often has several PDFs about the same sale, so
+every PDF is scored by how many of the row's values are written in it, and the best one becomes the case
+document. No model is involved.
+
+What can be checked against a document follows the analyst's field definitions: scraped fields are written
+in the announcement; calculated fields (the aggregate, the shares value) follow a formula; the share price
+is market data from the announcement date and is not in the document at all.
+
+| | |
+|---|---|
+| Rows in the table / without a PDF folder / cases | 249 / 13 / 236 |
+| Case documents: digital / mixed | 214 / 22 |
+| Projects with several PDFs where the chosen one holds every value any of them holds | 89 of 95 |
+| Aggregate equals cash + exploration commitment + shares value | 182 of 182 rows |
+| Shares value equals shares × share price | 18 of 58 rows |
+
+| Scraped field | Analyst value written in the case document |
+|---|---|
+| Royalty | 76 of 84 (90%) |
+| Interest acquired | 155 of 194 (80%) |
+| Shares issued | 51 of 77 (66%) |
+| Cash payments | 68 of 144 (47%) |
+| Exploration commitment | 16 of 47 (34%) |
+| Project area | 11 of 133 (8%) |
+| All scraped values | 377 of 679 (56%) |
+
+This table is not an extraction score. It measures the ground truth: how many of the analyst's values can
+be found as written in the document, which is the ceiling for scoring an extractor against these rows by
+exact match. The low rows have known causes: the area is stored in hectares whatever unit the announcement
+uses, and a cash or commitment figure is a sum of tranches that the announcement lists separately. The
+shares-value formula holding in only 18 of 58 rows means the stored share price is often not the one the
+value was computed with. Scoring an extractor on this set therefore needs the validator's derivation rules
+(sums, unit conversion) and not only exact matches; that scoring is not built yet.
+
+**Converted amounts.** An earlier sheet holds the same deals converted to US dollars, by the rule
+"amount × the exchange rate on the document date".
+[`scripts/check_conversion.py`](scripts/check_conversion.py) tests that rule with daily public reference
+rates. Of 108 converted cash figures, 25 are within 2% of amount × that day's rate, 21 more are within 5%
+and 62 are further off; the converted figures run a median 3% above the public rate. So the rule holds
+approximately, the rates actually used were not the public daily ones, and converted figures are kept out
+of document scoring.
+
 **Agent.** [`evals/agent_questions.jsonl`](evals/agent_questions.jsonl) holds 10 questions, each with a SQL
 query that computes the true answer from the deal table. An answer passes only if it contains that number.
 
@@ -225,7 +270,7 @@ Agent runs and repeated passes come on top. Measured spend will replace this tab
 
 ## Status
 
-Tested, offline, in CI (130 tests, no account or network needed):
+Tested, offline, in CI (133 tests, no account or network needed):
 
 - The validator and schema, with the original pipeline's tests.
 - The extract, validate, retry, quarantine loop, at every exit.
@@ -291,7 +336,7 @@ classifier: project transaction or not). The 43 labelled cases are too few to tr
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 130 tests, offline
+pytest                               # 133 tests, offline
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```
