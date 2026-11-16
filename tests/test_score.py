@@ -45,10 +45,18 @@ def test_cases_without_text_or_extraction_are_reported_not_counted(tmp_path):
 @pytest.mark.skipif(not (ORIGINAL_CACHE / "extractions" / "gpt-6.1-terra" / "attempt1").is_dir(),
                     reason="the original pipeline's eval cache is not on this machine")
 def test_reproduces_the_original_pipelines_published_numbers():
-    """Same cases, same saved replies, same validator: the numbers in the original README must come out."""
+    """Same cases, same saved replies: the original README published 122 / 126 (first attempt, 30 records
+    passed) and 123 / 126 after the retry (31). The critics' fixes to the validator (16 Nov 2026) change three
+    values from DERIVED to NOT_FOUND, all through the rule for a total split between projects:
+      83978 shares 4,731,835 as "14,195,506 split across 3": wrong, the document issues all 14,195,506
+            shares for one deal and the analyst recorded 14,195,506; the old number was too high here
+      35924 shares 2,000,000 as "(5,000,000 + 5,000,000) split across 5": the analyst agrees, so this one is
+            a loss; a sum of two amounts then split accepted too many invented values to keep
+      75845 cash 1,400,000 as "7,000,000 split across 5": the analyst agrees; no project word near the total
+    So the published numbers were one value too high and the current validator is two values too strict."""
     summary = score.score(score.load_cases(), ORIGINAL_CACHE / "texts", ORIGINAL_CACHE / "extractions" / "gpt-6.1-terra", retry=True)
     assert summary["records"] == 33 and summary["skipped"] == []
-    assert (summary["first"]["grounded"], summary["first"]["checked"], summary["first"]["records_passed"]) == (122, 126, 30)
-    assert (summary["final"]["grounded"], summary["final"]["checked"], summary["final"]["records_passed"]) == (123, 126, 31)
+    assert (summary["first"]["grounded"], summary["first"]["checked"], summary["first"]["records_passed"]) == (119, 126, 28)
+    assert (summary["final"]["grounded"], summary["final"]["checked"], summary["final"]["records_passed"]) == (120, 126, 29)
     assert (summary["retried"], summary["retried_now_passing"]) == (3, 1)
     assert summary["agreement_total"] == {"both": 108, "agree": 83}

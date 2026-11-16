@@ -131,10 +131,45 @@ def test_a_value_not_written_as_such_is_derived_by_the_extraction_rules():
     text = ("The Company will pay $250,000 on signing and $1,000,000 on a decision to mine, and will spend "
             "$2,000,000 across the Bingara and Nundle projects. The tenements cover 45.5 km2.")
     assert cases.derived_by_rule("cash_payments_value", 1250000, text) == "sum"        # tranches summed
-    assert cases.derived_by_rule("exp_comit_value", 1000000, text) == "split"          # shared by two projects
     assert cases.derived_by_rule("project_area", 4550, text) == "km2 to ha"
     assert cases.derived_by_rule("cash_payments_value", 777000, text) is None
     assert cases.derived_by_rule("nsr_percent", 2, text) is None                        # no rule for a percentage
+
+
+# Findings of the critic agent (review of 16 Nov 2026), one test each.
+
+def test_a_split_between_projects_is_no_longer_derived():                       # finding 3
+    cases = load("build_pdf_cases")
+    text = "The resource is 1,005,000 ounces at 6.1g/t Au. A further 1,005,000 ounces are inferred."
+    assert cases.derived_by_rule("exp_comit_value", 502500, text) is None
+
+
+def test_a_sum_uses_only_amounts_of_the_fields_kind():                          # finding 2
+    cases = load("build_pdf_cases")
+    text = "A resource of 370,000 tonnes and 3,650,000 tonnes. Map sheet 1:250,000. The Company pays $100,000."
+    assert cases.derived_by_rule("cash_payments_value", 4020000, text) is None       # tonnes are not money
+    assert cases.derived_by_rule("cash_payments_value", 350000, text) is None        # nor is a map scale
+
+
+@pytest.mark.parametrize("text", ["within a 12 months period", "16 km of strike length", "anomalies above 12 ppm",
+                                  "located 12km west of town", "a resource of 12koz"])
+def test_an_area_needs_a_km2_unit(text):                                        # finding 4
+    assert load("build_pdf_cases").derived_by_rule("project_area", 1200, text) is None
+
+
+@pytest.mark.parametrize("text", ["covering approximately 12km²", "an area of 12 km2", "12 sq km of tenements",
+                                  "12 square kilometres", "12km 2 of leases"])
+def test_an_area_in_km2_is_derived(text):
+    assert load("build_pdf_cases").derived_by_rule("project_area", 1200, text) == "km2 to ha"
+
+
+def test_the_buyer_must_be_named_in_full_or_by_its_ticker():                    # finding 9
+    cases = load("build_pdf_cases")
+    assert not cases.buyer_named("West Coast Silver Ltd.", "Acquisition of the Challenger West project")
+    assert not cases.buyer_named("New Frontier Minerals Limited", "located in New South Wales")
+    assert cases.buyer_named("West Coast Silver Ltd.", "West Coast Silver Limited acquires ...")
+    assert cases.buyer_named("New Frontier Minerals Limited", "NFM announces ...", "ASX:NFM")
+    assert not cases.buyer_named("New Frontier Minerals Limited", "nfm in lower case is a word", "ASX:NFM")
 
 
 def test_calculated_fields_are_checked_by_the_analysts_formulas():

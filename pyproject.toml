@@ -14,7 +14,11 @@ dependencies = [
 snowflake = ["snowflake-snowpark-python>=1.18", "snowflake-cli>=3.24"]
 # Needed only to download the source documents.
 fetch = ["requests>=2.32", "trafilatura>=2.3", "pypdf>=7"]
-dev = ["pytest>=9", "ruff>=0.17"]
+# Traces and logs of local runs (motherlode/telemetry.py). Inside Snowflake the platform supplies the API.
+# protobuf and googleapis-common-protos are held below 6 / 1.71 because Snowpark and the Snowflake CLI need protobuf 5.
+telemetry = ["opentelemetry-api>=1.45", "opentelemetry-sdk>=1.45", "opentelemetry-exporter-otlp-proto-http>=1.45",
+             "protobuf>=5.29.6,<6", "googleapis-common-protos<1.71"]
+dev = ["pytest>=9", "ruff>=0.17", "opentelemetry-api>=1.45", "opentelemetry-sdk>=1.45"]
 
 [tool.setuptools.packages.find]
 include = ["motherlode*"]

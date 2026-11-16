@@ -20,8 +20,13 @@ data/source_text/
 # Rows exported from the client's database: never committed
 data/client/
 data/replies/
+# Decision-model requests and answers: they hold document text
+data/judge_cache/
+data/judge_questions.jsonl
 evals/.cache/
 
 # Local run output
+traces/
 spend_ledger.jsonl
+judge_ledger.jsonl
 run_report.json

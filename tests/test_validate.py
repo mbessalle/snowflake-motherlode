@@ -157,3 +157,30 @@ def test_the_fast_sum_check_gives_the_same_answer_as_trying_every_combination():
             assert (found is not None) is brute
             if found:
                 assert abs(sum(found) - target) <= 0.5 and 2 <= len(found) <= terms
+
+
+@pytest.mark.parametrize("text, value, kind, expected", [
+    # found by the critic in the source PDFs: metres read as millions
+    ("results including 6m @ 4.79% Cu, 0.36g/t Au from 1m", 6_000_000, "shares", False),
+    ("sampled at intervals (0.1m to 3.1m)", 100_000, "money", False),
+    ("a horizontal accuracy of 0.3m", 300_000, "money", False),
+    ("a resource of 2.3 million ounces of gold", 2_300_000, "money", False),
+    ("an exploration target of 1.2 billion tonnes", 1_200_000_000, "money", False),
+    # a unit with a money or share context still counts
+    ("a payment of $6m in cash", 6_000_000, "money", True),
+    ("the issue of 6m shares to the vendor", 6_000_000, "shares", True),
+    ("A$2.5 million on completion", 2_500_000, "money", True),
+    ("spending 2.5 million dollars", 2_500_000, "money", True),
+    ("a C$250k option payment", 250_000, "money", True),
+    ("an enterprise value of $1.2bn", 1_200_000_000, "money", True),
+    ("valued at 1.2 billion dollars", 1_200_000_000, "money", True),
+    ("an acquisition for US$1.25 billion", 1_250_000_000, "money", True),
+])
+def test_a_million_thousand_or_billion_unit_counts_only_as_money_or_shares(text, value, kind, expected):
+    assert bool(find_number(text, value, kind=kind)) is expected
+
+
+def test_written_amounts_skip_metres_and_physical_quantities():
+    text = "6m @ 4.79% Cu, $1.5m in cash, 2 million tonnes, 3 million shares and a $1.2bn market value"
+    assert written_amounts(text) == [1_500_000.0, 3_000_000.0, 1_200_000_000.0]
+    assert validate({"shares_amount": 6_000_000}, "6m @ 4.79% Cu").fields["shares_amount"].status == NOT_FOUND

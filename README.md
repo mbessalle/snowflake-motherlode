@@ -65,7 +65,7 @@ this project uses.
 
 ## The model extracts, code decides
 
-This is carried over from the original pipeline (one function made faster, with the same results), and it is the part that does not depend on which
+This is carried over from the original pipeline, with the fixes listed in the layout table below, and it is the part that does not depend on which
 model or platform runs the extraction.
 
 - [`motherlode/validate.py`](motherlode/validate.py) gives every extracted number a status: written in the
@@ -134,14 +134,23 @@ real press releases ([`evals/cases.jsonl`](evals/cases.jsonl)): how many extract
 supports, and agreement with an analyst's hand-entered values.
 
 The only numbers measured so far are the baseline. Pointed at the original pipeline's saved `gpt-6.1-terra`
-replies, the scorer reproduces what that repository published, which shows the scorer and the ported
-validator behave as the originals do:
+replies, the scorer with the original validator reproduced what that repository published (first column).
+The validator has since been made stricter after two rounds of review by critic agents (see the 236-case
+section below), and the same replies now score as in the second column:
 
-| | First attempt | After the corrected retry |
+| | Published (original validator) | Current validator |
 |---|---|---|
-| Extracted numbers supported by the article | 122 of 126 (97%) | 123 of 126 (98%) |
-| Records with every number supported | 30 of 33 | 31 of 33 |
-| Agreement with the analyst, where both have a value | | 83 of 108 (77%) |
+| Extracted numbers supported by the article, first attempt | 122 of 126 (97%) | 119 of 126 (94%) |
+| Records with every number supported, first attempt | 30 of 33 | 28 of 33 |
+| Extracted numbers supported, after the corrected retry | 123 of 126 (98%) | 120 of 126 (95%) |
+| Records with every number supported, after the retry | 31 of 33 | 29 of 33 |
+| Agreement with the analyst, where both have a value | 83 of 108 (77%) | 83 of 108 (77%) |
+
+The three values that changed were all accepted by a rule for totals split between projects. One of them
+was wrong: 4,731,835 shares accepted as "14,195,506 split across 3 projects", where the document issues all
+14,195,506 for one deal. The other two the analyst agrees with, so the current validator is two values too
+strict on this set; the old rules accepted as derived between 18% and 28% of invented round cash amounts
+offered for the 236 real documents, now between 3% and 12% ([`scripts/validator_control.py`](scripts/validator_control.py)), so it was narrowed.
 
 These are OpenAI results from the original pipeline, not Snowflake results. The Snowflake rows
 (`AI_COMPLETE` and `AI_EXTRACT` on the same cases) will be added when they have been run.
@@ -162,7 +171,8 @@ model call. Measured on 16 November 2026 and read back from the tables:
 | Second attempts recorded in `CORE.EXTRACTION_ATTEMPTS` | 3 |
 | Entries in `CORE.REVIEW_QUEUE` | 2 |
 
-These match the scorer's numbers above (31 of 33 records fully supported, 3 retried), which is the point:
+These match the scorer's published numbers above (31 of 33 records fully supported, 3 retried; this run
+used the validator before the critics' fixes), which is the point:
 the validation, retry, quarantine and storage path behaves on Snowflake as it does offline. The rows are
 marked `REPLAY gpt-6.1-terra`. They are not Cortex output.
 
@@ -180,68 +190,163 @@ is market data from the announcement date and is not in the document at all.
 | | |
 |---|---|
 | Rows in the table / without a PDF folder / cases | 249 / 13 / 236 |
-| Case documents: digital / mixed | 214 / 22 |
+| Case documents: digital / mixed | 213 / 23 |
 | Projects with several PDFs where the chosen one holds every value any of them holds | 89 of 95 |
 | Aggregate equals cash + exploration commitment + shares value | 182 of 182 rows |
-| Shares value, 109 rows: stated in the document / computed as shares × price / both / unexplained | 43 / 15 / 3 / 48 |
-| Chosen PDF names the analyst's buyer (rule 1 of the extraction rules: is the document about this deal?) | 229 of 236 |
+| Shares value, 109 rows: stated in the document / computed as shares × price / both / unexplained | 26 / 21 / 8 / 54 |
+| Chosen PDF names the analyst's buyer, in full or by ticker (rule 1 of the extraction rules: is the document about this deal?) | 226 of 236 |
 
-| Scraped field | Written in the case document | Not written, but derived by a rule | Chance matches of the rule (control) |
+| Scraped field | Written in the case document | Area given in km² (hectares in the row) | Probably a sum of written amounts |
 |---|---|---|---|
-| Royalty | 76 of 84 (90%) | 0 | |
-| Interest acquired | 155 of 194 (80%) | 0 | |
-| Shares issued | 51 of 77 (66%) | 20 (19 sums, 1 split) | 4 / 4 |
-| Cash payments | 68 of 144 (47%) | 28 (24 sums, 4 splits) | 12 / 6 |
-| Exploration commitment | 16 of 47 (34%) | 14 (6 sums, 8 splits) | 5 / 2 |
-| Project area | 11 of 133 (8%) | 90 (km² in the document, hectares in the row) | 0 / 2 |
-| All scraped values | 377 of 679 (56%) | 152, so 529 of 679 (78%) together | |
+| Royalty | 75 of 84 (89%) | | |
+| Interest acquired | 153 of 194 (79%) | | |
+| Shares issued | 50 of 77 (65%) | | 18 |
+| Cash payments | 62 of 144 (43%) | | 18 |
+| Exploration commitment | 16 of 47 (34%) | | 5 |
+| Project area | 6 of 133 (5%) | 87 | |
+| All scraped values | 362 of 679 (53%) | 87 | 41 |
+
+"Written" means the number is in the text with the checks the validator makes: a royalty or interest
+percentage near a word of its kind, a cash amount that is not followed by "worth of exploration",
+"placement" or "in shares", and an area followed by a hectare unit.
 
 This table is not an extraction score. It measures the ground truth: how many of the analyst's values can
 be found in the document. A value that is not written as such can still follow from the document by the
 original pipeline's extraction rules, and the case file records which rule explains it:
 
+- **km² to ha**: the announcement gives the area as a number followed by a km² unit, and the row holds
+  it in hectares. These count as confirmed.
 - **sum**: "sum all forms of a payment type", so a cash payment is the sum of tranches the announcement
-  lists separately (two or three amounts written in the document).
-- **split**: a value shared between projects is divided equally (a written total, or a sum of two,
-  divided between 2 and 6 projects).
-- **km² to ha**: the announcement gives the area in km² and the row holds it in hectares.
+  lists separately: two or three amounts of the same kind (dollars for a payment, share counts for shares).
+  These count as probable only, and the scorer reports them apart.
 
-A sum of written amounts can match by chance, so the same tests were run with every stored value
-multiplied by 1.13 and by 0.87, values that should not match. The last column gives how many of those
-wrong values the rule still "explained". The area rule is reliable (0 and 2 chance matches against 90).
-The share-count sums are mostly real. For cash, up to about 12 of the 28 may be chance, so a derived
-cash value is "probably from the document", not confirmed.
+**How these rules were checked, and what that changed.** Critic agents (their instructions are in
+[`.claude/agents/eval-critic.md`](.claude/agents/eval-critic.md)) ran the builder, validator and scorer
+end to end, read the traces, and checked decisions against the PDF text by hand. Round 1 was one critic in
+the main checkout (64 decisions read, 11 errors confirmed). Round 2 was three critics in parallel, each in
+its own git worktree on its own branch, one each for the validator, the builder and the scorer; each
+committed a failing test per confirmed finding (`tests/test_critic_*.py`), and those tests now pass. A
+rebuild in a fresh worktree, with the PDF text extracted again, reproduced the case file byte for byte.
+
+Round 1 fixes:
+
+- "m" and "k" after a number were read as million and thousand, so "6m @ 4.79% Cu" (6 metres) counted as
+  6,000,000 shares and "0.1m" as a $100,000 payment. They now count only next to a currency sign or before
+  "dollars", "in cash" or "shares"; the words million, thousand and billion count unless a physical unit
+  such as tonnes or ounces follows.
+- Sums used any number in the text, including ounces, tonnes, coordinates and a 1:250,000 map scale. They
+  now use only amounts of the field's kind.
+- A rule for totals shared between projects found 13 values; none survived the hand check, because
+  nothing tied a total to a number of projects. It was removed.
+- The area rule accepted any bare number, such as "12 months" or "16 km of strike length". It now needs a
+  km² unit.
+- The buyer check matched the first word only ("West Coast Silver" matched "Challenger West"). It now
+  needs the full name or the ticker.
+
+Round 2 fixes:
+
+- Trailing zeros: "$0.10" did not match a share price of 0.1 and "$14.0m" did not match 14,000,000, so a
+  price written that way blocked a record. Both match now.
+- A number followed by a physical unit ("5,000,000 tonnes") is never an amount, and the validator's own
+  sums use one kind of amount only, as the builder's do. The metres rule needs a metres unit.
+- A royalty or interest percentage must be near a word of its kind: "approximately 10% of the original
+  diamond holes" was a royalty, "100% of the RC holes logged" an interest.
+- A cash amount followed by "worth of exploration", "placement" or "in shares" no longer confirms a cash
+  payment; at least 8 of 66 had.
+- An area counts as written only with a hectare unit ("$100,000 to be paid in cash" was an area).
+- When no PDF of a project holds a written value, the one that gives the row's news date most often is
+  chosen, not the longest: the agreement and the later completion notice can sit in the same folder.
+- A shares value counts as stated only near the word share and when it is not the cash payment's number;
+  a stored share price rounded to its decimals still explains the value.
+- A wrong PDF folder used to give empty texts and exit 0; it now stops with an error.
+
+Of the 28 sums the round 1 critic read, 12 were right and are all still found, and 5 of the 13 wrong ones
+are still found: they add real dollar amounts that are not part of the payment, such as a fee cap. That is
+why sums stay "probable". A control run ([`scripts/rule_control.py`](scripts/rule_control.py)) multiplies
+every stored amount by 1.13 and by 0.87 and runs the same rules: 1 chance match in 401 values each time.
+For percentages it offers every other common value (0.5% to 100%) instead of the analyst's: a wrong
+royalty is found written near a royalty word 4.1% of the time and a wrong interest 6.4%, so a percentage
+counted as written is not certain either; most deals are for 100%, and a document often says "100%"
+about something else nearby.
 
 A shares value has two legitimate origins, as the original pipeline's extraction rules set out in order
 of priority: the announcement states what the share payment is worth, or it is computed from the number
 of shares and a share price, taken from the announcement or, failing that, the last traded price on the
-listing site. 61 of the 109 rows are explained by one of the two. The other 48 match neither the document
+listing site. 55 of the 109 rows are explained by one of the two. The other 54 match neither the document
 nor the stored price. The fallback price can be checked only where a project folder holds a print of the
-listing page: that is so for 1 of the 48, and its printed price does not explain the value.
+listing page: that is so for 7 of them, and in none does the printed price explain the value.
 
-Of the 7 cases whose PDF does not name the buyer, one shows why the check matters: two deals on the
+**Judgments of meaning: a decision model, calibrated on blind labels.** Some checks are not exact matches
+but readings: is the analyst's buyer the buyer in this announcement or the seller, is an area this project's
+or a total for several, is each amount of a sum part of the payment or a fee, is "100%" the interest
+acquired or an existing holding. Code cannot settle those, so code proposes the candidates and a decision
+model judges them: TypeSafe's Jev on OpenRouter's Decisions API ([`motherlode/judge.py`](motherlode/judge.py),
+[`scripts/judge_cases.py`](scripts/judge_cases.py)). It answers closed questions with probabilities and
+writes no text. Each question restates a rule of the original extraction rules. 693 questions on the 236
+cases cost 0.042 USD (price checked on OpenRouter's model list: 0.042 USD per million input tokens, output
+free; the ledger adds up the cost each response reports). Every call is cached and traced.
+
+The answers were measured before any threshold was chosen. Two labelling agents answered the same
+questions on a stratified sample of 147, in a separate git worktree that held only the questions and texts:
+the model's answers were never committed, so they were not there, and
+[`scripts/audit_agent_reads.py`](scripts/audit_agent_reads.py) checked each labeller's tool calls for a read
+outside that folder or of the answers (none; both wrote helper files to `/tmp`, which the audit lists).
+
+| Question | Blind labels | Same verdict at P < 0.5 | Wrong evidence caught | Right evidence rejected |
+|---|---|---|---|---|
+| Buyer, seller or no deal | 40 | 36 | 23 of 25 | 2 of 15 |
+| Area of this project or a total | 26 | 25 | 14 of 15 | 0 of 11 |
+| Percentage is the deal's interest or royalty | 36 | 31 | 16 of 19 | 2 of 17 |
+| Sum, all amounts at once | 39 | 29 | 13 of 13 | 10 of 26 |
+| Sum, one question per amount | 39 | 36 | 13 of 13 | 3 of 26 |
+
+Asking about all amounts of a sum at once rejected too many right sums; one question per amount, with the
+sum right only if every amount is, fixed that, so the scorer uses that form. With these judgments
+([`evals/judge_results.jsonl`](evals/judge_results.jsonl)), the scorer leaves out evidence the model rejects
+and adds sums it accepts; `--no-judgments` scores by code alone.
+
+The largest effect is on the buyer: the model reads the analyst's buyer as the buyer in 157 of the 236
+chosen PDFs. In the others the PDF is often a tenement grant notice with no deal in it, or the company named
+as buyer is selling or farming out the project. That points at the ground truth, not at the extractor, and
+is a question for the analyst: whether the owner column holds the buyer, as its field definition says, or
+the project's holder on the listing site. Not checked yet.
+
+Of the 10 cases whose PDF does not name the buyer, one shows why the check matters: two deals on the
 Glenfine project, by different buyers in 2024 and 2025, both chose the only PDF in the folder, and that
 PDF is about the 2025 deal.
 
 **Scoring an extractor on the 236 cases.** [`evals/score_pdf.py`](evals/score_pdf.py) scores every one
-of the 31 fields the extractor fills. Each field has one rule, and a test fails if a field has none:
+of the 33 fields the extractor fills. Each field has one rule, and a test fails if a field has none:
 
 | Kind | Fields | How compared |
 |---|---|---|
 | Scraped | royalty, interest, cash, exploration commitment, metres drilled, shares issued, stated shares value, area | Within 1% of the analyst's value (area after conversion to hectares), and checked against the PDF text by the validator |
 | Calculated | aggregate, shares value, drilling value | Within 1% of the analyst's value |
-| Market | share price | Within 1%; usually not in the document |
+| Market | share price | Within 1% (0.02 and 0.03 differ); usually not in the document |
 | Location | latitude, longitude | Within 0.05°; usually not in the document |
-| Text | commodity, commodity list, stage, state, country, buyer, ticker, currencies, date | After normalising: "Ltd" = "Limited", "WA" = "Western Australia", "ASX.MM8" = "ASX:MM8", lists as sets |
+| Text | commodity, commodity list, stage, state, country, buyer, ticker, currencies, date | After normalising: "Ltd" = "Limited", "N.L." = "NL", "WA" = "Western Australia", "ASX.MM8" = "MM8.AX" = "ASX:MM8", "A$" = "AUD", lists as sets |
 | Given as input | project name | Not scored: the prompt names the project |
 | No comparable value | deal type, deal period, market cap, resource statement, listing-site stage, exploration currency | Only how often the model fills them. The analyst's deal types are listing-site categories ("Project Acquisition"), not the prompt's "option agreement, JV, sale" |
 
-The headline measure counts the scraped values the analyst has, the PDF supports (written or derived),
-and whose PDF names the buyer: how many the extractor gets right. There are 517 of those.
+The headline measure counts the scraped values the analyst has and the PDF confirms (written, or an area
+in km²), in cases whose PDF names the buyer: how many the extractor gets right. By code alone there are 432
+of those, with 40 probable sums reported apart. With the decision model's judgments (the default when
+`evals/judge_results.jsonl` exists) there are 310: 290 confirmed by code and not rejected by the model, and
+20 sums the model accepts amount by amount; 217 values are left out, most because the PDF does not show the
+analyst's buyer as the buyer. Numbers written as text ("70%", "A$600,000",
+"44.5 million") are read; "N/A", "null" or "0" count as no value; an unreadable reply file is reported
+and skipped instead of stopping the run.
 
 As a check of the scorer itself, the analyst's own values were scored as if they came from an extractor:
-every comparable field agrees 100%, and a test confirms that wrong values do not agree. No Snowflake
+every comparable field agrees 100%, and tests confirm that wrong values do not agree. No Snowflake
 extraction has been scored on this set yet, because Cortex is blocked on the trial account.
+
+**Traces.** The case builder, the validator and the scorer write OpenTelemetry spans
+([`motherlode/telemetry.py`](motherlode/telemetry.py)): one per case, with the candidate PDFs, the chosen
+one, the evidence for each value, and for scoring the model's and the analyst's value and the verdict per
+field. They go to a local file that [`scripts/traces.py`](scripts/traces.py) queries, and to a trace viewer
+(Jaeger) when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Logs carry the id of the step that wrote them. Inside
+Snowflake the same calls are meant to reach the account's event table; that is not deployed or tested yet.
 
 **Converted amounts.** An earlier sheet holds the same deals converted to US dollars, by the rule
 "amount × the exchange rate on the document date".
@@ -395,7 +500,7 @@ python scripts/run_pipeline.py export --extractor claude-sonnet-5
 
 | Path | What it holds |
 |---|---|
-| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` differs in one function: its sum check gives the same yes or no in O(n²) instead of O(n³), tested against the original search |
+| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` was changed after two rounds of critic review, each change marked in the code: a faster sum check with the same answers; units (6 metres is not 6 million; billion added); trailing zeros; physical quantities are no amounts; one kind of amount per sum; a narrower split rule; context words for percentages and metres; cash that is an exploration amount or placement does not count; NaN is no number. On the original 33 cases it scores 119 of 126 instead of the published 122 (see Evals) |
 | [`motherlode/process.py`](motherlode/process.py) | The extract, validate, retry, quarantine loop |
 | [`motherlode/cortex.py`](motherlode/cortex.py) | Cortex statements and reply parsing |
 | [`motherlode/pipeline.py`](motherlode/pipeline.py) | The Snowpark steps and the stored procedure's handler |

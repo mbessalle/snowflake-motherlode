@@ -12,10 +12,12 @@ For every number the model returned, decide whether the source text supports it:
 """
 from __future__ import annotations
 
+import math
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from . import schema
+from . import schema, telemetry
 
 FOUND, DERIVED, NOT_FOUND, EMPTY = "FOUND", "DERIVED", "NOT_FOUND", "EMPTY"
 
@@ -39,15 +41,23 @@ def number_in_words(n: int) -> str | None:
 
 
 DRILLING_USD_PER_METRE = 250  # extraction rule: commitments given in metres are converted at 250 USD per metre
+METRES_AFTER = r"\s*(?:m\b|metres?\b|meters?\b)"
+# A royalty or interest percentage is found only near a word of its kind, not as a grade or a share of drill
+# holes (critic, round 2: 7 of 76 royalty matches in the real documents were about something else).
+FIELD_NEAR = {"nsr_percent": re.compile(r"royalt|\bnsr\b|\bgrr\b|smelter|gross revenue|\bnpi\b|net (?:value|profit)", re.I),
+              "interest_acquired_percent": re.compile(r"interest|stake|equity|owne|earn|acqui|farm|joint venture|\bjv\b|"
+                                                      r"hold|option|purchas|sell|sale|transfer|vend", re.I)}
 
 
 def to_number(value) -> float | None:
     if isinstance(value, bool) or value is None:
         return None
     try:
-        return float(str(value).replace(",", "").replace("$", ""))
+        number = float(str(value).replace(",", "").replace("$", ""))
     except ValueError:
         return None
+    # NaN or infinity is no number: _forms() raised on them and stopped a whole run (critic finding 7)
+    return number if math.isfinite(number) else None
 
 
 def _forms(x: float) -> set[str]:
@@ -64,7 +74,25 @@ FIELD_KIND = {"cash_payments_value": MONEY, "exp_comit_value": MONEY, "shares_va
               "shares_amount": SHARES}
 _CURRENCY_BEFORE = re.compile(r"(?:[A-Z]{0,2}\$|\b(?:CAD|USD|AUD|EUR|GBP|NZD))\s?$")
 _MONEY_AFTER = re.compile(r"\s*(?:million\s+|thousand\s+)?(?:dollars|in cash)\b", re.I)
-_SHARES_AFTER = re.compile(r"\s*(?:million\s+|thousand\s+)?(?:[a-z-]+\s){0,3}(?:shares|units|warrants)\b", re.I)
+# "share" in the singular ("1,000,000 share bonus") and "s hares" (a space inserted by PDF text extraction)
+# also mark a share count.
+_SHARES_AFTER = re.compile(r"\s*(?:million\s+|thousand\s+)?(?:[a-z-]+\s+){0,3}(?:s\s?hares?|units?|warrants?)\b", re.I)
+
+
+_PHYSICAL_AFTER = re.compile(r"\s*(?:of\s+)?(?:tonnes?|tons?|t\b|ounces?|oz\b|pounds?|lbs?\b|metres?|meters?|m\b|hectares?|"
+                             r"ha\b|km|square|acres?|years?|carats?|barrels?|cubic|litres?|liters?|people|g/t)", re.I)
+
+
+def unit_counts(text: str, end: int, unit: str, kind: str) -> bool:
+    """Does a number written with a million or thousand unit count as an amount?
+
+    Changed from the original pipeline, where every such unit counted. The abbreviations m and k count only
+    with a money or share context (a currency sign before, or dollars, in cash or shares after), because
+    "6m @ 4.79% Cu" is 6 metres and "0.1m" is 10 centimetres. The words million and thousand count unless a
+    physical unit follows: "2.3 million ounces" is not money, "3 million more" in a sentence about spending is."""
+    if unit.lower() in ("m", "k", "mm", "bn"):
+        return kind != OTHER
+    return not _PHYSICAL_AFTER.match(text[end:end + 20])
 
 
 def occurrence_kind(text: str, start: int, end: int) -> str:
@@ -76,53 +104,99 @@ def occurrence_kind(text: str, start: int, end: int) -> str:
     return OTHER
 
 
-def find_number(text: str, x: float, percent: bool = False, kind: str | None = None) -> str | None:
+_NUMBER_WORDS = re.compile(r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|"
+                           r"fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|"
+                           r"eighty|ninety)[- ]$", re.I)
+NEAR_WINDOW = 120
+
+
+def _written(form: str) -> str:
+    """A number form as a pattern that also accepts trailing zeros: 0.1 matches '0.10', 14 matches '14.0'.
+    Changed from the original pipeline, which accepted them only for whole numbers, so '$0.10' did not
+    match a share price of 0.1 and '$14.0m' did not match 14,000,000 (critic finding, round 2)."""
+    return r"(?<![\d.,])" + re.escape(form) + (r"0*" if "." in form else r"(?:\.0+)?")
+
+
+def not_cash(text: str, end: int) -> bool:
+    """Is the money amount ending at `end` something other than a cash payment: "$500,000 worth of
+    exploration", "$2m placement", "$75,000 in shares"? Critic (round 2): 8 or more of 66 cash values counted
+    as written in the case PDFs were such amounts."""
+    after = text[end:end + 60]
+    return not re.match(r"\s*(?:in\s+)?cash", after, re.I) and bool(_NOT_CASH_AFTER.match(after))
+
+
+_NOT_CASH_AFTER = re.compile(r"\s*(?:[a-z-]+\s+){0,3}?(?:exploration|expenditure|drilling|placement|capital rais|"
+                             r"raising|rights issue|entitlement|in shares|worth of shares|of shares|in scrip)", re.I)
+
+
+def find_number(text: str, x: float, percent: bool = False, kind: str | None = None,
+                exact_kind: bool = False, near: re.Pattern | None = None,
+                skip: Callable[[str, int], bool] | None = None, width: int = 90) -> str | None:
     """Return the surrounding snippet if `x` is written in `text`, else None.
 
     With `kind`, an occurrence of the other kind does not count: 500,000 written as "500,000 shares"
-    is not evidence for a 500,000 cash payment, and "$500,000" is not evidence for a share count."""
+    is not evidence for a 500,000 cash payment, and "$500,000" is not evidence for a share count.
+    With `exact_kind`, only an occurrence of that kind counts (a bare 500,000 is not money).
+    With `near`, the pattern must occur within NEAR_WINDOW characters: a royalty percentage near the word
+    royalty, not a copper grade. With `skip(text, end)`, an occurrence for which it returns True does not
+    count (not_cash: an exploration amount is not a cash payment)."""
     patterns = []
     for form in _forms(x):
-        tail = r"\s*(?:%|per\s?cent|percent)" if percent else r"(?![\d]|[.,]\d)"
-        patterns.append(r"(?<![\d.,])" + re.escape(form) + r"(?:\.0+)?" + tail)
+        tail = r"\s*(?:%|per\s?cent\b|percent\b)" if percent else r"(?![\d]|[.,]\d)"
+        patterns.append(_written(form) + tail)
     if percent and x == int(x) and number_in_words(int(x)):
-        # the lookbehind stops "five percent" matching inside "seventy-five percent"
-        patterns.append(r"(?<!ty[- ])\b" + number_in_words(int(x)) + r"\s*(?:per\s?cent|percent)")
-    if not percent and x >= 1e5:  # "2 million", "$1.5M", "250K"
-        patterns += [r"(?<![\d.,])" + re.escape(f) + r"\s*(?:million|mm\b|m\b)" for f in _forms(x / 1e6)]
-        patterns += [r"(?<![\d.,])" + re.escape(f) + r"\s*(?:thousand|k\b)" for f in _forms(x / 1e3)]
+        # the check on the word before stops "five percent" matching inside "seventy-five percent"
+        patterns.append(r"\b(?P<words>" + number_in_words(int(x)) + r")\s*(?:per\s?cent\b|percent\b)")
+    if not percent and x >= 1e8:  # "1.2 billion", "$1.2bn"
+        patterns += [_written(f) + r"\s*(?P<unit>billion|bn\b)" for f in _forms(x / 1e9)]
+    if not percent and x >= 1e5:  # "2 million", "$1.5M", "250K"; whether the unit counts: unit_counts
+        patterns += [_written(f) + r"\s*(?P<unit>million|mm\b|m\b)" for f in _forms(x / 1e6)]
+        patterns += [_written(f) + r"\s*(?P<unit>thousand|k\b)" for f in _forms(x / 1e3)]
     other = {MONEY: SHARES, SHARES: MONEY}.get(kind)
     for pattern in patterns:
         for match in re.finditer(pattern, text, re.I):
-            if other and occurrence_kind(text, match.start(), match.end()) == other:
+            found_kind = occurrence_kind(text, match.start(), match.end())
+            if (other and found_kind == other) or (exact_kind and found_kind != kind):
                 continue
-            start, end = max(0, match.start() - 90), min(len(text), match.end() + 90)
+            if "unit" in match.groupdict() and not unit_counts(text, match.end(), match["unit"], found_kind):
+                continue
+            if "words" in match.groupdict() and _NUMBER_WORDS.search(text[max(0, match.start() - 12):match.start()]):
+                continue
+            if near and not near.search(text[max(0, match.start() - NEAR_WINDOW):match.end() + NEAR_WINDOW]):
+                continue
+            if skip and skip(text, match.end()):
+                continue
+            start, end = max(0, match.start() - width), min(len(text), match.end() + width)
             return re.sub(r"\s+", " ", text[start:end]).strip()
     return None
 
 
 _AMOUNT = re.compile(
     r"(?P<cur>(?:[A-Z]{0,2}\$|\b(?:CAD|USD|AUD|EUR|GBP|NZD)\b)\s?)?(?<![\d.,])(?P<num>\d{1,3}(?:,\d{3})+|\d+)(?P<frac>\.\d+)?"
-    r"\s*(?P<unit>million|thousand|m\b|k\b)?(?=(?P<after>[^.;\n|]{0,40}))", re.I)
+    r"\s*(?P<unit>billion|million|thousand|bn\b|m\b|k\b)?(?=(?P<after>[^.;\n|]{0,40}))", re.I)
 
 
-def written_amounts(text: str, exclude: str | None = None) -> list[float]:
+def written_amounts(text: str, exclude: str | None = None, only: str | None = None) -> list[float]:
     """Amounts written in the text, with repeats. A bare number such as a year does not count:
     it needs a thousands separator, a currency sign, or a million/thousand unit.
 
     Each amount has a kind (money, a share count, or other) so that a sum never mixes dollars with shares;
-    `exclude` drops one kind."""
+    `exclude` drops one kind; `only` keeps one kind (a number with no money or share context is "other")."""
     out = []
     for m in _AMOUNT.finditer(text):
         if not (m.group("cur") or "," in m.group("num") or m.group("unit")):
             continue
         value = float(m.group("num").replace(",", "") + (m.group("frac") or ""))
         unit = (m.group("unit") or "").lower()
-        value *= 1e6 if unit in ("million", "m") else 1e3 if unit in ("thousand", "k") else 1
+        value *= {"billion": 1e9, "bn": 1e9, "million": 1e6, "m": 1e6, "thousand": 1e3, "k": 1e3}.get(unit, 1)
         if value < 1000:
             continue
         kind = MONEY if m.group("cur") else occurrence_kind(text, m.start("num"), m.end())
-        if kind != exclude:
+        if unit and not unit_counts(text, m.end("unit"), unit, kind):     # "6m @ 4.79% Cu" is 6 metres
+            continue
+        if not unit and kind == OTHER and _PHYSICAL_AFTER.match(text[m.end("num") + len(m.group("frac") or ""):][:20]):
+            continue        # "5,000,000 tonnes" is a quantity, never an amount (critic finding, round 2)
+        if kind != exclude and (only is None or kind == only):
             out.append(value)
     return sorted(out)
 
@@ -157,27 +231,28 @@ def sum_of_amounts(target: float, amounts: list[float], max_terms: int = 3) -> t
     return None
 
 
+PROJECT_WORDS = re.compile(r"project|tenement|propert|licen[cs]e|claims", re.I)
+
+
 def explain_by_rules(x: float, amounts: list[float], text: str, kind: str | None = None) -> str | None:
-    """A sum of up to three written amounts, or a written total (or two-term sum) split across 2-6 projects.
-    An amount is used twice only if it is written twice. This is a plausibility test, not a proof."""
+    """A sum of up to three written amounts, or a written total split across 2-6 projects.
+    An amount is used twice only if it is written twice. This is a plausibility test, not a proof.
 
-    def as_sum(target: float, max_terms: int) -> str | None:
-        combo = sum_of_amounts(target, amounts, max_terms)
-        return " + ".join(f"{c:,.0f}" for c in combo) if combo else None
-
-    summed = as_sum(x, 3)
-    if summed:
-        return "sum of " + summed
+    Changed from the original pipeline after a critic measured it on 236 real documents: about a third of
+    invented round amounts passed. A split now needs the total written as that kind (money or shares,
+    not a bare number) with a word such as project or tenement nearby, and a sum of two amounts split
+    between projects is no longer accepted. `amounts` should hold one kind only (written_amounts(only=...))."""
+    combo = sum_of_amounts(x, amounts, 3)
+    if combo:
+        return "sum of " + " + ".join(f"{c:,.0f}" for c in combo)
     for n in range(2, 7):
         total = x * n
-        if total < 10000 or abs(total - round(total)) > 0.01 * n:
+        # 1e308 x 2 is infinity, and round(infinity) raised OverflowError (critic, round 2)
+        if not math.isfinite(total) or total < 10000 or abs(total - round(total)) > 0.01 * n:
             continue
         total = round(total)
-        if find_number(text, total, kind=kind):
+        if kind and find_number(text, total, kind=kind, exact_kind=True, near=PROJECT_WORDS):
             return f"{total:,.0f} split across {n} projects"
-        summed = as_sum(total, 2)
-        if summed:
-            return f"({summed}) split across {n} projects"
     return None
 
 
@@ -228,8 +303,25 @@ class Report:
 
 
 def validate(extraction: dict, article_text: str) -> Report:
+    """Check every number of an extraction against the text. Traced: the span records each field's value,
+    status and evidence, so a wrong decision can be found from the trace (motherlode.telemetry)."""
+    with telemetry.span("validate", input_text_chars=len(article_text), input_extraction=extraction) as s:
+        report = _validate(extraction, article_text)
+        for name, check in report.fields.items():
+            if check.status != EMPTY:
+                s.set(**{f"field.{name}.value": check.value, f"field.{name}.status": check.status,
+                         f"field.{name}.evidence": check.evidence})
+        s.set(output_passed=report.passed, output_not_found=report.not_found, output_schema_issues=report.schema_issues)
+        return report
+
+
+FIELD_SKIP = {"cash_payments_value": not_cash}
+
+
+def _validate(extraction: dict, article_text: str) -> Report:
     text = article_text.replace("\xa0", " ").replace("’", "'")
-    money_amounts, share_amounts = written_amounts(text, exclude=SHARES), written_amounts(text, exclude=MONEY)
+    # one kind per pool: a money sum never uses tonnes, a table count or a bare number (critic, round 2)
+    money_amounts, share_amounts = written_amounts(text, only=MONEY), written_amounts(text, only=SHARES)
     report = Report(schema_issues=schema.issues(extraction))
     values = {name: to_number(extraction.get(name)) for name in CHECKED_FIELDS}
 
@@ -238,7 +330,8 @@ def validate(extraction: dict, article_text: str) -> Report:
         if x is None or x == 0:
             report.fields[name] = FieldCheck(EMPTY)
             continue
-        snippet = find_number(text, x, percent=name in PERCENT_FIELDS, kind=FIELD_KIND.get(name))
+        snippet = find_number(text, x, percent=name in PERCENT_FIELDS, kind=FIELD_KIND.get(name), near=FIELD_NEAR.get(name),
+                              skip=FIELD_SKIP.get(name))
         report.fields[name] = FieldCheck(FOUND, x, snippet) if snippet else FieldCheck(NOT_FOUND, x)
 
     def supported(name: str) -> bool:
@@ -257,7 +350,8 @@ def validate(extraction: dict, article_text: str) -> Report:
     # Exploration commitments stated in metres are converted at a fixed rate.
     if report.fields["exp_comit_value"].status == NOT_FOUND:
         metres = values["exp_comit_value"] / DRILLING_USD_PER_METRE
-        if metres == int(metres) and find_number(text, metres):
+        written = metres == int(metres) and any(re.search(_written(f) + METRES_AFTER, text, re.I) for f in _forms(metres))
+        if written:     # the number must be written as metres, not as shares or tonnes (critic, round 2)
             derive("exp_comit_value", f"{metres:,.0f} metres x {DRILLING_USD_PER_METRE} USD")
 
     # shares_value is stated in the article, or it is shares x price with both inputs supported.
