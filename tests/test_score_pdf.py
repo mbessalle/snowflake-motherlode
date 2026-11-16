@@ -9,6 +9,9 @@ from evals import score_pdf
 from motherlode.fields import extracted_fields
 
 ROOT = Path(__file__).resolve().parent.parent
+# The 236 cases hold a client's deal values and are not published; a test that reads them skips without them.
+needs_cases = pytest.mark.skipif(not (ROOT / "evals" / "pdf_cases.jsonl").exists(),
+                                 reason="evals/pdf_cases.jsonl absent (client data, not published)")
 
 
 def test_every_extracted_field_has_exactly_one_scoring_rule():
@@ -197,6 +200,7 @@ def test_a_case_whose_pdf_does_not_name_the_buyer_is_left_out_of_the_in_document
     assert fields["nsr_percent"]["agree"] == 1 and fields["nsr_percent"]["in_document"] == 0
 
 
+@needs_cases
 def test_case_ids_are_unique_and_every_case_says_whether_its_pdf_names_the_buyer():
     cases = score_pdf.load_cases()
     assert len(cases) == 236 and len({c["id"] for c in cases}) == 236

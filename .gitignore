@@ -20,6 +20,18 @@ data/source_text/
 # Rows exported from the client's database: never committed
 data/client/
 data/replies/
+# Per-deal results of the 236-deal set: they hold a client's deal values (counts are in evals/results_summary.json)
+evals/pdf_cases.jsonl
+evals/cell_checks.jsonl
+evals/cell_review_pilot.jsonl
+evals/judge_results.jsonl
+evals/judge_labels.jsonl
+evals/pdf_choice.jsonl
+evals/pdf_labels.jsonl
+evals/pdf_set.jsonl
+evals/pdf_set_labels.jsonl
+evals/split_labels.jsonl
+evals/split_triage.jsonl
 # Decision-model requests and answers: they hold document text
 data/judge_cache/
 data/judge_questions.jsonl

@@ -46,9 +46,9 @@ and Claude Code sessions. Their results are loaded into Snowflake and reviewed i
   verdicts and highlights each value in its own announcement text ([details](#review-app-in-snowflake)).
 - **Traces**: the case builder, validator, scorer and judge write OpenTelemetry spans with the inputs,
   outputs and evidence of each step, to local files and to a Jaeger viewer when it is configured.
-- **Findings for the analyst** (the client's own table): share prices rounded to two decimals, rows where
+- **Errors found in the hand-made table**: share prices rounded to two decimals, rows where
   the named buyer is the seller, a price that cannot belong to the named company.
-- 285 offline tests (3 need private data and skip without it); CI on every pull request.
+- 288 offline tests, CI on every pull request: 281 run in CI, and 7 that need the private data skip there.
 
 ## Architecture
 
@@ -217,7 +217,7 @@ marked `REPLAY gpt-6.1-terra`. They are not Cortex output.
 **A larger set: 236 cases built from the source PDFs.** 33 cases give 126 checked values, which leaves
 the 97% figure uncertain by about three points. [`scripts/build_pdf_cases.py`](scripts/build_pdf_cases.py)
 pairs each row of the analyst's deal table for one region with its project's PDFs and writes
-[`evals/pdf_cases.jsonl`](evals/pdf_cases.jsonl). A project often has several PDFs about the same sale.
+`evals/pdf_cases.jsonl` (private; see [What is published](#what-is-published)). A project often has several PDFs about the same sale.
 Which of them announces the deal, and which others give its terms, was first decided by counting how many of
 the row's values each PDF contains; it is now decided by the small model with blind labels on every
 disagreement (see [Which PDF announces the deal](#which-pdf-announces-the-deal)).
@@ -375,7 +375,7 @@ out. Measured on the cases as they were labelled, the agreement was 36, 25, 34, 
 
 Asking about all amounts of a sum at once rejected too many right sums; one question per amount, with the
 sum right only if every amount is, fixed that, so the scorer uses that form. With these judgments
-([`evals/judge_results.jsonl`](evals/judge_results.jsonl)), the scorer leaves out evidence the model rejects
+(`evals/judge_results.jsonl`), the scorer leaves out evidence the model rejects
 and adds sums it accepts; `--no-judgments` scores by code alone.
 
 **Totals shared between projects.** The extraction rules divide a total shared by N projects by N. Whether
@@ -397,7 +397,7 @@ plus four controls, used the decision model itself (140 calls, 0.006 USD) and co
   number of projects with a written total was proposed; one failing judge call stopped the whole record.
   All fixed, each with the critic's test.
 - Asking yes or no about one count scored 12 of 14 on the items it had read; asking for the count with
-  the announcement's start scored 14 of 14. Re-run here on the same 14 ([`evals/split_labels.jsonl`](evals/split_labels.jsonl)):
+  the announcement's start scored 14 of 14. Re-run here on the same 14 (`evals/split_labels.jsonl`):
   14 of 14. Three are close: both Telfer halves (0.57 and 0.51) and Murphy Lake North (0.57); a wider
   passage tips Telfer to three assets, because it reaches "the Paterson region".
 
@@ -477,7 +477,7 @@ flowchart TD
 
 [`scripts/check_cells.py`](scripts/check_cells.py) ran tiers 1 and 2 on the 231 cases that have an announcing PDF (5 of the 236 have none; 16 Nov 2026):
 1,180 cells in 92 seconds, for 0.05 USD of decision-model calls
-([`evals/cell_checks.jsonl`](evals/cell_checks.jsonl)). Rerun after the choice of each deal's PDFs below:
+(`evals/cell_checks.jsonl`; the counts are in [`evals/results_summary.json`](evals/results_summary.json)). Rerun after the choice of each deal's PDFs below:
 
 | Verdict | Cells |
 |---|---|
@@ -493,7 +493,7 @@ Cells in the 46 cases whose documents do not show the analyst's buyer as the buy
 one finding per case, a wrong document or a wrong buyer, not one per cell. That leaves 179 cells in 98
 cases for tier 3. A first tier 3 run, made before the PDF choice changed, ([`scripts/escalate_cells.py`](scripts/escalate_cells.py),
 [`.claude/agents/cell-reviewer.md`](.claude/agents/cell-reviewer.md)) reviewed 31 of them in 20 cases,
-reading every PDF of each case ([`evals/cell_review_pilot.jsonl`](evals/cell_review_pilot.jsonl), quotes
+reading every PDF of each case (`evals/cell_review_pilot.jsonl`, quotes
 left out):
 
 | Tier 2 said | Cells | Analyst right | Analyst wrong | Undecidable |
@@ -543,7 +543,7 @@ option) and the count rule disagreed:
 The form without "none" was chosen after seeing these labels, so its 41 is an optimistic figure, not a
 held-out one. Either way the model is not reliable enough alone (at best 41 of 61), and its confidence does
 not sort its right answers from its wrong ones well, which is why every disagreement goes to tier 3. The PDF changed for 41 cases
-([`evals/pdf_choice.jsonl`](evals/pdf_choice.jsonl), labels in [`evals/pdf_labels.jsonl`](evals/pdf_labels.jsonl)).
+(`evals/pdf_choice.jsonl`, labels in `evals/pdf_labels.jsonl`).
 The labellers' instructions are in [`.claude/agents/pdf-labeller.md`](.claude/agents/pdf-labeller.md); their
 worktrees were made from a commit without either method's picks, and the audit of their tool calls found no
 read of them.
@@ -562,8 +562,8 @@ their terms in more than one PDF. Against their labels, on 212 PDFs:
 | 0.7 | 161 of 212 (76%) | 125 of 130 (96%) |
 
 Each deal's documents are now the announcing PDF first, then the others with terms: the blind label where
-there is one (75 deals), otherwise the model at 0.3 ([`evals/pdf_set.jsonl`](evals/pdf_set.jsonl), labels
-in [`evals/pdf_set_labels.jsonl`](evals/pdf_set_labels.jsonl)). 71 deals are read from more than one PDF, and
+there is one (75 deals), otherwise the model at 0.3 (`evals/pdf_set.jsonl`, labels
+in `evals/pdf_set_labels.jsonl`). 71 deals are read from more than one PDF, and
 the deal's documents now hold every value any PDF of the project holds in 88 of the 95 projects with several
 PDFs (69 with the announcing PDF alone). Everything that reads a case's text (the scorer, the judge
 questions, the cell check) reads the whole set.
@@ -620,6 +620,19 @@ original pipeline is used as a `.txt` file. Nothing was done to get around a ref
 [`data/manifest.jsonl`](data/manifest.jsonl) records which is which. The documents themselves are other
 people's press releases and are not committed.
 
+### What is published
+
+The 236-deal evaluation set is built from a client's deal table, so the files that hold its values per deal
+stay on the machine that made them: the cases, the 1,180 cell verdicts, the decision model's answers, the PDF
+choices and sets, and the labels (11 files, listed in [`.gitignore`](.gitignore)). What is published is the
+code that made them, the agent briefs, the tests, and the counts the README quotes, in
+[`evals/results_summary.json`](evals/results_summary.json).
+[`scripts/summarize_results.py`](scripts/summarize_results.py) writes that file from the per-deal files, and
+[`tests/test_results_summary.py`](tests/test_results_summary.py) regenerates it and compares it byte for byte
+wherever they are present; in CI it checks that the counts add up and that the README quotes them. The
+33-case set in [`evals/cases.jsonl`](evals/cases.jsonl) comes from the original, public repository and is
+committed in full.
+
 ## Cost
 
 A trial account's resource monitor covers warehouses only, and a budget on AI services notifies without
@@ -673,7 +686,7 @@ needs a km² or ha unit after the number.
 
 ## Status
 
-Tested, offline, in CI (285 tests, no account or network needed):
+Tested, offline, in CI (288 tests, no account or network needed; 281 run in CI and 7 skip there, see below):
 
 - The validator and schema, with the original pipeline's tests, and one test per finding of the critics
   (`tests/test_critic_*.py`).
@@ -687,7 +700,8 @@ Tested, offline, in CI (285 tests, no account or network needed):
   replies, gives the numbers in the code-only column of [Evals](#evals) (116 of 129 on the first attempt).
   The original repository published 122 of 126 with the earlier, looser rules.
 
-Three tests need private data (the PDF texts or that cache) and skip without it, as they do in CI.
+Seven tests need private data (the 236 cases, the PDF texts or that cache) and skip without it, as they do
+in CI; all 288 pass on the machine that holds it.
 
 Run on a Snowflake trial account (Standard edition, AWS EU Frankfurt) on 16 November 2026:
 
@@ -740,7 +754,7 @@ pipeline does that outside Snowflake).
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 285 tests, offline
+pytest                               # 288 tests, offline (7 skip without the private data)
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```

@@ -11,6 +11,9 @@ from evals import score_pdf as S
 from motherlode import telemetry
 
 ROOT = Path(__file__).resolve().parent.parent
+# The 236 cases hold a client's deal values and are not published; a test that reads them skips without them.
+needs_cases = pytest.mark.skipif(not (ROOT / "evals" / "pdf_cases.jsonl").exists(),
+                                 reason="evals/pdf_cases.jsonl absent (client data, not published)")
 
 
 def test_finding1_metres_are_not_millions():
@@ -83,6 +86,7 @@ def test_finding10_directory_named_like_a_reply_does_not_stop_the_run(tmp_path):
     S.score(cases, tmp_path, tmp_path)
 
 
+@needs_cases
 def test_finding11_huge_float_does_not_stop_the_run(tmp_path):
     # validate.py:199 round(inf) raises OverflowError for 1e308; one such reply aborts the whole scoring run
     cases = S.load_cases()[:1]

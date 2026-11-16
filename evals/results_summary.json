@@ -1,0 +1,64 @@
+{
+  "note": "Counts only; the per-deal files are a client's data and are not published.",
+  "cases": {
+    "cases": 236,
+    "with_announcing_pdf": 231
+  },
+  "cell_check": {
+    "cells": 1180,
+    "cases": 231,
+    "verdicts": {
+      "calculated": 58,
+      "confirmed": 428,
+      "contradicted": 162,
+      "formula_fails": 22,
+      "formula_holds_parts_unconfirmed": 145,
+      "not_in_document": 267,
+      "unsure": 98
+    },
+    "escalated": 260
+  },
+  "tier3_pilot": {
+    "cells": 31,
+    "cases": 20,
+    "analyst_right": 14,
+    "analyst_wrong": 14,
+    "undecidable": 3,
+    "proposals_judged": 17,
+    "proposals_right": 9
+  },
+  "pdf_choice": {
+    "deals_with_several_pdfs": 95,
+    "decided_by": {
+      "model and count rule agree": 29,
+      "tier 3 (blind label)": 66
+    },
+    "labelled": 66,
+    "count_rule_right": 25,
+    "model_with_none_right": 34,
+    "model_without_none_right": 41,
+    "no_announcing_pdf": 5
+  },
+  "pdf_set": {
+    "deals": 95,
+    "using_several_pdfs": 71,
+    "threshold": 0.3,
+    "pdfs_labelled": 212,
+    "model_agrees_with_label": 184
+  },
+  "judge_questions": 718,
+  "judge_labels": 208,
+  "judge_calibration": [
+    "blind labeller A: area_scope: 26 labelled (11 right, 15 wrong)",
+    "blind labeller A: threshold 0.5: agrees with the label 25 of 26; wrong evidence caught 14 of 15; right evidence rejected 0 of 11",
+    "blind labeller A: buyer_role: 40 labelled (15 right, 25 wrong)",
+    "blind labeller A: threshold 0.5: agrees with the label 34 of 40; wrong evidence caught 22 of 25; right evidence rejected 3 of 15",
+    "blind labeller B: percent_role: 38 labelled (18 right, 20 wrong)",
+    "blind labeller B: threshold 0.5: agrees with the label 32 of 38; wrong evidence caught 16 of 20; right evidence rejected 2 of 18",
+    "blind labeller B: sum_each: 39 labelled (25 right, 14 wrong)",
+    "blind labeller B: threshold 0.5: agrees with the label 36 of 39; wrong evidence caught 14 of 14; right evidence rejected 3 of 25",
+    "blind labeller B: sum_parts: 39 labelled (25 right, 14 wrong)",
+    "blind labeller B: threshold 0.5: agrees with the label 30 of 39; wrong evidence caught 14 of 14; right evidence rejected 9 of 25",
+    "blind labeller B: labels with no current question (the case changed since it was labelled): 6: ['315:sum_parts:cash_payments_value', '356:sum_parts:cash_payments_value', '367:percent_role:interest_acquired_percent', '283:percent_role:interest_acquired_percent', '315:sum_each:cash_payments_value', '356:sum_each:cash_payments_value']"
+  ]
+}

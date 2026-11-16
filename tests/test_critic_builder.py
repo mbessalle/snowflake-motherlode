@@ -15,8 +15,11 @@ sys.path.insert(0, str(ROOT))
 
 import build_pdf_cases as b  # noqa: E402
 
-CASES = [json.loads(line) for line in (ROOT / "evals" / "pdf_cases.jsonl").read_text().splitlines()]
+# The 236 cases hold a client's deal values and are not published; tests that read them skip without them.
+CASES_FILE = ROOT / "evals" / "pdf_cases.jsonl"
+CASES = [json.loads(line) for line in CASES_FILE.read_text().splitlines()] if CASES_FILE.exists() else []
 TEXT = ROOT / "data" / "source_text"
+needs_cases = pytest.mark.skipif(not CASES, reason="evals/pdf_cases.jsonl absent (client data, not published)")
 
 
 def case(cid):
@@ -36,6 +39,7 @@ def text_of(c):
     return case_text(c, TEXT)
 
 
+@needs_cases
 def test_finding1_area_written_needs_an_area_unit():
     # crosbie_91-350: "$100,000 to be paid in cash" was taken as an area of 100,000 ha
     row = {"project_area": 100000}
@@ -57,6 +61,7 @@ def test_finding2_cash_is_not_confirmed_by_an_exploration_amount():
     assert "cash_payments_value" not in b.written_fields(row, text)
 
 
+@needs_cases
 def test_finding3_choice_between_pdfs_uses_the_news_date():
     # the row news_date 2025-03-24 is the completion announcement (kat_gap_230, dated 24 March 2025); the
     # builder chose the 17 December 2024 agreement because a tie goes to the longer text
@@ -78,6 +83,7 @@ def test_finding5_rounded_stored_price_still_explains_the_value():
     assert b.shares_value_source(row, "no value written here") == "computed"
 
 
+@needs_cases
 def test_finding6_readme_count_of_listing_prints_matches_the_cases():
     unexplained = [c for c in CASES if c["shares_value_source"] == "unexplained"]
     n = sum("Detailed Quote" in (TEXT / f"{Path(c['file']).stem}.txt").read_text() for c in unexplained
