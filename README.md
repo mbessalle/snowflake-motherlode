@@ -6,7 +6,13 @@
 
 An analyst built a table of 236 mining deals by hand. This project checks every value in it against the
 announcements the deals come from, **1,180 values for 0.05 USD**, finds the errors, and puts the results in
-Snowflake for review in a Streamlit app.
+Snowflake for review in a Streamlit app. The principle throughout: **a model reads and proposes, code
+decides what is written**, and every number must be found in its source or derived from it by a stated rule.
+
+Scope, plainly: the value check ran outside Snowflake, with code, a small classifier through OpenRouter and
+Claude Code. Snowflake holds the extraction pipeline, the tables, the document index and the review app. The
+Cortex AI calls are written and unit-tested but have not run yet, because Snowflake refuses them on trial
+accounts ([where it stands](#where-it-stands)).
 
 ![The review app in Snowflake: the verdicts, then one deal with its values highlighted in the announcement](docs/images/review_app_demo.gif)
 
@@ -21,14 +27,14 @@ Snowflake for review in a Streamlit app.
   (about 0.00006 USD a question) judges meaning, and only the values those two cannot settle go to a
   full-document review by Claude Code.
 - **Measured, not assumed**: the classifier's thresholds were set from blind labels, made by agents that
-  never saw its answers; an audit of every file they read proves it.
+  never saw its answers; an audit of every file they read checks it.
 
 ## Built with
 
 **Snowflake**: Snowpark Python, stages and directory tables, streams, stored procedures and tasks, a semantic
 view, a Cortex Agent specification, a hierarchical document index, Streamlit in Snowflake, resource monitors.
 **Around it**: Python, Pydantic, OpenTelemetry and Jaeger, Claude Code agents in isolated git worktrees,
-GitHub Actions, 290 tests.
+GitHub Actions, 290 offline unit tests.
 
 ## Engineering practice
 
@@ -49,10 +55,16 @@ Deployed: the task and the Cortex Agent. **The Cortex AI calls themselves have n
 refuses them on trial accounts until a payment card is accepted, and a support case is open. The 33 deals
 came from extractions saved by the original pipeline. [Exactly what was and was not tested](#status).
 
-The checks run on a laptop (code, the classifier through OpenRouter, Claude Code sessions), and their
-results are loaded into Snowflake. Details of each step: [evaluation set](#evals),
-[three-tier check](#checking-every-cell-three-tiers), [choosing each deal's documents](#which-pdf-announces-the-deal),
-[review app](#review-app-in-snowflake).
+Next, once Cortex is enabled: extraction with `AI_EXTRACT` against `AI_COMPLETE` on the 33 cases, the agent's
+10 test questions, and the measured cost from Snowflake's own usage views in place of the estimate.
+
+**The rest of this README is the detailed engineering record.** Contents: [architecture](#architecture) ·
+[what each Snowflake service does](#what-each-snowflake-service-does-here) ·
+[the model extracts, code decides](#the-model-extracts-code-decides) ·
+[retrieval](#retrieval-an-index-to-walk-not-embeddings) · [evaluation](#evals) ·
+[three-tier check](#checking-every-cell-three-tiers) · [choosing each deal's documents](#which-pdf-announces-the-deal) ·
+[documents](#documents) · [cost](#cost) · [review app](#review-app-in-snowflake) ·
+[tested and not tested](#status) · **[run it](#run-it)** · [layout](#layout).
 
 ## Architecture
 
@@ -171,7 +183,7 @@ similarity ranking. It has not been measured against the index here.
 real press releases ([`evals/cases.jsonl`](evals/cases.jsonl)): how many extracted numbers the announcement
 supports, and agreement with an analyst's hand-entered values.
 
-The only numbers measured so far are the baseline. Pointed at the original pipeline's saved `gpt-6.1-terra`
+The only numbers measured so far are the baseline. Pointed at the original pipeline's saved OpenAI `gpt-6.1-terra`
 replies, the scorer with the original validator reproduced what that repository published (first column).
 The validator has since been made stricter after two rounds of review by critic agents (see the 236-case
 section below), and the same replies now score as in the second column:
@@ -188,8 +200,7 @@ By code alone no total counts as shared between projects any more (see "Totals s
 below), which costs the true splits in these replies; with the decision model judging each split the
 replies score one value above the published number, on three more checked values. A split critic read the
 five splits in these replies in their documents: four are shared (Murphy Lake North's 14,195,506 shares over
-three projects; an earlier version of this README called that one wrong, which the critic's reading
-corrected) and one is not (an expenditure of 7,000,000, offered as cash). The current validator also checks the shares value stated in the news
+three projects) and one is not (an expenditure of 7,000,000, offered as cash). The current validator also checks the shares value stated in the news
 (`shares_value_scraped`), which the original stored but never checked: 3 more values, all written in
 their announcement, hence 129 checked. The old rules accepted as derived between 18% and 28% of invented round cash amounts
 offered for the 236 real documents, now between 3% and 12% ([`scripts/validator_control.py`](scripts/validator_control.py)), so it was narrowed.
