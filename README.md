@@ -506,6 +506,19 @@ decision model's proposed value was right in only 9 of 17: it proposed a signing
 total, or a company's total shares on issue instead of the consideration shares. That is why the fix comes
 from tier 3, not tier 2. The other 78 cases have not been through tier 3 yet.
 
+Seven of those cells as examples ([`evals/sample_rows.jsonl`](evals/sample_rows.jsonl), copied from the
+results by [`scripts/sample_rows.py`](scripts/sample_rows.py)):
+
+| Deal | Value | Analyst | Tier 2 verdict | Tier 2 proposal | Tier 3, reading every PDF |
+|---|---|---|---|---|---|
+| Elizabeth Hill | Exploration commitment | 700,000 | contradicted | 1,000,000 | 1,000,000: analyst wrong, proposal right |
+| Eagle Downs | Cash payments | 20,100,000 | contradicted | 30,000,000 | 30,000,000: analyst wrong, proposal right |
+| Lakewood Mill | Share price | 0.82 | contradicted | 0.76 | 0.76: analyst wrong, proposal right |
+| Katanning | Cash payments | 10,760,000 | contradicted | 3,120,000 | 10,760,000: analyst right; the proposal was one tranche |
+| Fiery Creek | Shares issued | 26,500,000 | unsure | 223,391,506 | 26,500,000: analyst right; the proposal was the company's total shares on issue |
+| Achilles | Shares value | 301,500 | contradicted | 250,000 | 450,000: analyst and proposal both wrong |
+| Sandover Additional Claims | Cash payments | 720,250 | unsure | 1,075,000 | 1,075,000: analyst wrong, proposal right |
+
 ### Which PDF announces the deal
 
 A project folder often holds several PDFs: the agreement, a completion notice weeks later, a quarterly
