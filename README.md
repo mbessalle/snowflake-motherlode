@@ -296,9 +296,9 @@ outside that folder or of the answers (none; both wrote helper files to `/tmp`, 
 |---|---|---|---|---|
 | Buyer, seller or no deal | 40 | 36 | 23 of 25 | 2 of 15 |
 | Area of this project or a total | 26 | 25 | 14 of 15 | 0 of 11 |
-| Percentage is the deal's interest or royalty | 36 | 31 | 16 of 19 | 2 of 17 |
-| Sum, all amounts at once | 39 | 29 | 13 of 13 | 10 of 26 |
-| Sum, one question per amount | 39 | 36 | 13 of 13 | 3 of 26 |
+| Percentage is the deal's interest or royalty | 40 | 34 | 18 of 22 | 2 of 18 |
+| Sum, all amounts at once | 41 | 30 | 14 of 14 | 11 of 27 |
+| Sum, one question per amount | 41 | 38 | 14 of 14 | 3 of 27 |
 
 Asking about all amounts of a sum at once rejected too many right sums; one question per amount, with the
 sum right only if every amount is, fixed that, so the scorer uses that form. With these judgments
