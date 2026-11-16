@@ -16,7 +16,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from . import schema
-from .validate import validate
+from .validate import resolve_splits, validate
 
 STORED, STORED_PARTIAL, REVIEW_ONLY, NO_DATA = "stored", "stored_partial", "review_only", "no_data"
 
@@ -38,14 +38,18 @@ class Result:
         return bool(self.withheld) or self.outcome == REVIEW_ONLY
 
 
-def process(text: str, project_name: str | None, extract: Extract, max_attempts: int = 2) -> Result:
+def process(text: str, project_name: str | None, extract: Extract, max_attempts: int = 2,
+            judge_split: Callable | None = None) -> Result:
+    """`judge_split(project, field, value, candidate) -> probability` reads the totals that may be shared
+    between projects (motherlode.judge.judge_split, or a Cortex AI_FILTER call inside Snowflake). Without it a
+    split with no project word next to its total stays unsupported, as before."""
     attempts, feedback, first_report = 0, None, None
     while True:
         attempts += 1
         extraction = extract(text, project_name, feedback)
         if not extraction:
             return Result(NO_DATA, attempts, first_report=first_report)
-        report = validate(extraction, text)
+        report = resolve_splits(extraction, text, project_name, judge_split) if judge_split else validate(extraction, text)
         first_report = first_report or report.as_dict()
         if report.passed:
             return Result(STORED, attempts, schema.normalise(extraction), report=report.as_dict(), first_report=first_report)

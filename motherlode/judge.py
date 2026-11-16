@@ -59,6 +59,36 @@ def noul(instructions: str, true: str, false: str) -> dict:
     return {"type": "noul", "instructions": instructions, "criteria": {"true": true, "false": false}}
 
 
+FIELD_WORDS = {"cash_payments_value": "cash payment", "exp_comit_value": "exploration expenditure commitment",
+               "shares_amount": "share consideration (number of shares)", "shares_value": "share consideration",
+               "shares_value_scraped": "share consideration"}
+
+
+def split_question(project: str | None, field: str, value: float, candidate) -> tuple[dict, dict]:
+    """The state and question for one split candidate (motherlode.validate.SplitCandidate): does the text
+    share this total between n projects, this one among them? The rule it restates is the extraction rules'
+    'shared commitments: if a value is shared between N projects, the project's value is RAW_VALUE / N'."""
+    what = FIELD_WORDS.get(field, field)
+    state = {"project": project, "total": f"{candidate.total:,.0f}", "projects_sharing_it": candidate.n,
+             "this_projects_share": f"{value:,.0f}", "passage": candidate.passage}
+    question = noul(
+        f"Does `passage` describe the {candidate.total:,.0f} {what} as covering {candidate.n} projects or assets, "
+        f"one of them the project named in `project`, so that its equal share is {value:,.0f}?",
+        f"Yes: the {what} of {candidate.total:,.0f} is paid for {candidate.n} projects or assets together, and the "
+        "project named in `project` is one of them.",
+        f"No: the {candidate.total:,.0f} is for this project alone, for other projects, for a different number of "
+        "projects, or it is not this kind of consideration.")
+    return state, {"split": question}
+
+
+def judge_split(project: str | None, field: str, value: float, candidate, post=None) -> float | None:
+    """P(yes) that the candidate total is shared between its n projects; for validate.resolve_splits."""
+    state, questions = split_question(project, field, value, candidate)
+    kwargs = {"post": post} if post else {}
+    answer = ask(state, questions, label=f"split:{project}:{field}", **kwargs).get("split") or {}
+    return answer.get("noul")
+
+
 def spent() -> float:
     if not LEDGER.exists():
         return 0.0

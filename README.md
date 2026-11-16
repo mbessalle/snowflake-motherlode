@@ -307,6 +307,23 @@ sum right only if every amount is, fixed that, so the scorer uses that form. Wit
 ([`evals/judge_results.jsonl`](evals/judge_results.jsonl)), the scorer leaves out evidence the model rejects
 and adds sums it accepts; `--no-judgments` scores by code alone.
 
+**Totals shared between projects.** The extraction rules divide a total shared by N projects by N. Whether
+a text shares a total is a reading, so the validator proposes every candidate (the value times 2 to 6 is
+written as money or shares) and the pipeline's loop ([`motherlode/process.py`](motherlode/process.py),
+`judge_split`) asks the judge one yes or no question per candidate; a yes makes the value DERIVED, so an
+aggregate built on it is supported too. Without a judge, a word rule stays as the fallback (a word such as
+project or licence next to the total), and it is weak. Checked on real announcements (16 Nov 2026):
+
+| Case | Should be | P(shared), Jev | Word rule alone |
+|---|---|---|---|
+| Telfer and Havieron, $167.5 million of shares, half per asset | shared | 0.90 | rejected (no such word) |
+| Telfer and Havieron, $207.5 million cash, half per asset | shared | 0.83 | rejected |
+| Bonnie Vale and Kunanalling, $1.1 million of shares, half | shared | 0.96 | accepted |
+| Kat Gap, one sale for A$7,000,000, half of it | not shared | 0.07 | accepted (wrong: "licence" stands next to it) |
+
+Inside Snowflake the same question would go to Cortex `AI_FILTER`; that is not built, because Cortex is
+not available on the trial account. The offline scorers still validate without a judge.
+
 The largest effect is on the buyer: the model reads the analyst's buyer as the buyer in 157 of the 236
 chosen PDFs. In the others the PDF is often a tenement grant notice with no deal in it, or the company named
 as buyer is selling or farming out the project. That points at the ground truth, not at the extractor, and
