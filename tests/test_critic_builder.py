@@ -27,10 +27,13 @@ def case(cid):
 
 
 def text_of(c):
-    path = TEXT / f"{Path(c['file']).stem}.txt"
-    if not path.exists():
+    # Adjusted by the actor: a case is read from its set of PDFs since PR 19 (a deal's terms can be split
+    # between the agreement and a completion notice), so the evidence may be in any PDF of the set.
+    from evals.score_pdf import case_text
+
+    if not (TEXT / f"{Path(c['file']).stem}.txt").exists():
         pytest.skip("text cache absent")
-    return " ".join(path.read_text().split())
+    return case_text(c, TEXT)
 
 
 def test_finding1_area_written_needs_an_area_unit():
