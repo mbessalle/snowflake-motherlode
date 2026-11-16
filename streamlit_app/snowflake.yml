@@ -7,9 +7,14 @@ entities:
       database: MOTHERLODE
       schema: REVIEW
     title: "Cell check review"
+    # Warehouse runtime: the app runs only while someone views it, with a sleep timer (.streamlit/config.toml),
+    # on MOTHERLODE_XS, which is under the account's resource monitor. The CLI's default, the container runtime,
+    # keeps a compute pool node for three days after the last viewer and is outside the resource monitor.
+    runtime_name: SYSTEM$WAREHOUSE_RUNTIME
     query_warehouse: MOTHERLODE_XS
     main_file: streamlit_app.py
     stage: STREAMLIT_APPS
     artifacts:
       - streamlit_app.py
       - environment.yml
+      - .streamlit/config.toml

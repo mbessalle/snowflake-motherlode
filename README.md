@@ -631,9 +631,16 @@ The results of the cell check live in Snowflake and are reviewed there, in a Str
 `MOTHERLODE.REVIEW` for the pipeline role; [`scripts/load_review_data.py`](scripts/load_review_data.py) loads
 the cases, the 1,180 cell verdicts, the decision model's answers, the PDF choices and sets and the tier 3
 verdicts as JSON rows with typed views; `snow streamlit deploy` (with
-[`streamlit_app/snowflake.yml`](streamlit_app/snowflake.yml)) deploys the app. It runs on Snowflake's container
-runtime and reads the announcement texts from `MOTHERLODE.RAW.DOCUMENT_TEXT`, so each value is shown where it
-is written. No AI function is called. Deployed and checked on the trial account on 16 November 2026.
+[`streamlit_app/snowflake.yml`](streamlit_app/snowflake.yml)) deploys the app. It reads the announcement texts
+from `MOTHERLODE.RAW.DOCUMENT_TEXT`, so each value is shown where it is written. No AI function is called.
+Deployed and checked on the trial account on 16 November 2026.
+
+It runs on the warehouse runtime, on purpose. The CLI's default is the container runtime, and the first
+deployment used it; Snowflake's runtime documentation then showed that a container-runtime app keeps a
+compute pool node until three days after its last viewer, has no sleep timer, and is outside the account's
+resource monitor (which covers warehouses only). On the warehouse runtime the app runs only while someone
+views it: a sleep timer of 5 minutes ([`.streamlit/config.toml`](streamlit_app/.streamlit/config.toml)), then
+the `MOTHERLODE_XS` warehouse auto-suspends after 60 seconds, under the 20-credit resource monitor.
 
 | Overview | One case: a value highlighted in its announcement |
 |---|---|

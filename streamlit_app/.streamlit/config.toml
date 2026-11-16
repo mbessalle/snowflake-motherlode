@@ -1,0 +1,6 @@
+# The app suspends 5 minutes after the last viewer interaction; its warehouse then auto-suspends after 60 s.
+# Sleep timers only work on the warehouse runtime (see snowflake.yml); a container-runtime app would keep a
+# compute pool node for three days after its last viewer.
+[snowflake]
+[snowflake.sleep]
+streamlitSleepTimeoutMinutes = 5
