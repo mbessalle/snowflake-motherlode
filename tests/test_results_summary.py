@@ -28,8 +28,13 @@ def test_summary_holds_counts_only():
     assert "/home/" not in json.dumps(SUMMARY)
 
 
+def documents() -> str:
+    """The README and the engineering record: the numbers are quoted across both."""
+    return (ROOT / "README.md").read_text() + "\n" + (ROOT / "docs" / "engineering-record.md").read_text()
+
+
 def test_readme_quotes_the_summary():
-    readme = (ROOT / "README.md").read_text()
+    readme = documents()
     cells = SUMMARY["cell_check"]
     assert f"{cells['cells']:,} values checked" in readme
     for verdict, label in [("confirmed", "Confirmed in the document"), ("contradicted", "Contradicted, with a proposed value")]:

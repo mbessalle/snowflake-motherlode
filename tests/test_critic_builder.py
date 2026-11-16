@@ -90,7 +90,7 @@ def test_finding6_readme_count_of_listing_prints_matches_the_cases():
             if (TEXT / f"{Path(c['file']).stem}.txt").exists())
     if not TEXT.exists():
         pytest.skip("text cache absent")
-    readme = (ROOT / "README.md").read_text()
+    readme = (ROOT / "docs" / "engineering-record.md").read_text()
     assert f"that is so for {n} of them" in readme, n
 
 
