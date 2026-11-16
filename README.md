@@ -43,7 +43,7 @@ and Claude Code sessions. Their results are loaded into Snowflake and reviewed i
   README critic) found and fixed real errors, among them metres read as millions and a rule that accepted
   invented amounts.
 - **A review app in Streamlit in Snowflake**: the results in Snowflake tables, with an app that shows the
-  verdicts and highlights each value in its own announcement text ([details](#review-app-in-snowflake)).
+  verdicts and highlights each value in its own announcement text ([recording and details](#review-app-in-snowflake)).
 - **Traces**: the case builder, validator, scorer and judge write OpenTelemetry spans with the inputs,
   outputs and evidence of each step, to local files and to a Jaeger viewer when it is configured.
 - **Errors found in the hand-made table**: share prices rounded to two decimals, rows where
@@ -685,6 +685,12 @@ compute pool node until three days after its last viewer, has no sleep timer, an
 resource monitor (which covers warehouses only). On the warehouse runtime the app runs only while someone
 views it: a sleep timer of 5 minutes ([`.streamlit/config.toml`](streamlit_app/.streamlit/config.toml)), then
 the `MOTHERLODE_XS` warehouse auto-suspends after 60 seconds, under the 20-credit resource monitor.
+
+A Streamlit in Snowflake app runs inside the Snowflake account, behind its login, so there is no public link.
+This recording of the deployed app shows it instead: the overview, then one deal with its values highlighted
+in the announcement (the area, then the royalty).
+
+![The review app in Snowflake](docs/images/review_app_demo.gif)
 
 | Overview | One case: a value highlighted in its announcement |
 |---|---|
