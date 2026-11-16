@@ -5,9 +5,12 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A rebuild of [motherlode-data-pipeline](https://github.com/mbessalle/motherlode-data-pipeline) on Snowflake.
-Deal announcements land on a stage, Cortex AI functions read them, Snowpark Python holds the pipeline, code
-checks every extracted number against the announcement before it is written, and a Cortex Agent answers
-questions over the result.
+The design: deal announcements land on a stage, Cortex AI functions read them, Snowpark Python holds the
+pipeline, code checks every extracted number against the announcement before it is written, and a Cortex
+Agent answers questions over the result. Alongside it, an analyst's hand-made deal table is checked value by
+value against the announcements, and the results are reviewed in a Streamlit in Snowflake app:
+
+![The review app in Snowflake: the verdicts, then one deal with its values highlighted in the announcement](docs/images/review_app_demo.gif)
 
 > **Status: no Cortex AI function has run yet.** Trial accounts are refused them ("not available for trial
 > accounts"; a trial needs an accepted payment card, and a support case is open). What is deployed on a
@@ -686,11 +689,8 @@ resource monitor (which covers warehouses only). On the warehouse runtime the ap
 views it: a sleep timer of 5 minutes ([`.streamlit/config.toml`](streamlit_app/.streamlit/config.toml)), then
 the `MOTHERLODE_XS` warehouse auto-suspends after 60 seconds, under the 20-credit resource monitor.
 
-A Streamlit in Snowflake app runs inside the Snowflake account, behind its login, so there is no public link.
-This recording of the deployed app shows it instead: the overview, then one deal with its values highlighted
-in the announcement (the area, then the royalty).
-
-![The review app in Snowflake](docs/images/review_app_demo.gif)
+A Streamlit in Snowflake app runs inside the Snowflake account, behind its login, so there is no public link;
+the recording at the top of this README shows the deployed app.
 
 | Overview | One case: a value highlighted in its announcement |
 |---|---|
