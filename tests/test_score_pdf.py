@@ -148,6 +148,18 @@ def test_a_sum_is_reported_apart_from_confirmed_values(tmp_path):               
     assert fields["cash_payments_value"]["probable"] == 1 and fields["cash_payments_value"]["probable_agree"] == 1
 
 
+def test_a_cases_text_is_every_pdf_of_its_set_and_a_single_pdf_is_unchanged(tmp_path):
+    (tmp_path / "agreement_1.txt").write_text("Pays  $250,000 on signing.")
+    (tmp_path / "completion_2.txt").write_text("Issues 2,000,000 shares on completion.")
+    single = {"file": "agreement_1.pdf"}
+    assert score_pdf.case_text(single, tmp_path) == "Pays $250,000 on signing."
+    both = {"file": "agreement_1.pdf", "files": ["agreement_1.pdf", "completion_2.pdf"]}
+    text = score_pdf.case_text(both, tmp_path)
+    assert text.index("agreement_1.pdf") < text.index("completion_2.pdf")       # the announcing PDF first
+    assert "$250,000" in text and "2,000,000 shares" in text
+    assert score_pdf.case_text({"file": "missing.pdf"}, tmp_path) == ""
+
+
 def test_the_decision_models_judgments_move_values_in_and_out_of_the_headline(tmp_path):
     case = {**CASE, "row_id": 7}
     (tmp_path / "texts").mkdir()

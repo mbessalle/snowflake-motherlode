@@ -24,7 +24,7 @@ questions over the result.
 - **Every cell checked in three tiers**: code finds where each value is written, a cheap decision model
   (TypeSafe's Jev, about 0.00006 USD a question) judges what each passage means, and only the cells those two
   cannot settle go to a frontier model (a `claude -p` session) that reads the whole document. 1,180 cells
-  checked for 0.05 USD; 427 confirmed, 156 contradicted with a proposed correction ([details](#checking-every-cell-three-tiers)).
+  checked for 0.05 USD; 428 confirmed, 162 contradicted with a proposed correction ([details](#checking-every-cell-three-tiers)).
 - **The same tiers for choosing the document**: which of a project's PDFs announces the deal is decided by
   the decision model, with blind labels on every disagreement; it beat the old counting rule 41 to 25 on
   66 hand-picked cases ([details](#which-pdf-announces-the-deal)).
@@ -219,7 +219,8 @@ is market data from the announcement date and is not in the document at all.
 |---|---|
 | Rows in the table / without a PDF folder / cases | 249 / 13 / 236 |
 | Case documents: digital / mixed | 216 / 20 |
-| Projects with several PDFs where the chosen one holds every value any of them holds | 69 of 95 |
+| Projects with several PDFs where the deal's documents hold every value any of them holds | 88 of 95 |
+| Deals whose terms are read from more than one PDF | 71 |
 | Deals for which no PDF of the project announces the deal (flagged, left out of scoring) | 5 |
 | Aggregate equals cash + exploration commitment + shares value | 182 of 182 rows |
 | Shares value, 109 rows: stated in the document / computed as shares × price / both / unexplained | 26 / 21 / 8 / 54 |
@@ -227,17 +228,18 @@ is market data from the announcement date and is not in the document at all.
 
 | Scraped field | Written in the case document | Area given in km² (hectares in the row) | Probably a sum of written amounts |
 |---|---|---|---|
-| Royalty | 71 of 84 (85%) | | |
-| Interest acquired | 144 of 194 (74%) | | |
-| Shares issued | 43 of 77 (56%) | | 17 |
-| Cash payments | 58 of 144 (40%) | | 22 |
-| Exploration commitment | 16 of 47 (34%) | | 5 |
-| Project area | 5 of 133 (4%) | 87 | |
-| All scraped values | 337 of 679 (50%) | 87 | 44 |
+| Royalty | 75 of 84 (89%) | | |
+| Interest acquired | 151 of 194 (78%) | | |
+| Shares issued | 47 of 77 (61%) | | 21 |
+| Cash payments | 64 of 144 (44%) | | 20 |
+| Exploration commitment | 17 of 47 (36%) | | 6 |
+| Project area | 6 of 133 (5%) | 94 | |
+| All scraped values | 360 of 679 (53%) | 94 | 47 |
 
-These counts use the PDF that announces the deal (see [Which PDF announces the deal](#which-pdf-announces-the-deal)).
-They are lower than with the earlier choice by counting, 362 of 679, and that is expected: counting picked
-the PDF that matched the analyst's values best, which is circular and hides the analyst's errors.
+These counts use each deal's documents: the PDF that announces the deal plus every other PDF of the project
+that gives terms of it (see [Which PDFs give the deal's terms](#which-pdf-announces-the-deal)). With the
+announcing PDF alone they were 337 of 679. Choosing by counting gave 362, but counting picked the PDF that
+matched the analyst's values best, which is circular and hides the analyst's errors.
 
 "Written" means the number is in the text with the checks the validator makes: a royalty or interest
 percentage near a word of its kind, a cash amount that is not followed by "worth of exploration",
@@ -409,9 +411,9 @@ of the 33 fields the extractor fills. Each field has one rule, and a test fails 
 
 The headline measure counts the scraped values the analyst has and the PDF confirms (written, or an area
 in km²), in cases whose PDF names the buyer and announces the deal: how many the extractor gets right. By
-code alone there are 404 of those, with 42 probable sums reported apart. With the decision model's
-judgments (the default when `evals/judge_results.jsonl` exists) there are 296: 274 confirmed by code and not
-rejected by the model, and 22 sums the model accepts amount by amount; 225 values are left out, most because
+code alone there are 434 of those, with 45 probable sums reported apart. With the decision model's
+judgments (the default when `evals/judge_results.jsonl` exists) there are 313: 294 confirmed by code and not
+rejected by the model, and 19 sums the model accepts amount by amount; 232 values are left out, most because
 the PDF does not show the analyst's buyer as the buyer. Numbers written as text ("70%", "A$600,000",
 "44.5 million") are read; "N/A", "null" or "0" count as no value; an unreadable reply file is reported
 and skipped instead of stopping the run.
@@ -457,20 +459,20 @@ flowchart TD
 
 [`scripts/check_cells.py`](scripts/check_cells.py) ran tiers 1 and 2 on all 236 cases (16 Nov 2026):
 1,180 cells in 92 seconds, for 0.05 USD of decision-model calls
-([`evals/cell_checks.jsonl`](evals/cell_checks.jsonl)). Rerun after the PDF choice below:
+([`evals/cell_checks.jsonl`](evals/cell_checks.jsonl)). Rerun after the choice of each deal's PDFs below:
 
 | Verdict | Cells |
 |---|---|
-| Confirmed in the document | 427 |
+| Confirmed in the document | 428 |
 | Calculated by formula from confirmed parts | 58 |
 | Formula holds, parts not all confirmed | 145 |
-| Not in the document (143 of them share prices) | 271 |
-| Unsure | 101 |
-| Contradicted, with a proposed value | 156 |
+| Not in the document (137 of them share prices) | 267 |
+| Unsure | 98 |
+| Contradicted, with a proposed value | 162 |
 | Formula fails | 22 |
 
-Cells in the 45 cases whose PDF does not show the analyst's buyer as the buyer (80 escalated cells) are
-one finding per case, a wrong document or a wrong buyer, not one per cell. That leaves 177 cells in 96
+Cells in the 46 cases whose documents do not show the analyst's buyer as the buyer (81 escalated cells) are
+one finding per case, a wrong document or a wrong buyer, not one per cell. That leaves 179 cells in 98
 cases for tier 3. A first tier 3 run, made before the PDF choice changed, ([`scripts/escalate_cells.py`](scripts/escalate_cells.py),
 [`.claude/agents/cell-reviewer.md`](.claude/agents/cell-reviewer.md)) reviewed 31 of them in 20 cases,
 reading every PDF of each case ([`evals/cell_review_pilot.jsonl`](evals/cell_review_pilot.jsonl), quotes
@@ -525,6 +527,26 @@ of 61), which is why the disagreements go to tier 3. The PDF changed for 41 case
 The labellers' instructions are in [`.claude/agents/pdf-labeller.md`](.claude/agents/pdf-labeller.md); their
 worktrees were made from a commit without either method's picks, and the audit of their tool calls found no
 read of them.
+
+**Not one PDF but a set.** A deal's terms are often split: the cash in the agreement, the shares in the
+completion notice. So every PDF of the project gets its own yes or no question to the decision model: does
+this announcement give terms of this deal? ([`scripts/pdf_set.py`](scripts/pdf_set.py); it reads the start of
+the PDF and up to two passages naming the project.) Two more blind labellers marked every PDF with terms for
+78 deals ([`.claude/agents/pdf-set-labeller.md`](.claude/agents/pdf-set-labeller.md)); 66 of those deals have
+their terms in more than one PDF. Against their labels, on 212 PDFs:
+
+| Model says "gives terms" when P ≥ | Agrees with the labels | Its yes answers right |
+|---|---|---|
+| 0.3 | **184 of 212 (87%)** | **155 of 167 (93%)** |
+| 0.5 | 176 of 212 (83%) | 146 of 157 (93%) |
+| 0.7 | 161 of 212 (76%) | 125 of 130 (96%) |
+
+Each deal's documents are now the announcing PDF first, then the others with terms: the blind label where
+there is one (75 deals), otherwise the model at 0.3 ([`evals/pdf_set.jsonl`](evals/pdf_set.jsonl), labels
+in [`evals/pdf_set_labels.jsonl`](evals/pdf_set_labels.jsonl)). 71 deals are read from more than one PDF, and
+the deal's documents now hold every value any PDF of the project holds in 88 of the 95 projects with several
+PDFs (69 with the announcing PDF alone). Everything that reads a case's text (the scorer, the judge
+questions, the cell check) reads the whole set.
 
 **Share prices.** The analyst's share price is often not in the document, so 20 sampled deals were compared
 with public daily closes on the news date (Yahoo Finance history pages, read in a browser). Yahoo has 15

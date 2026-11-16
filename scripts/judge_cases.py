@@ -38,7 +38,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_pdf_cases as builder  # noqa: E402
 
-from evals.score_pdf import company_core, listings  # noqa: E402
+from evals.score_pdf import case_text, company_core, listings  # noqa: E402
 from motherlode import judge, telemetry  # noqa: E402
 from motherlode.validate import FIELD_KIND, find_number  # noqa: E402
 
@@ -53,7 +53,8 @@ PASSAGE = 450        # characters on each side of a piece of evidence
 
 
 def text_of(case: dict) -> str:
-    return " ".join((builder.TEXT_CACHE / f"{Path(case['file']).stem}.txt").read_text().split())
+    """Every PDF of the case's set, the announcing one first (evals.score_pdf.case_text)."""
+    return case_text(case, builder.TEXT_CACHE)
 
 
 def around(text: str, snippet: str | None, width: int = PASSAGE) -> str | None:

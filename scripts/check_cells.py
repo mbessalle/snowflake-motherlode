@@ -35,6 +35,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_pdf_cases as builder  # noqa: E402
 
+from evals.score_pdf import case_text  # noqa: E402
 from motherlode import judge, telemetry  # noqa: E402
 from motherlode.fields import all_fields  # noqa: E402
 from motherlode.validate import MONEY, SHARES, find_number, written_amounts  # noqa: E402
@@ -168,7 +169,7 @@ def check_cell(case: dict, field: str, texts: dict[str, str]) -> dict:
     a, project = case["analyst"], case["project_name"]
     value = builder.number(a.get(field))
     cell = {"row_id": case["row_id"], "case_id": case["id"], "field": field, "value": value}
-    chosen = texts.get(case["file"], "")
+    chosen = case_text(case, builder.TEXT_CACHE)       # every PDF of the case's set, the announcing one first
     head = chosen[:HEAD]
     found = [(file, p) for file, text in texts.items() for p in occurrences(field, value, text)]
     cell["found_in"] = sorted({f for f, _ in found})

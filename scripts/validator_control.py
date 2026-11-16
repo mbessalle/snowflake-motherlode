@@ -18,6 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from evals.score_pdf import case_text  # noqa: E402
 from motherlode.validate import CHECKED_FIELDS, DERIVED, EMPTY, FOUND, validate  # noqa: E402
 
 INVENTED = (175_000, 300_000, 750_000, 1_500_000, 2_500_000, 4_000_000, 325_000)
@@ -25,8 +26,7 @@ INVENTED = (175_000, 300_000, 750_000, 1_500_000, 2_500_000, 4_000_000, 325_000)
 
 def main() -> None:
     cases = [json.loads(line) for line in (ROOT / "evals" / "pdf_cases.jsonl").read_text().splitlines() if line.strip()]
-    texts = {c["id"]: " ".join((ROOT / "data" / "source_text" / f"{Path(c['file']).stem}.txt").read_text().split())
-             for c in cases}
+    texts = {c["id"]: case_text(c, ROOT / "data" / "source_text") for c in cases}
     print("invented cash payments accepted (FOUND / DERIVED of", len(cases), "texts):")
     for value in INVENTED:
         statuses = [validate({"cash_payments_value": value}, texts[c["id"]]).fields["cash_payments_value"].status

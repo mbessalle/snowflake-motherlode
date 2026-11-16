@@ -249,6 +249,20 @@ def filled(value) -> bool:
 
 # --- scoring -----------------------------------------------------------------------------------------------
 
+def case_text(case: dict, texts: Path = TEXTS) -> str:
+    """The text of a case's documents: every PDF of its set (`files`, the announcing PDF first; a deal's terms can
+    be split between the agreement and a completion notice), or its one `file` for cases built before sets.
+    Whitespace is normalised; documents are separated by a marker naming the file. Empty without a text layer."""
+    files = case.get("files") or [case["file"]]
+    parts = []
+    for file in files:
+        path = texts / f"{Path(file).stem}.txt"
+        if path.exists():
+            text = " ".join(path.read_text().split())
+            parts.append(f"=== {Path(file).name} === {text}" if len(files) > 1 else text)
+    return " ".join(parts)
+
+
 def load_cases(path: Path = CASES) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
@@ -322,12 +336,12 @@ def _score_case(case: dict, model: dict, texts: Path):
     field both values and the verdict. Returns the validator's report, or None without a text layer."""
     with telemetry.span("score_case", case_id=case["id"], file=case["file"], input_reply=model,
                         buyer_in_document=case.get("buyer_in_document", True)) as s:
-        text_file = texts / f"{Path(case['file']).stem}.txt"
+        text = case_text(case, texts)
         report = None
-        if text_file.exists():
-            report = validate(for_validator(model), " ".join(text_file.read_text().split()))
+        if text:
+            report = validate(for_validator(model), text)
         else:
-            log.warning("case %s: no text layer at %s, so its values are not checked against the PDF", case["id"], text_file)
+            log.warning("case %s: no text layer in %s, so its values are not checked against the PDF", case["id"], texts)
         for name, (kind, _, _) in RULES.items():
             m, a = model.get(name), case["analyst"].get(name)
             if not (filled(m) or filled(a)):

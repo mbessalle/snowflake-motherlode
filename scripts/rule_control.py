@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT))
 
 import build_pdf_cases as builder  # noqa: E402
 
+from evals.score_pdf import case_text  # noqa: E402
 from motherlode.validate import FIELD_KIND, find_number  # noqa: E402
 
 FIELDS = ("cash_payments_value", "exp_comit_value", "shares_amount", "project_area")
@@ -28,7 +29,7 @@ def control(cases: list[dict], factor: float) -> dict[str, dict[str, int]]:
     """Per field: values tested, wrong values found written, found as a sum, found as an area in km2."""
     out = {f: {"tested": 0, "written": 0, "sum": 0, "km2 to ha": 0} for f in FIELDS}
     for case in cases:
-        text = " ".join((builder.TEXT_CACHE / f"{Path(case['file']).stem}.txt").read_text().split())
+        text = case_text(case, builder.TEXT_CACHE)
         for name in FIELDS:
             value = builder.number(case["analyst"].get(name))
             if value is None:
@@ -59,7 +60,7 @@ def percent_control(cases: list[dict]) -> dict[str, dict[str, int]]:
             value = builder.number(case["analyst"].get(name))
             if value is None:
                 continue
-            text = " ".join((builder.TEXT_CACHE / f"{Path(case['file']).stem}.txt").read_text().split())
+            text = case_text(case, builder.TEXT_CACHE)
             for wrong in PLAUSIBLE_PERCENT:
                 if wrong != value:
                     tried += 1

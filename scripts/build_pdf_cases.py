@@ -244,15 +244,21 @@ def document_text(project: str, file: str, directory: Path) -> str:
 # The decision model's pick of the PDF that announces each deal (scripts/choose_pdf.py), used instead of the
 # count rule when --pdf-choice names that file; empty otherwise.
 MODEL_PICKS: dict[int, str] = {}
+# The PDFs that give terms of each deal (scripts/pdf_set.py finalize), when --pdf-set names that file.
+PDF_SETS: dict[int, list[str]] = {}
 
 
 def main() -> None:
-    args = [a for a in sys.argv[1:] if not a.startswith("--pdf-choice=")]
+    args = [a for a in sys.argv[1:] if not a.startswith(("--pdf-choice=", "--pdf-set="))]
     for a in sys.argv[1:]:
         if a.startswith("--pdf-choice="):
             for r in map(json.loads, Path(a.split("=", 1)[1]).read_text().splitlines()):
                 if "final" in r:        # the three-tier pick (choose_pdf.py finalize); None: no PDF announces it
                     MODEL_PICKS[r["row_id"]] = r["final"]
+        if a.startswith("--pdf-set="):
+            for r in map(json.loads, Path(a.split("=", 1)[1]).read_text().splitlines()):
+                if "set" in r:
+                    PDF_SETS[r["row_id"]] = r["set"]
     if len(args) != 2:
         raise SystemExit(__doc__)
     sys.argv[1:] = args
@@ -304,7 +310,14 @@ def build_case(row: dict, project: str, entries: list[dict], directory: Path, s)
         file, written, chosen_by = pick, next(c[1] for c in candidates if c[0] == pick), "choose_pdf"
     elif pick is None:              # no PDF of the project announces this deal: keep the count rule's, flag it
         announcement_found, chosen_by = False, "none announces the deal"
-    text = texts[file]
+    files = [file]
+    extra = [f for f in PDF_SETS.get(row["id"], []) if f != file and f in texts]
+    if extra and announcement_found:    # a deal's terms split over several PDFs (pdf_set.py): read them together
+        files += extra
+        text = " ".join(f"=== {Path(f).name} === {texts[f]}" for f in files)
+        written = written_fields(row, text)
+    else:
+        text = texts[file]
     s.set(step_candidates=[{"file": f, "written": w, "chars": n, "mentions_news_date": d} for f, w, n, d in candidates],
           output_chosen=file, output_chosen_by=chosen_by)
     for name in written:          # the snippet that proves each written value, for checking by eye or by code
@@ -331,6 +344,7 @@ def build_case(row: dict, project: str, entries: list[dict], directory: Path, s)
         "written_in_any_document": sorted({f for c in candidates for f in c[1]}),
         "formulas": formula_checks(row), "shares_value_source": shares_value_source(row, text),
         "chosen_by": chosen_by, "announcement_found": announcement_found,
+        **({"files": files} if len(files) > 1 else {}),
     }
     if not case["buyer_in_document"]:
         log.warning("case %s: the chosen PDF %s does not name the buyer %r", case["id"], file, row.get("owner_name"))
