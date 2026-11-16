@@ -16,8 +16,12 @@ Which fields can be checked against a document follows the analyst's field defin
               drilling value = metres x 250 USD. Checked by their formula, not against the text.
   market      share price: the market price on the announcement date. Not in the document; not scored.
 
-Writes evals/pdf_cases.jsonl (case id, project, chosen file, the analyst's values, and which scraped values
-are written in the document) and prints the counts. No document text is stored.
+A scraped value that is not written as such may still follow from the document by the original extraction
+rules: tranches summed into one payment, a total split between projects, an area given in km2 and stored in
+hectares. Those are recorded separately as derived, with the rule that explains them.
+
+Writes evals/pdf_cases.jsonl (case id, project, chosen file, the analyst's values, which scraped values are
+written in the document and which are derived from it) and prints the counts. No document text is stored.
 """
 from __future__ import annotations
 
@@ -31,7 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from motherlode.validate import FIELD_KIND, find_number  # noqa: E402
+from motherlode.validate import FIELD_KIND, MONEY, SHARES, find_number, written_amounts  # noqa: E402
 
 CASES = ROOT / "evals" / "pdf_cases.jsonl"
 INVENTORY = ROOT / "data" / "pdf_inventory.jsonl"
@@ -59,6 +63,49 @@ def written_fields(row: dict, text: str) -> list[str]:
         if value is not None and find_number(text, value, percent=name in PERCENT, kind=FIELD_KIND.get(name)):
             found.append(name)
     return found
+
+
+def as_sum(target: float, amounts: list[float], max_terms: int = 3) -> bool:
+    """Is the target a sum of 2..max_terms (at most 3) of the amounts, within 0.5? An amount counts twice only
+    if it is listed twice. The same answer as trying every combination, as the validator's explain_by_rules
+    does, but with sorted two-pointer scans: O(n^2) instead of O(n^3), which matters on a PDF with hundreds
+    of amounts."""
+    c = sorted(a for a in amounts if a < target)
+
+    def pair(lo: int, goal: float) -> bool:
+        i, j = lo, len(c) - 1
+        while i < j:
+            s = c[i] + c[j]
+            if abs(s - goal) <= 0.5:
+                return True
+            i, j = (i + 1, j) if s < goal else (i, j - 1)
+        return False
+
+    return pair(0, target) or (max_terms >= 3 and any(pair(k + 1, target - c[k]) for k in range(len(c) - 2)))
+
+
+def derived_by_rule(name: str, value: float, text: str) -> str | None:
+    """How a scraped value not written as such follows from the document by the original extraction rules
+    (docs/extraction-rules in the old pipeline):
+      km2 to ha  the area: the document gives km2 and the row holds hectares (value / 100 is written)
+      sum        "sum all forms of a payment type": a sum of two or three amounts written in the document
+      split      "shared commitments": a written total, or a sum of two, divided between 2-6 projects
+    A plausibility test, not a proof: a sum can match by chance, so the README reports the chance rate."""
+    if name == "project_area":
+        return "km2 to ha" if find_number(text, value / 100) else None
+    kind = FIELD_KIND.get(name)
+    if kind is None:
+        return None
+    amounts = written_amounts(text, exclude={MONEY: SHARES, SHARES: MONEY}[kind])
+    if as_sum(value, amounts):
+        return "sum"
+    for n in range(2, 7):
+        total = value * n
+        if total < 10000 or abs(total - round(total)) > 0.01 * n:
+            continue
+        if find_number(text, round(total), kind=kind) or as_sum(round(total), amounts, 2):
+            return "split"
+    return None
 
 
 def choose(candidates: list[tuple[str, list[str], int]]) -> tuple[str, list[str]] | None:
@@ -145,12 +192,20 @@ def main() -> None:
             kinds[entry["file"]], texts[entry["file"]] = entry["kind"], text
         file, written = choose(candidates)
         anywhere = sorted({f for _, fields, _ in candidates for f in fields})
+        derived = {}
+        for name in SCRAPED:
+            value = number(row.get(name))
+            if value is not None and name not in written:
+                how = derived_by_rule(name, value, texts[file])
+                if how:
+                    derived[name] = how
         cases.append({
             "id": Path(file).stem, "row_id": row["id"], "project": project, "project_name": row["project_name"], "file": file,
             "kind": kinds[file], "documents_in_project": len(candidates),
             "analyst": {k: row[k] for k in KEPT if row.get(k) not in (None, "")},
             "scraped_values": sum(1 for k in SCRAPED if number(row.get(k)) is not None),
-            "written_in_document": written, "written_in_any_document": anywhere, "formulas": formula_checks(row),
+            "written_in_document": written, "derived_in_document": derived, "written_in_any_document": anywhere,
+            "formulas": formula_checks(row),
             "shares_value_source": shares_value_source(row, texts[file]),
         })
     CASES.write_text("".join(json.dumps(case, ensure_ascii=False) + "\n" for case in cases))
@@ -165,7 +220,9 @@ def main() -> None:
     for name in SCRAPED:
         have = [c for c in cases if number(c["analyst"].get(name)) is not None]
         hit = sum(1 for c in have if name in c["written_in_document"])
-        print(f"  {name:<28} {hit:>3} of {len(have):>3}  ({100 * hit / max(1, len(have)):.0f}%)")
+        how = [c["derived_in_document"][name] for c in have if name in c["derived_in_document"]]
+        print(f"  {name:<28} {hit:>3} of {len(have):>3}  ({100 * hit / max(1, len(have)):.0f}%); by a rule {len(how):>3}"
+              + "".join(f", {k} {how.count(k)}" for k in sorted(set(how))))
     one_holds_all = sum(1 for c in several if len(c["written_in_document"]) == len(c["written_in_any_document"]))
     print(f"projects with several PDFs: {len(several)}; the chosen PDF holds every value any of them holds: {one_holds_all}")
     checked = [c["formulas"]["aggregate"] for c in cases if "aggregate" in c["formulas"]]

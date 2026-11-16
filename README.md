@@ -185,28 +185,39 @@ is market data from the announcement date and is not in the document at all.
 | Aggregate equals cash + exploration commitment + shares value | 182 of 182 rows |
 | Shares value, 109 rows: stated in the document / computed as shares × price / both / unexplained | 43 / 15 / 3 / 48 |
 
-| Scraped field | Analyst value written in the case document |
-|---|---|
-| Royalty | 76 of 84 (90%) |
-| Interest acquired | 155 of 194 (80%) |
-| Shares issued | 51 of 77 (66%) |
-| Cash payments | 68 of 144 (47%) |
-| Exploration commitment | 16 of 47 (34%) |
-| Project area | 11 of 133 (8%) |
-| All scraped values | 377 of 679 (56%) |
+| Scraped field | Written in the case document | Not written, but derived by a rule | Chance matches of the rule (control) |
+|---|---|---|---|
+| Royalty | 76 of 84 (90%) | 0 | |
+| Interest acquired | 155 of 194 (80%) | 0 | |
+| Shares issued | 51 of 77 (66%) | 20 (19 sums, 1 split) | 4 / 4 |
+| Cash payments | 68 of 144 (47%) | 28 (24 sums, 4 splits) | 12 / 6 |
+| Exploration commitment | 16 of 47 (34%) | 14 (6 sums, 8 splits) | 5 / 2 |
+| Project area | 11 of 133 (8%) | 90 (km² in the document, hectares in the row) | 0 / 2 |
+| All scraped values | 377 of 679 (56%) | 152, so 529 of 679 (78%) together | |
 
 This table is not an extraction score. It measures the ground truth: how many of the analyst's values can
-be found as written in the document, which is the ceiling for scoring an extractor against these rows by
-exact match. The low rows have known causes: the area column was carried over in hectares from the analyst's
-original dataset rather than read from the announcement, and a cash or commitment figure is a sum of
-tranches that the announcement lists separately. A
-shares value has two legitimate origins, as the original pipeline's extraction rules set out in order of
-priority: the announcement states what the share payment is worth, or it is computed from the number of
-shares and a share price, taken from the announcement or, failing that, the last traded price on the
-listing site.
-61 of the 109 rows are explained by one of the two; the other 48 match neither the document nor the
-stored price, most likely because the price used was not the one kept in the row. Scoring an extractor on this set therefore needs the validator's derivation rules
-(sums, unit conversion) and not only exact matches; that scoring is not built yet.
+be found in the document. A value that is not written as such can still follow from the document by the
+original pipeline's extraction rules, and the case file records which rule explains it:
+
+- **sum**: "sum all forms of a payment type", so a cash payment is the sum of tranches the announcement
+  lists separately (two or three amounts written in the document).
+- **split**: a value shared between projects is divided equally (a written total, or a sum of two,
+  divided between 2 and 6 projects).
+- **km² to ha**: the announcement gives the area in km² and the row holds it in hectares.
+
+A sum of written amounts can match by chance, so the same tests were run with every stored value
+multiplied by 1.13 and by 0.87, values that should not match. The last column gives how many of those
+wrong values the rule still "explained". The area rule is reliable (0 and 2 chance matches against 90).
+The share-count sums are mostly real. For cash, up to about 12 of the 28 may be chance, so a derived
+cash value is "probably from the document", not confirmed.
+
+A shares value has two legitimate origins, as the original pipeline's extraction rules set out in order
+of priority: the announcement states what the share payment is worth, or it is computed from the number
+of shares and a share price, taken from the announcement or, failing that, the last traded price on the
+listing site. 61 of the 109 rows are explained by one of the two. The other 48 match neither the document
+nor the stored price. The fallback price can be checked only where a project folder holds a print of the
+listing page: that is so for 1 of the 48, and its printed price does not explain the value. Scoring an
+extractor on this set is not built yet.
 
 **Converted amounts.** An earlier sheet holds the same deals converted to US dollars, by the rule
 "amount × the exchange rate on the document date".
