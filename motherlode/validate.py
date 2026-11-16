@@ -25,7 +25,7 @@ MONEY_FIELDS = ("cash_payments_value", "exp_comit_value")
 PERCENT_FIELDS = ("nsr_percent", "interest_acquired_percent")
 PLAIN_FIELDS = ("shares_amount", "share_price", "project_area", "drilling_amount")
 CHECKED_FIELDS = MONEY_FIELDS + ("shares_amount", "share_price", "shares_value", "aggregate_deal_value") + PERCENT_FIELDS + (
-    "project_area", "drilling_amount")
+    "project_area", "drilling_amount", "shares_value_scraped")    # the last one was stored but never checked
 _ONES = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen",
          "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
 _TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
@@ -71,7 +71,7 @@ def _forms(x: float) -> set[str]:
 
 MONEY, SHARES, OTHER = "money", "shares", "other"
 FIELD_KIND = {"cash_payments_value": MONEY, "exp_comit_value": MONEY, "shares_value": MONEY, "aggregate_deal_value": MONEY,
-              "shares_amount": SHARES}
+              "shares_amount": SHARES, "shares_value_scraped": MONEY}
 _CURRENCY_BEFORE = re.compile(r"(?:[A-Z]{0,2}\$|\b(?:CAD|USD|AUD|EUR|GBP|NZD))\s?$")
 _MONEY_AFTER = re.compile(r"\s*(?:million\s+|thousand\s+)?(?:dollars|in cash)\b", re.I)
 # "share" in the singular ("1,000,000 share bonus") and "s hares" (a space inserted by PDF text extraction)
@@ -342,7 +342,10 @@ def _validate(extraction: dict, article_text: str) -> Report:
             report.fields[name] = FieldCheck(DERIVED, values[name], evidence)
 
     # Payments and share counts are often a sum of tranches, or one total shared by several projects.
-    for name in MONEY_FIELDS + ("shares_amount",):
+    # The shares value can be a stated total too, shared between projects like a cash payment (a review in the
+    # original pipeline's 30-deal run, 16 Nov 2026: Telfer and Havieron's $167.5 million, halved per project,
+    # was withheld because this loop left the shares value out); so can the shares value stated in the news.
+    for name in MONEY_FIELDS + ("shares_amount", "shares_value", "shares_value_scraped"):
         if report.fields[name].status == NOT_FOUND:
             amounts = share_amounts if name == "shares_amount" else money_amounts
             derive(name, explain_by_rules(values[name], amounts, text, FIELD_KIND.get(name)))

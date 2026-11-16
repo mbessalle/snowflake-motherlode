@@ -180,6 +180,17 @@ def test_a_million_thousand_or_billion_unit_counts_only_as_money_or_shares(text,
     assert bool(find_number(text, value, kind=kind)) is expected
 
 
+def test_a_stated_shares_value_split_between_projects_is_derived_and_the_scraped_one_is_checked():
+    # wording of the Bonnie Vale announcement; the deal covers two projects
+    text = ("Bonnie Vale and Kunanalling projects, revised terms: the Company may issue the $1.1 million of share "
+            "consideration at any time.")
+    for field in ("shares_value", "shares_value_scraped"):
+        assert validate({field: 1_100_000}, text).fields[field].status == FOUND
+        check = validate({field: 550_000}, text).fields[field]
+        assert check.status == DERIVED and "split across 2 projects" in check.evidence
+        assert validate({field: 777_000}, text).fields[field].status == NOT_FOUND
+
+
 def test_written_amounts_skip_metres_and_physical_quantities():
     text = "6m @ 4.79% Cu, $1.5m in cash, 2 million tonnes, 3 million shares and a $1.2bn market value"
     assert written_amounts(text) == [1_500_000.0, 3_000_000.0, 1_200_000_000.0]

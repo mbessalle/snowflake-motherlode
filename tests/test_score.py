@@ -53,10 +53,13 @@ def test_reproduces_the_original_pipelines_published_numbers():
       35924 shares 2,000,000 as "(5,000,000 + 5,000,000) split across 5": the analyst agrees, so this one is
             a loss; a sum of two amounts then split accepted too many invented values to keep
       75845 cash 1,400,000 as "7,000,000 split across 5": the analyst agrees; no project word near the total
-    So the published numbers were one value too high and the current validator is two values too strict."""
+    So the published numbers were one value too high and the current validator is two values too strict.
+    Since the shares value stated in the news (shares_value_scraped) is checked too, 3 more values are checked,
+    and all 3 are written in their announcement: 122 of 129 and 123 of 129."""
     summary = score.score(score.load_cases(), ORIGINAL_CACHE / "texts", ORIGINAL_CACHE / "extractions" / "gpt-6.1-terra", retry=True)
     assert summary["records"] == 33 and summary["skipped"] == []
-    assert (summary["first"]["grounded"], summary["first"]["checked"], summary["first"]["records_passed"]) == (119, 126, 28)
-    assert (summary["final"]["grounded"], summary["final"]["checked"], summary["final"]["records_passed"]) == (120, 126, 29)
+    assert (summary["first"]["grounded"], summary["first"]["checked"], summary["first"]["records_passed"]) == (122, 129, 28)
+    assert (summary["final"]["grounded"], summary["final"]["checked"], summary["final"]["records_passed"]) == (123, 129, 29)
+    assert summary["first"]["fields"]["shares_value_scraped"]["FOUND"] == 3
     assert (summary["retried"], summary["retried_now_passing"]) == (3, 1)
     assert summary["agreement_total"] == {"both": 108, "agree": 83}

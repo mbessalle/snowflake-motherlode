@@ -140,16 +140,18 @@ section below), and the same replies now score as in the second column:
 
 | | Published (original validator) | Current validator |
 |---|---|---|
-| Extracted numbers supported by the article, first attempt | 122 of 126 (97%) | 119 of 126 (94%) |
+| Extracted numbers supported by the article, first attempt | 122 of 126 (97%) | 122 of 129 (95%) |
 | Records with every number supported, first attempt | 30 of 33 | 28 of 33 |
-| Extracted numbers supported, after the corrected retry | 123 of 126 (98%) | 120 of 126 (95%) |
+| Extracted numbers supported, after the corrected retry | 123 of 126 (98%) | 123 of 129 (95%) |
 | Records with every number supported, after the retry | 31 of 33 | 29 of 33 |
 | Agreement with the analyst, where both have a value | 83 of 108 (77%) | 83 of 108 (77%) |
 
 The three values that changed were all accepted by a rule for totals split between projects. One of them
 was wrong: 4,731,835 shares accepted as "14,195,506 split across 3 projects", where the document issues all
 14,195,506 for one deal. The other two the analyst agrees with, so the current validator is two values too
-strict on this set; the old rules accepted as derived between 18% and 28% of invented round cash amounts
+strict on this set. The current validator also checks the shares value stated in the news
+(`shares_value_scraped`), which the original stored but never checked: 3 more values, all written in
+their announcement, hence 129 checked. The old rules accepted as derived between 18% and 28% of invented round cash amounts
 offered for the 236 real documents, now between 3% and 12% ([`scripts/validator_control.py`](scripts/validator_control.py)), so it was narrowed.
 
 These are OpenAI results from the original pipeline, not Snowflake results. The Snowflake rows
@@ -500,7 +502,7 @@ python scripts/run_pipeline.py export --extractor claude-sonnet-5
 
 | Path | What it holds |
 |---|---|
-| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` was changed after two rounds of critic review, each change marked in the code: a faster sum check with the same answers; units (6 metres is not 6 million; billion added); trailing zeros; physical quantities are no amounts; one kind of amount per sum; a narrower split rule; context words for percentages and metres; cash that is an exploration amount or placement does not count; NaN is no number. On the original 33 cases it scores 119 of 126 instead of the published 122 (see Evals) |
+| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` was changed after two rounds of critic review, each change marked in the code: a faster sum check with the same answers; units (6 metres is not 6 million; billion added); trailing zeros; physical quantities are no amounts; one kind of amount per sum; a narrower split rule; context words for percentages and metres; cash that is an exploration amount or placement does not count; NaN is no number; the shares value can be a total split between projects, like cash, and the shares value stated in the news is checked. On the original 33 cases it scores 119 of 126 instead of the published 122 (see Evals) |
 | [`motherlode/process.py`](motherlode/process.py) | The extract, validate, retry, quarantine loop |
 | [`motherlode/cortex.py`](motherlode/cortex.py) | Cortex statements and reply parsing |
 | [`motherlode/pipeline.py`](motherlode/pipeline.py) | The Snowpark steps and the stored procedure's handler |
