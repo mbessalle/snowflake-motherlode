@@ -682,12 +682,6 @@ per service, printing Snowflake's own message for each.
 Not built: Snowflake's native agent evaluations, and automatic discovery of new announcements (the original
 pipeline does that outside Snowflake).
 
-Not built yet, data being collected: a small ML model trained and served in Snowflake (a headline
-classifier: project transaction or not). The 43 labelled cases are too few to train on, so
-[`scripts/collect_headlines.py`](scripts/collect_headlines.py) adds the public news sitemap's headlines to
-[`data/headlines.jsonl`](data/headlines.jsonl) once a day through a GitHub Actions workflow. Its
-`deal_words` flag is a weak label from a regular expression, not a human judgement.
-
 ## Run it
 
 ```bash
