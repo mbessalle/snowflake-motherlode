@@ -1,7 +1,7 @@
 """The validator decides what reaches the database, so each rule is pinned by a case that would break it."""
 import pytest
 
-from motherlode.validate import DERIVED, EMPTY, FOUND, NOT_FOUND, find_number, validate, written_amounts
+from motherlode.validate import DERIVED, EMPTY, FOUND, NOT_FOUND, find_number, sum_of_amounts, validate, written_amounts
 
 OPTION = (
     "Vancouver, May 31, 2023. The Company may exercise the Option by paying $250,000 in cash on closing and "
@@ -138,3 +138,22 @@ def test_a_share_count_is_not_evidence_for_a_cash_payment():
     assert report.fields["shares_amount"].status == FOUND
     assert validate({"cash_payments_value": 150000}, text).fields["cash_payments_value"].status == FOUND
     assert validate({"shares_amount": 150000}, text).fields["shares_amount"].status == NOT_FOUND   # $150,000 is money
+
+
+def test_the_fast_sum_check_gives_the_same_answer_as_trying_every_combination():
+    """sum_of_amounts replaced the original's search over every combination; the yes or no must not change."""
+    import itertools
+    import random
+
+    rng = random.Random(7)
+    for _ in range(2000):
+        amounts = [rng.choice((5000, 10000, 25000, 50000, 100000, 125000, 250000)) for _ in range(rng.randint(0, 8))]
+        target = rng.choice((15000, 30000, 75000, 150000, 175000, 300000, 375000, 400000, 999999))
+        for terms in (2, 3):
+            candidates = [a for a in amounts if a < target]
+            brute = any(abs(sum(combo) - target) <= 0.5 for n in range(2, terms + 1)
+                        for combo in itertools.combinations(candidates, n))
+            found = sum_of_amounts(target, amounts, terms)
+            assert (found is not None) is brute
+            if found:
+                assert abs(sum(found) - target) <= 0.5 and 2 <= len(found) <= terms

@@ -12,7 +12,6 @@ For every number the model returned, decide whether the source text supports it:
 """
 from __future__ import annotations
 
-import itertools
 import re
 from dataclasses import dataclass, field
 
@@ -128,17 +127,43 @@ def written_amounts(text: str, exclude: str | None = None) -> list[float]:
     return sorted(out)
 
 
+def sum_of_amounts(target: float, amounts: list[float], max_terms: int = 3) -> tuple[float, ...] | None:
+    """Two, or (with max_terms 3) three, of the amounts below the target that add up to it within 0.5, or None.
+    An amount is used twice only if it is listed twice.
+
+    Changed from the original pipeline, which tried every combination: that is O(n^3) and took minutes on a
+    long PDF with hundreds of amounts. Sorted two-pointer scans give the same yes or no in O(n^2); when
+    several combinations fit, the one returned may differ. tests/test_validate.py checks the answer against
+    the brute-force search."""
+    c = sorted(a for a in amounts if a < target)
+
+    def pair(lo: int, goal: float) -> tuple[float, float] | None:
+        i, j = lo, len(c) - 1
+        while i < j:
+            s = c[i] + c[j]
+            if abs(s - goal) <= 0.5:
+                return c[i], c[j]
+            i, j = (i + 1, j) if s < goal else (i, j - 1)
+        return None
+
+    found = pair(0, target)
+    if found:
+        return found
+    if max_terms >= 3:
+        for k in range(len(c) - 2):
+            found = pair(k + 1, target - c[k])
+            if found:
+                return (c[k], *found)
+    return None
+
+
 def explain_by_rules(x: float, amounts: list[float], text: str, kind: str | None = None) -> str | None:
     """A sum of up to three written amounts, or a written total (or two-term sum) split across 2-6 projects.
     An amount is used twice only if it is written twice. This is a plausibility test, not a proof."""
 
     def as_sum(target: float, max_terms: int) -> str | None:
-        candidates = [a for a in amounts if a < target]
-        for n in range(2, max_terms + 1):
-            for combo in itertools.combinations(candidates, n):
-                if abs(sum(combo) - target) <= 0.5:
-                    return " + ".join(f"{c:,.0f}" for c in combo)
-        return None
+        combo = sum_of_amounts(target, amounts, max_terms)
+        return " + ".join(f"{c:,.0f}" for c in combo) if combo else None
 
     summed = as_sum(x, 3)
     if summed:

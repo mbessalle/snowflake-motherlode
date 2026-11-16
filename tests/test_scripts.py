@@ -126,21 +126,6 @@ def test_the_case_document_is_the_pdf_with_the_most_scraped_values_written_in_it
     assert cases.choose([("short.pdf", [], 10), ("long.pdf", [], 900)])[0] == "long.pdf"      # a tie goes to the longer text
 
 
-def test_the_fast_sum_check_gives_the_same_answer_as_trying_every_combination():
-    import itertools
-    import random
-
-    cases = load("build_pdf_cases")
-    rng = random.Random(7)
-    for _ in range(400):
-        amounts = [rng.choice((5000, 10000, 25000, 50000, 100000, 125000, 250000)) for _ in range(rng.randint(0, 7))]
-        target = rng.choice((15000, 30000, 75000, 150000, 175000, 300000, 375000, 400000, 999999))
-        for terms in (2, 3):
-            brute = any(abs(sum(combo) - target) <= 0.5 for n in range(2, terms + 1)
-                        for combo in itertools.combinations([a for a in amounts if a < target], n))
-            assert cases.as_sum(target, amounts, terms) is brute
-
-
 def test_a_value_not_written_as_such_is_derived_by_the_extraction_rules():
     cases = load("build_pdf_cases")
     text = ("The Company will pay $250,000 on signing and $1,000,000 on a decision to mine, and will spend "

@@ -65,7 +65,7 @@ this project uses.
 
 ## The model extracts, code decides
 
-This is carried over unchanged from the original pipeline, and it is the part that does not depend on which
+This is carried over from the original pipeline (one function made faster, with the same results), and it is the part that does not depend on which
 model or platform runs the extraction.
 
 - [`motherlode/validate.py`](motherlode/validate.py) gives every extracted number a status: written in the
@@ -184,6 +184,7 @@ is market data from the announcement date and is not in the document at all.
 | Projects with several PDFs where the chosen one holds every value any of them holds | 89 of 95 |
 | Aggregate equals cash + exploration commitment + shares value | 182 of 182 rows |
 | Shares value, 109 rows: stated in the document / computed as shares × price / both / unexplained | 43 / 15 / 3 / 48 |
+| Chosen PDF names the analyst's buyer (rule 1 of the extraction rules: is the document about this deal?) | 229 of 236 |
 
 | Scraped field | Written in the case document | Not written, but derived by a rule | Chance matches of the rule (control) |
 |---|---|---|---|
@@ -216,8 +217,31 @@ of priority: the announcement states what the share payment is worth, or it is c
 of shares and a share price, taken from the announcement or, failing that, the last traded price on the
 listing site. 61 of the 109 rows are explained by one of the two. The other 48 match neither the document
 nor the stored price. The fallback price can be checked only where a project folder holds a print of the
-listing page: that is so for 1 of the 48, and its printed price does not explain the value. Scoring an
-extractor on this set is not built yet.
+listing page: that is so for 1 of the 48, and its printed price does not explain the value.
+
+Of the 7 cases whose PDF does not name the buyer, one shows why the check matters: two deals on the
+Glenfine project, by different buyers in 2024 and 2025, both chose the only PDF in the folder, and that
+PDF is about the 2025 deal.
+
+**Scoring an extractor on the 236 cases.** [`evals/score_pdf.py`](evals/score_pdf.py) scores every one
+of the 31 fields the extractor fills. Each field has one rule, and a test fails if a field has none:
+
+| Kind | Fields | How compared |
+|---|---|---|
+| Scraped | royalty, interest, cash, exploration commitment, metres drilled, shares issued, stated shares value, area | Within 1% of the analyst's value (area after conversion to hectares), and checked against the PDF text by the validator |
+| Calculated | aggregate, shares value, drilling value | Within 1% of the analyst's value |
+| Market | share price | Within 1%; usually not in the document |
+| Location | latitude, longitude | Within 0.05°; usually not in the document |
+| Text | commodity, commodity list, stage, state, country, buyer, ticker, currencies, date | After normalising: "Ltd" = "Limited", "WA" = "Western Australia", "ASX.MM8" = "ASX:MM8", lists as sets |
+| Given as input | project name | Not scored: the prompt names the project |
+| No comparable value | deal type, deal period, market cap, resource statement, listing-site stage, exploration currency | Only how often the model fills them. The analyst's deal types are listing-site categories ("Project Acquisition"), not the prompt's "option agreement, JV, sale" |
+
+The headline measure counts the scraped values the analyst has, the PDF supports (written or derived),
+and whose PDF names the buyer: how many the extractor gets right. There are 517 of those.
+
+As a check of the scorer itself, the analyst's own values were scored as if they came from an extractor:
+every comparable field agrees 100%, and a test confirms that wrong values do not agree. No Snowflake
+extraction has been scored on this set yet, because Cortex is blocked on the trial account.
 
 **Converted amounts.** An earlier sheet holds the same deals converted to US dollars, by the rule
 "amount × the exchange rate on the document date".
@@ -371,7 +395,7 @@ python scripts/run_pipeline.py export --extractor claude-sonnet-5
 
 | Path | What it holds |
 |---|---|
-| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Byte-identical copies from the original pipeline |
+| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` differs in one function: its sum check gives the same yes or no in O(n²) instead of O(n³), tested against the original search |
 | [`motherlode/process.py`](motherlode/process.py) | The extract, validate, retry, quarantine loop |
 | [`motherlode/cortex.py`](motherlode/cortex.py) | Cortex statements and reply parsing |
 | [`motherlode/pipeline.py`](motherlode/pipeline.py) | The Snowpark steps and the stored procedure's handler |

@@ -35,7 +35,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from motherlode.validate import FIELD_KIND, MONEY, SHARES, find_number, written_amounts  # noqa: E402
+from evals.score_pdf import company_core, plain  # noqa: E402
+from motherlode.fields import extracted_fields  # noqa: E402
+from motherlode.validate import FIELD_KIND, MONEY, SHARES, find_number, sum_of_amounts, written_amounts  # noqa: E402
 
 CASES = ROOT / "evals" / "pdf_cases.jsonl"
 INVENTORY = ROOT / "data" / "pdf_inventory.jsonl"
@@ -43,8 +45,8 @@ TEXT_CACHE = ROOT / "data" / "source_text"
 SCRAPED = ("nsr_percent", "interest_acquired_percent", "cash_payments_value", "exp_comit_value", "drilling_amount",
            "shares_amount", "project_area")
 PERCENT = ("nsr_percent", "interest_acquired_percent")
-KEPT = SCRAPED + ("aggregate_deal_value", "shares_value", "share_price", "drilling_value", "aggregate_deal_currency",
-                  "cash_payments_currency", "exp_comit_currency", "shares_currency", "project_area_unit", "deal_type", "news_date")
+# every extracted field the analyst's table holds, so the scorer can compare all of them
+KEPT = tuple(f.name for f in extracted_fields())
 
 
 def normalise(name: str | None) -> str:
@@ -66,22 +68,8 @@ def written_fields(row: dict, text: str) -> list[str]:
 
 
 def as_sum(target: float, amounts: list[float], max_terms: int = 3) -> bool:
-    """Is the target a sum of 2..max_terms (at most 3) of the amounts, within 0.5? An amount counts twice only
-    if it is listed twice. The same answer as trying every combination, as the validator's explain_by_rules
-    does, but with sorted two-pointer scans: O(n^2) instead of O(n^3), which matters on a PDF with hundreds
-    of amounts."""
-    c = sorted(a for a in amounts if a < target)
-
-    def pair(lo: int, goal: float) -> bool:
-        i, j = lo, len(c) - 1
-        while i < j:
-            s = c[i] + c[j]
-            if abs(s - goal) <= 0.5:
-                return True
-            i, j = (i + 1, j) if s < goal else (i, j - 1)
-        return False
-
-    return pair(0, target) or (max_terms >= 3 and any(pair(k + 1, target - c[k]) for k in range(len(c) - 2)))
+    """Is the target a sum of two or three of the amounts? The validator's own sum check."""
+    return sum_of_amounts(target, amounts, max_terms) is not None
 
 
 def derived_by_rule(name: str, value: float, text: str) -> str | None:
@@ -106,6 +94,13 @@ def derived_by_rule(name: str, value: float, text: str) -> str | None:
         if find_number(text, round(total), kind=kind) or as_sum(round(total), amounts, 2):
             return "split"
     return None
+
+
+def buyer_named(owner: str | None, text: str) -> bool:
+    """Rule 1 of the extraction rules is data relevance: is the document about this deal? A cheap test: the
+    first word of the buyer's name ('Errawarra' of 'Errawarra Resources Ltd') appears in the text."""
+    core = company_core(owner)
+    return bool(core) and re.search(r"\b" + re.escape(core.split()[0]) + r"\b", plain(text)) is not None
 
 
 def choose(candidates: list[tuple[str, list[str], int]]) -> tuple[str, list[str]] | None:
@@ -200,7 +195,9 @@ def main() -> None:
                 if how:
                     derived[name] = how
         cases.append({
-            "id": Path(file).stem, "row_id": row["id"], "project": project, "project_name": row["project_name"], "file": file,
+            # two deals on one project can choose the same PDF, so the row number keeps the id unique
+            "id": f"{Path(file).stem}-{row['id']}", "row_id": row["id"],
+            "buyer_in_document": buyer_named(row.get("owner_name"), texts[file]), "project": project, "project_name": row["project_name"], "file": file,
             "kind": kinds[file], "documents_in_project": len(candidates),
             "analyst": {k: row[k] for k in KEPT if row.get(k) not in (None, "")},
             "scraped_values": sum(1 for k in SCRAPED if number(row.get(k)) is not None),
@@ -229,6 +226,7 @@ def main() -> None:
     print(f"formula aggregate: {sum(checked)} of {len(checked)} rows consistent")
     sources = [c["shares_value_source"] for c in cases if c["shares_value_source"]]
     print(f"shares value, {len(sources)} rows: " + ", ".join(f"{k} {sources.count(k)}" for k in ("stated", "computed", "both", "unexplained")))
+    print(f"chosen PDF names the analyst's buyer: {sum(c['buyer_in_document'] for c in cases)} of {len(cases)}")
     print(f"chosen PDFs: digital {sum(c['kind'] == 'digital' for c in cases)}, mixed {sum(c['kind'] == 'mixed' for c in cases)}")
 
 
