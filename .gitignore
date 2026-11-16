@@ -27,6 +27,7 @@ evals/.cache/
 
 # Local run output
 traces/
+streamlit_app/output/
 spend_ledger.jsonl
 judge_ledger.jsonl
 run_report.json

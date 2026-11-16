@@ -35,6 +35,8 @@ questions over the result.
   its own `claude -p` session), reviewed the code and data; every confirmed finding became a failing test
   first. Six rounds found and fixed real errors, among them metres read as millions and a rule that
   accepted invented amounts.
+- **A review app in Streamlit in Snowflake**: the check's results loaded into Snowflake tables, with an app
+  that shows the verdicts and highlights each value in its own announcement text ([details](#review-app-in-snowflake)).
 - **Every decision traceable**: OpenTelemetry spans with the inputs, outputs and evidence of each step, in
   local files and a Jaeger viewer; logs carry the step's span id.
 - **Findings for the analyst** (the client's own table): share prices rounded to two decimals, rows where
@@ -622,6 +624,28 @@ Estimate from the documents on disk (`python scripts/estimate_cost.py`), not a m
 
 Agent runs and repeated passes come on top. Measured spend will replace this table.
 
+## Review app in Snowflake
+
+The results of the cell check live in Snowflake and are reviewed there, in a Streamlit in Snowflake app
+([`streamlit_app/`](streamlit_app/)). [`sql/06_review_app.sql`](sql/06_review_app.sql) creates the schema
+`MOTHERLODE.REVIEW` for the pipeline role; [`scripts/load_review_data.py`](scripts/load_review_data.py) loads
+the cases, the 1,180 cell verdicts, the decision model's answers, the PDF choices and sets and the tier 3
+verdicts as JSON rows with typed views; `snow streamlit deploy` (with
+[`streamlit_app/snowflake.yml`](streamlit_app/snowflake.yml)) deploys the app. It runs on Snowflake's container
+runtime and reads the announcement texts from `MOTHERLODE.RAW.DOCUMENT_TEXT`, so each value is shown where it
+is written. No AI function is called. Deployed and checked on the trial account on 16 November 2026.
+
+| Overview | One case: a value highlighted in its announcement |
+|---|---|
+| ![Overview](docs/images/review_app_overview.jpg) | ![Case](docs/images/review_app_case.jpg) |
+
+Three pages: the overview (verdict counts and verdicts by field, the buyer finding, the tier 3 run), the
+escalated cells (filtered by verdict and field, leaving out deals whose documents do not show the buyer as
+buyer), and one case (the analyst's row, the deal's PDFs and how they were chosen, every cell's verdict, and
+the passages where a chosen value is written). Writing the area search, the app at first highlighted "40km
+west of Coffs Harbour" for a 4,000 ha area, the same mistake a critic had found in the case builder; it now
+needs a km² or ha unit after the number.
+
 ## Status
 
 Tested, offline, in CI (285 tests, no account or network needed):
@@ -711,7 +735,8 @@ python scripts/run_pipeline.py export --extractor claude-sonnet-5
 | [`motherlode/telemetry.py`](motherlode/telemetry.py), [`scripts/traces.py`](scripts/traces.py) | OpenTelemetry spans and logs for every step; a query tool for the trace files |
 | [`evals/score_pdf.py`](evals/score_pdf.py), [`scripts/build_pdf_cases.py`](scripts/build_pdf_cases.py) | The 236-case ground truth and its scorer, every field with one rule |
 | [`scripts/check_cells.py`](scripts/check_cells.py), [`scripts/escalate_cells.py`](scripts/escalate_cells.py) | The three-tier cell check and its tier 3 hand-off |
-| [`.claude/agents/`](.claude/agents/) | The critic, split critic and cell reviewer agents' instructions |
+| [`.claude/agents/`](.claude/agents/) | The critics', labellers' and cell reviewer's instructions |
+| [`streamlit_app/`](streamlit_app/), [`scripts/load_review_data.py`](scripts/load_review_data.py), [`sql/06_review_app.sql`](sql/06_review_app.sql) | The review app in Streamlit in Snowflake, its data load and its schema |
 | [`motherlode/process.py`](motherlode/process.py) | The extract, validate, retry, quarantine loop |
 | [`motherlode/cortex.py`](motherlode/cortex.py) | Cortex statements and reply parsing |
 | [`motherlode/pipeline.py`](motherlode/pipeline.py) | The Snowpark steps and the stored procedure's handler |

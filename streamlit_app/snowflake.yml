@@ -1,0 +1,15 @@
+definition_version: 2
+entities:
+  cell_review_app:
+    type: streamlit
+    identifier:
+      name: CELL_REVIEW_APP
+      database: MOTHERLODE
+      schema: REVIEW
+    title: "Cell check review"
+    query_warehouse: MOTHERLODE_XS
+    main_file: streamlit_app.py
+    stage: STREAMLIT_APPS
+    artifacts:
+      - streamlit_app.py
+      - environment.yml

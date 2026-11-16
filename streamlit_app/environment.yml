@@ -1,0 +1,5 @@
+name: cell_review_app
+channels:
+  - snowflake
+dependencies:
+  - pandas
