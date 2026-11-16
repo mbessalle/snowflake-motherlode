@@ -12,12 +12,15 @@ For every number the model returned, decide whether the source text supports it:
 """
 from __future__ import annotations
 
+import logging
 import math
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from . import schema, telemetry
+
+log = logging.getLogger("motherlode.validate")
 
 FOUND, DERIVED, NOT_FOUND, EMPTY = "FOUND", "DERIVED", "NOT_FOUND", "EMPTY"
 
@@ -265,28 +268,37 @@ class SplitCandidate:
     total: float
     n: int
     passage: str
+    head: str = ""      # the start of the announcement: the deal summary, which names the projects
 
     @property
     def evidence(self) -> str:
         return f"{self.total:,.0f} split across {self.n} projects (judged)"
 
 
-def split_candidate(x: float, text: str, kind: str | None) -> SplitCandidate | None:
-    """The first n (2-6) for which x * n is written as `kind` (money or shares, not a bare number), when no rule
-    accepted the value: the word rule found no project word nearby, or it was switched off so that a judge
-    reads every split (resolve_splits). Telfer: Greatland's
-    "$167.5 million" of shares for Telfer and Havieron, half of it per project; the text names the two
-    assets, not the word project."""
+# Characters each side of the total, and of the announcement's start. The split critic's best variant (count
+# question + start, 14 of 14) used 400; 600 makes Telfer's passage reach "the Paterson region" and the judge
+# counts 3 assets, not 2 (checked 16 Nov 2026). Telfer stays close at 400 too: P(2) 0.54 against P(3) 0.41.
+SPLIT_PASSAGE = 400
+SPLIT_HEAD = 1500
+
+
+def split_candidates(x: float, text: str, kind: str | None, skip=None) -> list[SplitCandidate]:
+    """Every n (2-6) for which x * n is written as `kind` (money or shares, not a bare number), each with the
+    passage around the total, for a judge to read (resolve_splits). Telfer: Greatland's "$167.5 million" of
+    shares for Telfer and Havieron, half of it per project. All n, not the first only: when x * 2 is written for
+    another reason (a royalty buy-down), the real total x * 3 must still be asked about. `skip` is the field's
+    own exclusion (not_cash), so "$1,000,000 of exploration commitments" is no cash candidate."""
     if not kind:
-        return None
+        return []
+    out = []
     for n in range(2, 7):
         total = x * n
         if not math.isfinite(total) or total < 10000 or abs(total - round(total)) > 0.01 * n:
             continue
-        passage = find_number(text, round(total), kind=kind, exact_kind=True, width=400)
+        passage = find_number(text, round(total), kind=kind, exact_kind=True, skip=skip, width=SPLIT_PASSAGE)
         if passage:
-            return SplitCandidate(float(round(total)), n, passage)
-    return None
+            out.append(SplitCandidate(float(round(total)), n, passage, text[:SPLIT_HEAD]))
+    return out
 
 
 def _close(a: float, b: float, tolerance: float = 0.01) -> bool:
@@ -298,7 +310,7 @@ class FieldCheck:
     status: str
     value: float | None = None
     evidence: str | None = None
-    candidate: SplitCandidate | None = None     # NOT_FOUND, but a split a judge may accept
+    candidates: list[SplitCandidate] = field(default_factory=list)   # NOT_FOUND, but splits a judge may accept
 
 
 @dataclass
@@ -333,25 +345,26 @@ class Report:
             "passed": self.passed, "checked": self.checked, "grounded": self.grounded, "not_found": self.not_found,
             "schema_issues": self.schema_issues,
             "fields": {k: {"status": c.status, "value": c.value, "evidence": c.evidence,
-                           **({"candidate": c.candidate.evidence} if c.candidate else {})}
+                           **({"candidates": [x.evidence for x in c.candidates]} if c.candidates else {})}
                        for k, c in self.fields.items()},
         }
 
     @property
-    def candidates(self) -> dict[str, SplitCandidate]:
+    def candidates(self) -> dict[str, list[SplitCandidate]]:
         """Fields that are NOT_FOUND but could be a total shared between projects, for a judge to read."""
-        return {k: c.candidate for k, c in self.fields.items() if c.status == NOT_FOUND and c.candidate}
+        return {k: c.candidates for k, c in self.fields.items() if c.status == NOT_FOUND and c.candidates}
 
 
-def validate(extraction: dict, article_text: str, judged: dict[str, str] | None = None, split_rule: bool = True) -> Report:
+def validate(extraction: dict, article_text: str, judged: dict[str, str] | None = None, split_rule: bool = False) -> Report:
     """Check every number of an extraction against the text. Traced: the span records each field's value,
     status and evidence, so a wrong decision can be found from the trace (motherlode.telemetry).
 
     `judged` maps fields to evidence that a judge accepted (resolve_splits); those count as DERIVED, so that an
-    aggregate built on them can be supported too. With split_rule=False no total is accepted as shared between
-    projects by the word rule: each possible split is left as a candidate for a judge. The word rule is the
-    fallback without a judge, and it is weak: Kat Gap's single A$7,000,000 sale passed it, because the word
-    "licence" stands next to the total."""
+    aggregate built on them can be supported too. No total counts as shared between projects without a judge:
+    each possible split is left as a candidate (Report.candidates). The word rule (split_rule=True: a word such
+    as project or licence next to the total) is off by default, because a split critic measured it worse than
+    nothing: it accepted 9 of the 10 split candidates in the data and 5 of those are not shared (Kat Gap's
+    single A$7,000,000 sale passed because "licence" stands next to the total)."""
     with telemetry.span("validate", input_text_chars=len(article_text), input_extraction=extraction,
                         input_judged=judged, split_rule=split_rule) as s:
         report = _validate(extraction, article_text, judged or {}, split_rule)
@@ -368,20 +381,29 @@ FIELD_SKIP = {"cash_payments_value": not_cash}
 
 def resolve_splits(extraction: dict, article_text: str, project: str | None, judge, threshold: float = 0.5) -> Report:
     """Validate; then ask `judge(project, field, value, candidate) -> probability` about each split candidate,
-    and validate again with the ones it accepts. Without candidates the judge is never called."""
-    report = validate(extraction, article_text, split_rule=False)
+    and validate again with the ones it accepts. Without candidates the judge is never called. A judge that
+    fails (no network, spend cap) leaves that one field unsupported, logged, and the rest goes on."""
+    report = validate(extraction, article_text)
     accepted = {}
-    for name, candidate in report.candidates.items():
-        with telemetry.span("judge_split", field=name, value=report.fields[name].value, total=candidate.total,
-                            n=candidate.n) as s:
-            p = judge(project, name, report.fields[name].value, candidate)
-            s.set(output_probability=p, output_accepted=p is not None and p >= threshold)
-        if p is not None and p >= threshold:
-            accepted[name] = candidate.evidence
-    return validate(extraction, article_text, accepted, split_rule=False) if accepted else report
+    for name, candidates in report.candidates.items():
+        for candidate in candidates:
+            with telemetry.span("judge_split", field=name, value=report.fields[name].value, total=candidate.total,
+                                n=candidate.n) as s:
+                try:
+                    p = judge(project, name, report.fields[name].value, candidate)
+                except Exception as error:      # critic: one failing call stopped the whole record
+                    log.warning("split judge failed for %s (%s split across %s): %r", name, candidate.total,
+                                candidate.n, error)
+                    s.set(output_error=repr(error))
+                    p = None
+                s.set(output_probability=p, output_accepted=p is not None and p >= threshold)
+            if p is not None and p >= threshold:
+                accepted[name] = candidate.evidence
+                break
+    return validate(extraction, article_text, accepted) if accepted else report
 
 
-def _validate(extraction: dict, article_text: str, judged: dict[str, str] | None = None, split_rule: bool = True) -> Report:
+def _validate(extraction: dict, article_text: str, judged: dict[str, str] | None = None, split_rule: bool = False) -> Report:
     text = article_text.replace("\xa0", " ").replace("’", "'")
     # one kind per pool: a money sum never uses tonnes, a table count or a bare number (critic, round 2)
     money_amounts, share_amounts = written_amounts(text, only=MONEY), written_amounts(text, only=SHARES)
@@ -416,7 +438,8 @@ def _validate(extraction: dict, article_text: str, judged: dict[str, str] | None
             if name in (judged or {}):          # a split a judge accepted (resolve_splits)
                 derive(name, judged[name])
             else:                               # left for a judge to read; it does not count as support
-                report.fields[name].candidate = split_candidate(values[name], text, FIELD_KIND.get(name))
+                report.fields[name].candidates = split_candidates(values[name], text, FIELD_KIND.get(name),
+                                                                  FIELD_SKIP.get(name))
 
     # Exploration commitments stated in metres are converted at a fixed rate.
     if report.fields["exp_comit_value"].status == NOT_FOUND:

@@ -19,7 +19,7 @@ import argparse
 import json
 from pathlib import Path
 
-from motherlode.validate import CHECKED_FIELDS, DERIVED, EMPTY, FOUND, NOT_FOUND, to_number, validate
+from motherlode.validate import CHECKED_FIELDS, DERIVED, EMPTY, FOUND, NOT_FOUND, resolve_splits, to_number, validate
 
 HERE = Path(__file__).parent
 CASES = HERE / "cases.jsonl"
@@ -40,8 +40,12 @@ def _read(path: Path) -> dict | None:
     return json.loads(path.read_text()) if path.exists() else None
 
 
-def score(cases: list[dict], texts: Path, replies: Path, retry: bool = False) -> dict:
-    """Counts for the cases that have both a text and a first-attempt extraction."""
+def score(cases: list[dict], texts: Path, replies: Path, retry: bool = False, judge_split=None) -> dict:
+    """Counts for the cases that have both a text and a first-attempt extraction. With `judge_split`
+    (motherlode.judge.judge_split), totals shared between projects are judged, as in the pipeline."""
+    def check(extraction: dict, text: str, project: str | None):
+        return resolve_splits(extraction, text, project, judge_split) if judge_split else validate(extraction, text)
+
     results, skipped = [], []
     for case in cases:
         text_file, first = texts / f"{case['id']}.txt", _read(replies / "attempt1" / f"{case['id']}.json")
@@ -49,12 +53,12 @@ def score(cases: list[dict], texts: Path, replies: Path, retry: bool = False) ->
             skipped.append(case["id"])
             continue
         text = " ".join(text_file.read_text().split())
-        report1 = validate(first, text)
+        report1 = check(first, text, case.get("project"))
         final, report, retried = first, report1, False
         if retry and not report1.passed:
             second = _read(replies / "attempt2" / f"{case['id']}.json")
             if second is not None:
-                final, report, retried = second, validate(second, text), True
+                final, report, retried = second, check(second, text, case.get("project")), True
         results.append({"case": case, "first": report1, "final": report, "extraction": final, "retried": retried})
 
     def stage(key: str) -> dict:

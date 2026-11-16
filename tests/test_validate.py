@@ -1,7 +1,17 @@
 """The validator decides what reaches the database, so each rule is pinned by a case that would break it."""
 import pytest
 
-from motherlode.validate import DERIVED, EMPTY, FOUND, NOT_FOUND, find_number, sum_of_amounts, validate, written_amounts
+from motherlode.validate import (
+    DERIVED,
+    EMPTY,
+    FOUND,
+    NOT_FOUND,
+    find_number,
+    resolve_splits,
+    sum_of_amounts,
+    validate,
+    written_amounts,
+)
 
 OPTION = (
     "Vancouver, May 31, 2023. The Company may exercise the Option by paying $250,000 in cash on closing and "
@@ -49,9 +59,13 @@ def test_an_amount_is_reused_only_if_written_twice():
     assert status({"cash_payments_value": 500000}, once)["cash_payments_value"] == NOT_FOUND
 
 
-def test_commitment_shared_across_projects_is_derived():
-    check = validate({"exp_comit_value": 200000}, OPTION).fields["exp_comit_value"]
-    assert check.status == DERIVED and check.evidence == "1,000,000 split across 5 projects"
+def test_commitment_shared_across_projects_is_a_candidate_that_a_judge_accepts():
+    # no split counts without a judge since the split critic's review (16 Nov 2026); the candidate is kept
+    report = validate({"exp_comit_value": 200000}, OPTION)
+    assert report.fields["exp_comit_value"].status == NOT_FOUND
+    assert [(c.total, c.n) for c in report.candidates["exp_comit_value"]] == [(1_000_000, 5)]
+    check = resolve_splits({"exp_comit_value": 200000}, OPTION, "Acacia", lambda *a: 0.9).fields["exp_comit_value"]
+    assert check.status == DERIVED and check.evidence == "1,000,000 split across 5 projects (judged)"
 
 
 def test_shares_value_is_shares_times_price_only_with_supported_inputs():
@@ -65,7 +79,8 @@ def test_shares_value_is_shares_times_price_only_with_supported_inputs():
 def test_aggregate_is_sum_of_supported_parts():
     extraction = {"cash_payments_value": 500000, "exp_comit_value": 200000, "shares_amount": 2000000, "share_price": 0.25,
                   "shares_value": 500000, "aggregate_deal_value": 1200000}
-    report = validate(extraction, OPTION)
+    assert not validate(extraction, OPTION).passed          # the commitment is a split, unsupported without a judge
+    report = resolve_splits(extraction, OPTION, "Acacia", lambda *a: 0.9)
     assert report.fields["aggregate_deal_value"].status == DERIVED and report.passed
 
 
@@ -186,9 +201,10 @@ def test_a_stated_shares_value_split_between_projects_is_derived_and_the_scraped
             "consideration at any time.")
     for field in ("shares_value", "shares_value_scraped"):
         assert validate({field: 1_100_000}, text).fields[field].status == FOUND
-        check = validate({field: 550_000}, text).fields[field]
+        assert validate({field: 550_000}, text).fields[field].status == NOT_FOUND        # a split needs a judge
+        check = resolve_splits({field: 550_000}, text, "Bonnie Vale", lambda *a: 0.9).fields[field]
         assert check.status == DERIVED and "split across 2 projects" in check.evidence
-        assert validate({field: 777_000}, text).fields[field].status == NOT_FOUND
+        assert resolve_splits({field: 777_000}, text, "Bonnie Vale", lambda *a: 0.9).fields[field].status == NOT_FOUND
 
 
 def test_written_amounts_skip_metres_and_physical_quantities():

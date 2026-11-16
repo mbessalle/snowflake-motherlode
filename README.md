@@ -138,18 +138,20 @@ replies, the scorer with the original validator reproduced what that repository 
 The validator has since been made stricter after two rounds of review by critic agents (see the 236-case
 section below), and the same replies now score as in the second column:
 
-| | Published (original validator) | Current validator |
-|---|---|---|
-| Extracted numbers supported by the article, first attempt | 122 of 126 (97%) | 122 of 129 (95%) |
-| Records with every number supported, first attempt | 30 of 33 | 28 of 33 |
-| Extracted numbers supported, after the corrected retry | 123 of 126 (98%) | 123 of 129 (95%) |
-| Records with every number supported, after the retry | 31 of 33 | 29 of 33 |
-| Agreement with the analyst, where both have a value | 83 of 108 (77%) | 83 of 108 (77%) |
+| | Published (original validator) | Current validator, code only | Current, splits judged by the decision model |
+|---|---|---|---|
+| Extracted numbers supported by the article, first attempt | 122 of 126 (97%) | 116 of 129 (90%) | 123 of 129 (95%) |
+| Records with every number supported, first attempt | 30 of 33 | 26 of 33 | 28 of 33 |
+| Extracted numbers supported, after the corrected retry | 123 of 126 (98%) | 117 of 129 (91%) | 124 of 129 (96%) |
+| Records with every number supported, after the retry | 31 of 33 | 27 of 33 | 29 of 33 |
+| Agreement with the analyst, where both have a value | 83 of 108 (77%) | 83 of 108 (77%) | 83 of 108 (77%) |
 
-The three values that changed were all accepted by a rule for totals split between projects. One of them
-was wrong: 4,731,835 shares accepted as "14,195,506 split across 3 projects", where the document issues all
-14,195,506 for one deal. The other two the analyst agrees with, so the current validator is two values too
-strict on this set. The current validator also checks the shares value stated in the news
+By code alone no total counts as shared between projects any more (see "Totals shared between projects"
+below), which costs the true splits in these replies; with the decision model judging each split the
+replies score one value above the published number, on three more checked values. A split critic read the
+five splits in these replies in their documents: four are shared (Murphy Lake North's 14,195,506 shares over
+three projects; an earlier version of this README called that one wrong, which the critic's reading
+corrected) and one is not (an expenditure of 7,000,000, offered as cash). The current validator also checks the shares value stated in the news
 (`shares_value_scraped`), which the original stored but never checked: 3 more values, all written in
 their announcement, hence 129 checked. The old rules accepted as derived between 18% and 28% of invented round cash amounts
 offered for the 236 real documents, now between 3% and 12% ([`scripts/validator_control.py`](scripts/validator_control.py)), so it was narrowed.
@@ -310,19 +312,28 @@ and adds sums it accepts; `--no-judgments` scores by code alone.
 **Totals shared between projects.** The extraction rules divide a total shared by N projects by N. Whether
 a text shares a total is a reading, so the validator proposes every candidate (the value times 2 to 6 is
 written as money or shares) and the pipeline's loop ([`motherlode/process.py`](motherlode/process.py),
-`judge_split`) asks the judge one yes or no question per candidate; a yes makes the value DERIVED, so an
-aggregate built on it is supported too. Without a judge, a word rule stays as the fallback (a word such as
-project or licence next to the total), and it is weak. Checked on real announcements (16 Nov 2026):
+`judge_split`) asks the judge how many projects share the total (one choice: not this kind of payment, 1,
+or 2 to 6), with the passage around the total and the start of the announcement. When the count equals the
+candidate's, the value is DERIVED, so an aggregate built on it is supported too. Without a judge no split
+counts: the earlier word rule (a word such as project or licence next to the total) is off by default.
 
-| Case | Should be | P(shared), Jev | Word rule alone |
-|---|---|---|---|
-| Telfer and Havieron, $167.5 million of shares, half per asset | shared | 0.90 | rejected (no such word) |
-| Telfer and Havieron, $207.5 million cash, half per asset | shared | 0.83 | rejected |
-| Bonnie Vale and Kunanalling, $1.1 million of shares, half | shared | 0.96 | accepted |
-| Kat Gap, one sale for A$7,000,000, half of it | not shared | 0.07 | accepted (wrong: "licence" stands next to it) |
+This was reviewed by a split critic: its own Claude Code session in its own git worktree
+([`.claude/agents/split-critic.md`](.claude/agents/split-critic.md)), which read only what the decision model
+had triaged ([`scripts/triage_splits.py`](scripts/triage_splits.py): the 10 split candidates in the data)
+plus five controls, used the decision model itself (140 calls, 0.006 USD) and committed failing tests:
 
-Inside Snowflake the same question would go to Cortex `AI_FILTER`; that is not built, because Cortex is
-not available on the trial account. The offline scorers still validate without a judge.
+- The word rule accepted 9 of the 10 candidates, and 5 of those are not shared (Kat Gap's single A$7,000,000
+  sale passed because "licence" stands next to the total). It was switched off.
+- Cash candidates ignored the cash exclusions ("$1,000,000 of exploration commitments"); only the first
+  number of projects with a written total was proposed; one failing judge call stopped the whole record.
+  All fixed, each with the critic's test.
+- Asking yes or no about one count scored 12 of 14 on the items it had read; asking for the count with
+  the announcement's start scored 14 of 14. Re-run here on the same 14 ([`evals/split_labels.jsonl`](evals/split_labels.jsonl)):
+  14 of 14. Three are close: both Telfer halves (0.57 and 0.51) and Murphy Lake North (0.57); a wider
+  passage tips Telfer to three assets, because it reaches "the Paterson region".
+
+Inside Snowflake the same question would go to Cortex `AI_CLASSIFY`; that is not built, because Cortex is
+not available on the trial account.
 
 The largest effect is on the buyer: the model reads the analyst's buyer as the buyer in 157 of the 236
 chosen PDFs. In the others the PDF is often a tenement grant notice with no deal in it, or the company named

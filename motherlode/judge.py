@@ -65,28 +65,40 @@ FIELD_WORDS = {"cash_payments_value": "cash payment", "exp_comit_value": "explor
 
 
 def split_question(project: str | None, field: str, value: float, candidate) -> tuple[dict, dict]:
-    """The state and question for one split candidate (motherlode.validate.SplitCandidate): does the text
-    share this total between n projects, this one among them? The rule it restates is the extraction rules'
-    'shared commitments: if a value is shared between N projects, the project's value is RAW_VALUE / N'."""
+    """The state and question for one split candidate (motherlode.validate.SplitCandidate): how many projects
+    share this total? The rule it restates is the extraction rules' 'shared commitments: if a value is shared
+    between N projects, the project's value is RAW_VALUE / N'.
+
+    A count to choose, not yes or no about one n, with the start of the announcement: the split critic
+    (16 Nov 2026) scored question variants on 14 items whose answer it had read in the documents. Yes or no
+    about n: 12 of 14, the same on a repeat. This choice with the announcement's start: 14 of 14, twice."""
     what = FIELD_WORDS.get(field, field)
-    state = {"project": project, "total": f"{candidate.total:,.0f}", "projects_sharing_it": candidate.n,
-             "this_projects_share": f"{value:,.0f}", "passage": candidate.passage}
-    question = noul(
-        f"Does `passage` describe the {candidate.total:,.0f} {what} as covering {candidate.n} projects or assets, "
-        f"one of them the project named in `project`, so that its equal share is {value:,.0f}?",
-        f"Yes: the {what} of {candidate.total:,.0f} is paid for {candidate.n} projects or assets together, and the "
-        "project named in `project` is one of them.",
-        f"No: the {candidate.total:,.0f} is for this project alone, for other projects, for a different number of "
-        "projects, or it is not this kind of consideration.")
+    total = f"{candidate.total:,.0f}"
+    state = {"project": project, "total": total, "passage": candidate.passage,
+             "announcement_start": candidate.head}
+    options = {"not_this_kind": f"The {total} is not a {what} for acquiring projects: for example a royalty "
+                                "buy-back, a financing, a settlement or another kind of consideration.",
+               "1": f"The {total} {what} is for the project named in `project` alone."}
+    options |= {str(k): f"The {total} {what} covers {k} projects or assets together, the project named in "
+                        "`project` among them." for k in range(2, 7)}
+    question = choice(f"How many projects or assets share the {total} {what} in `passage`?", options)
     return state, {"split": question}
 
 
 def judge_split(project: str | None, field: str, value: float, candidate, post=None) -> float | None:
-    """P(yes) that the candidate total is shared between its n projects; for validate.resolve_splits."""
+    """How strongly the model's count equals the candidate's n, for validate.resolve_splits (accepted at 0.5):
+    P(n) / (P(n) + P(the likeliest other answer)). It is at least 0.5 exactly when n is the model's choice, so a
+    choice of n is accepted even when the probability is spread over many answers (Murphy Lake North won with
+    0.30), and a near tie with another count shows as a value close to 0.5 in the trace."""
     state, questions = split_question(project, field, value, candidate)
     kwargs = {"post": post} if post else {}
-    answer = ask(state, questions, label=f"split:{project}:{field}", **kwargs).get("split") or {}
-    return answer.get("noul")
+    answer = ask(state, questions, label=f"split:{project}:{field}:{candidate.n}", **kwargs).get("split") or {}
+    probabilities = answer.get("probabilities") or {}
+    if not probabilities:
+        return None
+    mine = probabilities.get(str(candidate.n), 0.0)
+    rival = max((p for k, p in probabilities.items() if k != str(candidate.n)), default=0.0)
+    return mine / (mine + rival) if mine + rival > 0 else None
 
 
 def spent() -> float:

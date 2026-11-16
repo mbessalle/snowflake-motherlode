@@ -14,8 +14,9 @@ HALF = {"shares_value": 83_750_000}
 def test_a_split_with_no_project_word_is_a_candidate_not_support():
     report = validate(HALF, TEXT)
     assert report.fields["shares_value"].status == NOT_FOUND
-    candidate = report.candidates["shares_value"]
+    [candidate] = report.candidates["shares_value"]
     assert (candidate.total, candidate.n) == (167_500_000, 2) and "Telfer and Havieron" in candidate.passage
+    assert candidate.head.startswith("Newmont expects")              # the start of the announcement goes along
 
 
 def test_the_judge_decides_and_is_asked_only_about_candidates():
@@ -40,9 +41,18 @@ def test_with_a_judge_even_a_split_next_to_a_project_word_is_judged():
     text = ("Sale Assets: Mining lease M74/249, Exploration licence E74/467. Consideration: A$7,000,000 payable "
             "within 5 business days.")
     half = {"cash_payments_value": 3_500_000}
-    assert validate(half, text).fields["cash_payments_value"].status == DERIVED          # the word rule accepts it
+    assert validate(half, text, split_rule=True).fields["cash_payments_value"].status == DERIVED   # the old word rule
+    assert validate(half, text).fields["cash_payments_value"].status == NOT_FOUND                  # off by default
     assert resolve_splits(half, text, "Kat Gap", lambda *a: 0.1).fields["cash_payments_value"].status == NOT_FOUND
     assert resolve_splits(half, text, "Kat Gap", lambda *a: 0.9).fields["cash_payments_value"].status == DERIVED
+
+
+def test_a_failing_judge_leaves_only_that_field_unsupported():
+    def broken(*args):
+        raise judge.SpendCapReached("cap")
+
+    report = resolve_splits({**HALF, "nsr_percent": 2}, TEXT + " A 2% NSR royalty.", "Telfer", broken)
+    assert report.fields["shares_value"].status == NOT_FOUND and report.fields["nsr_percent"].status != NOT_FOUND
 
 
 def test_an_accepted_split_supports_the_aggregate_too():
@@ -69,11 +79,15 @@ def test_the_question_sent_to_the_decision_model(tmp_path, monkeypatch):
 
     def post(body):
         sent.append(body)
-        return {"answers": {"split": {"type": "noul", "noul": 0.83}}, "usage": {"cost": 0.00003}}
+        return {"answers": {"split": {"type": "choice", "choice": "2", "confidence": 0.5,
+                                      "probabilities": {"not_this_kind": 0.05, "1": 0.2, "2": 0.6, "3": 0.15}}},
+                "usage": {"cost": 0.00003}}
 
-    candidate = validate(HALF, TEXT).candidates["shares_value"]
-    assert judge.judge_split("Telfer", "shares_value", 83_750_000, candidate, post=post) == 0.83
+    [candidate] = validate(HALF, TEXT).candidates["shares_value"]
+    p = judge.judge_split("Telfer", "shares_value", 83_750_000, candidate, post=post)
+    assert abs(p - 0.6 / (0.6 + 0.2)) < 1e-9          # n = 2 against the likeliest other count
     body = sent[0]
-    assert body["model"] == judge.MODEL and body["questions"]["split"]["type"] == "noul"
-    assert body["state"]["total"] == "167,500,000" and body["state"]["projects_sharing_it"] == 2
-    assert "Telfer and Havieron" in body["state"]["passage"]
+    assert body["model"] == judge.MODEL and body["questions"]["split"]["type"] == "choice"
+    assert set(body["questions"]["split"]["criteria"]) == {"not_this_kind", "1", "2", "3", "4", "5", "6"}
+    assert body["state"]["total"] == "167,500,000" and "Telfer and Havieron" in body["state"]["passage"]
+    assert body["state"]["announcement_start"].startswith("Newmont")

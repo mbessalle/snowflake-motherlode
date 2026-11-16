@@ -46,20 +46,21 @@ def test_cases_without_text_or_extraction_are_reported_not_counted(tmp_path):
                     reason="the original pipeline's eval cache is not on this machine")
 def test_reproduces_the_original_pipelines_published_numbers():
     """Same cases, same saved replies: the original README published 122 / 126 (first attempt, 30 records
-    passed) and 123 / 126 after the retry (31). The critics' fixes to the validator (16 Nov 2026) change three
-    values from DERIVED to NOT_FOUND, all through the rule for a total split between projects:
-      83978 shares 4,731,835 as "14,195,506 split across 3": wrong, the document issues all 14,195,506
-            shares for one deal and the analyst recorded 14,195,506; the old number was too high here
-      35924 shares 2,000,000 as "(5,000,000 + 5,000,000) split across 5": the analyst agrees, so this one is
-            a loss; a sum of two amounts then split accepted too many invented values to keep
-      75845 cash 1,400,000 as "7,000,000 split across 5": the analyst agrees; no project word near the total
-    So the published numbers were one value too high and the current validator is two values too strict.
-    Since the shares value stated in the news (shares_value_scraped) is checked too, 3 more values are checked,
-    and all 3 are written in their announcement: 122 of 129 and 123 of 129."""
+    passed) and 123 / 126 after the retry (31). This test scores without a judge, so no total shared between
+    projects counts (the split critic of 16 Nov 2026 found the old word rule wrong on 5 of the 9 splits it
+    accepted); with the decision model judging the splits the numbers are higher (scripts/triage_splits.py).
+    The shares value stated in the news (shares_value_scraped) is now checked too: 3 more values, all found.
+
+    The splits among these replies, as the split critic read them in the documents:
+      83978 shares 4,731,835 = 14,195,506 / 3: shared by Murphy Lake North, Darby and Packrat (an earlier note
+            here called it wrong; the critic read the document, and it is right; the analyst keeps the total)
+      39689 cash 500,000 = 1,500,000 / 3 and 65011 shares 500,000 = 1,500,000 / 3: shared by three projects
+      35924 exploration 200,000 = 1,000,000 / 5: shared by five projects; the analyst agrees
+      75845 cash 1,400,000 = 7,000,000 / 5: not shared; the 7,000,000 is an expenditure, not cash"""
     summary = score.score(score.load_cases(), ORIGINAL_CACHE / "texts", ORIGINAL_CACHE / "extractions" / "gpt-6.1-terra", retry=True)
     assert summary["records"] == 33 and summary["skipped"] == []
-    assert (summary["first"]["grounded"], summary["first"]["checked"], summary["first"]["records_passed"]) == (122, 129, 28)
-    assert (summary["final"]["grounded"], summary["final"]["checked"], summary["final"]["records_passed"]) == (123, 129, 29)
+    assert (summary["first"]["grounded"], summary["first"]["checked"], summary["first"]["records_passed"]) == (116, 129, 26)
+    assert (summary["final"]["grounded"], summary["final"]["checked"], summary["final"]["records_passed"]) == (117, 129, 27)
     assert summary["first"]["fields"]["shares_value_scraped"]["FOUND"] == 3
     assert (summary["retried"], summary["retried_now_passing"]) == (3, 1)
     assert summary["agreement_total"] == {"both": 108, "agree": 83}
