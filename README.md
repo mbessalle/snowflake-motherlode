@@ -1,57 +1,58 @@
-# Mining M&A announcements → a checked deal table, inside Snowflake
+# Checking a mining-deal database against its sources, with Snowflake and LLMs
 
 [![CI](https://github.com/mbessalle/snowflake-motherlode/actions/workflows/ci.yml/badge.svg)](https://github.com/mbessalle/snowflake-motherlode/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-A rebuild of [motherlode-data-pipeline](https://github.com/mbessalle/motherlode-data-pipeline) on Snowflake.
-The design: deal announcements land on a stage, Cortex AI functions read them, Snowpark Python holds the
-pipeline, code checks every extracted number against the announcement before it is written, and a Cortex
-Agent answers questions over the result. Alongside it, an analyst's hand-made deal table is checked value by
-value against the announcements, and the results are reviewed in a Streamlit in Snowflake app:
+An analyst built a table of 236 mining deals by hand. This project checks every value in it against the
+announcements the deals come from, **1,180 values for 0.05 USD**, finds the errors, and puts the results in
+Snowflake for review in a Streamlit app.
 
 ![The review app in Snowflake: the verdicts, then one deal with its values highlighted in the announcement](docs/images/review_app_demo.gif)
 
-> **Status: no Cortex AI function has run yet.** Trial accounts are refused them ("not available for trial
-> accounts"; a trial needs an accepted payment card, and a support case is open). What is deployed on a
-> Snowflake trial account: the stage, tables and Snowpark pipeline, which wrote 33 deals from extractions
-> saved by the original pipeline, with validation, retry and the review queue running in Snowflake; the
-> stored procedure (run with a limit of 0 documents), the task (suspended), the semantic view, the agent
-> object, the hierarchical index, and a Streamlit review app. [What was and was not tested](#status).
+## Results
 
-**What is built and measured so far**
+- **1,180 values checked against 410 source PDFs: 428 confirmed, 162 contradicted**, each contradiction with
+  a proposed correction. In a sample read in full by a larger model, the analyst was wrong in 9 of the 11
+  contradicted values that could be decided. [Seven examples](#checking-every-cell-three-tiers).
+- **The errors are real and systematic**: share prices rounded to two decimals, buyers who are in fact the
+  seller, a share price that cannot belong to the named company.
+- **Cheap where it can be, expensive only where it must be**: code settles what it can, a small classifier
+  (about 0.00006 USD a question) judges meaning, and only the values those two cannot settle go to a
+  full-document review by Claude Code.
+- **Measured, not assumed**: the classifier's thresholds were set from blind labels, made by agents that
+  never saw its answers; an audit of every file they read proves it.
 
-The checks below run on a laptop: code, a small classification model called through OpenRouter (TypeSafe's
-Jev, which answers closed yes/no or pick-one questions with probabilities, about 0.00006 USD a question),
-and Claude Code sessions. Their results are loaded into Snowflake and reviewed in the Streamlit app.
+## Built with
 
-- **An evaluation set from 410 source PDFs**: 236 deals pairing an analyst's table rows with the
-  announcements that state each deal, with the evidence for every value recorded ([details](#evals)).
-- **Every analyst value checked in three tiers**: code finds where each value is written; the small model
-  judges what each passage means; only the values those two cannot settle go to a larger model (a
-  `claude -p` session) that reads the whole document. 1,180 values checked for 0.05 USD: 428 confirmed, 162
-  contradicted with a proposed correction. The third tier has reviewed 31 of the 260 escalated values so far
-  ([details](#checking-every-cell-three-tiers)).
-- **The same tiers for choosing each deal's documents**: the small model picks which PDF announces the deal
-  and which others give its terms; where it disagrees with the old counting rule, labelling agents decide.
-  On the 66 deals where the two disagreed, all labelled, counting was right 25 times and the model 34; a
-  second form of the question, chosen after seeing those labels, was right 41 times
-  ([details](#which-pdf-announces-the-deal)).
-- **Thresholds set from blind labels**: before any of the small model's answers was used, labelling agents
-  in an isolated git worktree answered the same questions without seeing them, and an audit of every file
-  they read confirmed they did not look.
-- **Actor-critic review in isolated worktrees**: critic agents, each in its own git worktree (the later ones
-  as their own `claude -p` sessions), reviewed the code, the data and this README; every confirmed finding
-  became a failing test first. Four rounds (one critic, then three in parallel, then a split critic, then a
-  README critic) found and fixed real errors, among them metres read as millions and a rule that accepted
-  invented amounts.
-- **A review app in Streamlit in Snowflake**: the results in Snowflake tables, with an app that shows the
-  verdicts and highlights each value in its own announcement text ([recording and details](#review-app-in-snowflake)).
-- **Traces**: the case builder, validator, scorer and judge write OpenTelemetry spans with the inputs,
-  outputs and evidence of each step, to local files and to a Jaeger viewer when it is configured.
-- **Errors found in the hand-made table**: share prices rounded to two decimals, rows where
-  the named buyer is the seller, a price that cannot belong to the named company.
-- 290 offline tests, CI on every pull request: 282 run in CI, and 8 that need the private data skip there.
+**Snowflake**: Snowpark Python, stages and directory tables, streams, stored procedures and tasks, a semantic
+view, a Cortex Agent specification, a hierarchical document index, Streamlit in Snowflake, resource monitors.
+**Around it**: Python, Pydantic, OpenTelemetry and Jaeger, Claude Code agents in isolated git worktrees,
+GitHub Actions, 290 tests.
+
+## Engineering practice
+
+- **Review by critic agents**: four rounds of independent critic agents, each in its own git worktree,
+  reviewed the code, the data and this README. Every confirmed finding became a failing test first; they
+  found real bugs, among them metres read as millions and a rule that accepted invented amounts.
+- **Every step traced**: OpenTelemetry spans with the inputs, outputs and evidence of each decision.
+- **Spend capped in code**: Snowflake's AI costs are estimated from the published rates and checked against a
+  cap before a step runs; the app runs on a warehouse that suspends a minute after the last viewer.
+- **Client data handled as such**: the analyst's table stays private; this repository publishes the code, the
+  counts and [seven example rows](#checking-every-cell-three-tiers).
+
+## Where it stands
+
+Run on a Snowflake trial account: the Snowpark pipeline (it wrote 33 deals, with validation, retry and a
+review queue), the stored procedure, the semantic view's queries, the document index and the review app.
+Deployed: the task and the Cortex Agent. **The Cortex AI calls themselves have not run yet**: Snowflake
+refuses them on trial accounts until a payment card is accepted, and a support case is open. The 33 deals
+came from extractions saved by the original pipeline. [Exactly what was and was not tested](#status).
+
+The checks run on a laptop (code, the classifier through OpenRouter, Claude Code sessions), and their
+results are loaded into Snowflake. Details of each step: [evaluation set](#evals),
+[three-tier check](#checking-every-cell-three-tiers), [choosing each deal's documents](#which-pdf-announces-the-deal),
+[review app](#review-app-in-snowflake).
 
 ## Architecture
 
