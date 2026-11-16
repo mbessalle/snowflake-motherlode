@@ -9,39 +9,46 @@ Deal announcements land on a stage, Cortex AI functions read them, Snowpark Pyth
 checks every extracted number against the announcement before it is written, and a Cortex Agent answers
 questions over the result.
 
-> **Status: everything except the model calls runs on Snowflake; no Cortex AI function has run yet.**
-> On a trial account, the pipeline's Snowpark code has written 33 deals to the deal table from extractions
-> saved by the original pipeline, with validation, retry and the review queue all running in Snowflake.
-> The stored procedure, the task, the semantic view and the agent object exist. The Cortex AI functions are
-> still refused with "not available for trial accounts" (a trial needs an accepted payment card), so there
-> are no Cortex extraction, screening or agent results yet. [What was and was not tested](#status) is listed
-> below and is updated as each part runs.
+> **Status: no Cortex AI function has run yet.** Trial accounts are refused them ("not available for trial
+> accounts"; a trial needs an accepted payment card, and a support case is open). What is deployed on a
+> Snowflake trial account: the stage, tables and Snowpark pipeline, which wrote 33 deals from extractions
+> saved by the original pipeline, with validation, retry and the review queue running in Snowflake; the
+> stored procedure (run with a limit of 0 documents), the task (suspended), the semantic view, the agent
+> object, the hierarchical index, and a Streamlit review app. [What was and was not tested](#status).
 
 **What is built and measured so far**
 
-- **A ground truth built from 410 source PDFs**: 236 cases pairing an analyst's deal rows with the PDF that
-  states the deal, with the evidence for each value recorded ([details](#evals)).
-- **Every cell checked in three tiers**: code finds where each value is written, a cheap decision model
-  (TypeSafe's Jev, about 0.00006 USD a question) judges what each passage means, and only the cells those two
-  cannot settle go to a frontier model (a `claude -p` session) that reads the whole document. 1,180 cells
-  checked for 0.05 USD; 428 confirmed, 162 contradicted with a proposed correction ([details](#checking-every-cell-three-tiers)).
-- **The same tiers for choosing the document**: which of a project's PDFs announces the deal is decided by
-  the decision model, with blind labels on every disagreement; it beat the old counting rule 41 to 25 on
-  66 hand-picked cases ([details](#which-pdf-announces-the-deal)).
-- **Code proposes, a model judges, hand labels decide the threshold**: the decision model's answers were
-  measured against 147 blind labels from labelling agents in an isolated git worktree, with an audit of
-  every file the labellers read, before any threshold was used.
-- **Actor-critic review in isolated worktrees**: critic agents, each in its own git worktree (the last one as
-  its own `claude -p` session), reviewed the code and data; every confirmed finding became a failing test
-  first. Six rounds found and fixed real errors, among them metres read as millions and a rule that
-  accepted invented amounts.
-- **A review app in Streamlit in Snowflake**: the check's results loaded into Snowflake tables, with an app
-  that shows the verdicts and highlights each value in its own announcement text ([details](#review-app-in-snowflake)).
-- **Every decision traceable**: OpenTelemetry spans with the inputs, outputs and evidence of each step, in
-  local files and a Jaeger viewer; logs carry the step's span id.
+The checks below run on a laptop: code, a small classification model called through OpenRouter (TypeSafe's
+Jev, which answers closed yes/no or pick-one questions with probabilities, about 0.00006 USD a question),
+and Claude Code sessions. Their results are loaded into Snowflake and reviewed in the Streamlit app.
+
+- **An evaluation set from 410 source PDFs**: 236 deals pairing an analyst's table rows with the
+  announcements that state each deal, with the evidence for every value recorded ([details](#evals)).
+- **Every analyst value checked in three tiers**: code finds where each value is written; the small model
+  judges what each passage means; only the values those two cannot settle go to a larger model (a
+  `claude -p` session) that reads the whole document. 1,180 values checked for 0.05 USD: 428 confirmed, 162
+  contradicted with a proposed correction. The third tier has reviewed 31 of the 260 escalated values so far
+  ([details](#checking-every-cell-three-tiers)).
+- **The same tiers for choosing each deal's documents**: the small model picks which PDF announces the deal
+  and which others give its terms; where it disagrees with the old counting rule, labelling agents decide.
+  On the 66 deals where the two disagreed, all labelled, counting was right 25 times and the model 34; a
+  second form of the question, chosen after seeing those labels, was right 41 times
+  ([details](#which-pdf-announces-the-deal)).
+- **Thresholds set from blind labels**: before any of the small model's answers was used, labelling agents
+  in an isolated git worktree answered the same questions without seeing them, and an audit of every file
+  they read confirmed they did not look.
+- **Actor-critic review in isolated worktrees**: critic agents, each in its own git worktree (the later ones
+  as their own `claude -p` sessions), reviewed the code, the data and this README; every confirmed finding
+  became a failing test first. Four rounds (one critic, then three in parallel, then a split critic, then a
+  README critic) found and fixed real errors, among them metres read as millions and a rule that accepted
+  invented amounts.
+- **A review app in Streamlit in Snowflake**: the results in Snowflake tables, with an app that shows the
+  verdicts and highlights each value in its own announcement text ([details](#review-app-in-snowflake)).
+- **Traces**: the case builder, validator, scorer and judge write OpenTelemetry spans with the inputs,
+  outputs and evidence of each step, to local files and to a Jaeger viewer when it is configured.
 - **Findings for the analyst** (the client's own table): share prices rounded to two decimals, rows where
   the named buyer is the seller, a price that cannot belong to the named company.
-- 285 offline tests; CI on every pull request.
+- 285 offline tests (3 need private data and skip without it); CI on every pull request.
 
 ## Architecture
 
@@ -77,7 +84,7 @@ flowchart TD
 | `AI_PARSE_DOCUMENT` | Turns an HTML or PDF announcement into the text everything else reads | [`motherlode/cortex.py`](motherlode/cortex.py) |
 | `AI_COMPLETE` | Screening (project deal or not, which project) and extraction with the original pipeline's prompt | [`motherlode/cortex.py`](motherlode/cortex.py) |
 | `AI_CLASSIFY`, `AI_FILTER` | Deal type and continent from fixed lists; a second way to screen, for comparison | [`motherlode/cortex.py`](motherlode/cortex.py) |
-| `AI_EXTRACT` | Document extraction with one question per field, measured against `AI_COMPLETE` on the same cases | [`motherlode/cortex.py`](motherlode/cortex.py) |
+| `AI_EXTRACT` | Document extraction with one question per field, to be measured against `AI_COMPLETE` on the same cases (not run yet: Cortex is refused on the trial) | [`motherlode/cortex.py`](motherlode/cortex.py) |
 | Snowpark Python, stored procedure, task | The pipeline code; the procedure runs it inside Snowflake when new files arrive | [`motherlode/pipeline.py`](motherlode/pipeline.py), [`sql/03_pipeline_procedure.sql`](sql/03_pipeline_procedure.sql) |
 | Semantic view | Tells the agent what the deal table's columns mean; the top level of the index | [`sql/04_semantic_view_agent.sql`](sql/04_semantic_view_agent.sql) |
 | SQL functions and a Snowpark procedure | The hierarchical index over the announcement texts: outline, section, exact lookup. No embeddings | [`sql/05_hierarchical_index.sql`](sql/05_hierarchical_index.sql), [`motherlode/outline.py`](motherlode/outline.py) |
@@ -127,7 +134,8 @@ long paper: start from the table of contents and go only where the answer is.
 plain SQL function, so each answer can be traced to the rows it read, and the whole index is built by a
 Snowpark procedure with no model call ([`motherlode/outline.py`](motherlode/outline.py)).
 
-At scale, on the source PDFs (see [Documents](#documents)): `BUILD_OUTLINES` cut 443 documents into
+At scale (see [Documents](#documents)): `BUILD_OUTLINES` cut 443 documents (the 410 distinct source PDFs
+and the 33 eval announcements) into
 13,075 sections inside Snowflake in about two minutes, and the walk project → its documents → outline →
 section was run for a real project with `FIND_PROJECTS`, `PROJECT_DOCUMENTS` and `DOCUMENT_OUTLINE`. One
 weakness showed up there: the first sentence of a PDF is often letterhead, so those outline entries say
@@ -150,7 +158,7 @@ headings gets sections labelled by their first words. Model-written summaries ca
 without changing the structure.
 
 Embedding search (Cortex Search) is left out on purpose for this corpus: the questions are about exact
-terms and numbers in a few dozen structured documents, where a traceable lookup fits better than a
+terms and numbers in a few hundred structured documents, where a traceable lookup fits better than a
 similarity ranking. It has not been measured against the index here.
 
 ## Evals
@@ -209,9 +217,10 @@ marked `REPLAY gpt-6.1-terra`. They are not Cortex output.
 **A larger set: 236 cases built from the source PDFs.** 33 cases give 126 checked values, which leaves
 the 97% figure uncertain by about three points. [`scripts/build_pdf_cases.py`](scripts/build_pdf_cases.py)
 pairs each row of the analyst's deal table for one region with its project's PDFs and writes
-[`evals/pdf_cases.jsonl`](evals/pdf_cases.jsonl). A project often has several PDFs about the same sale, so
-every PDF is scored by how many of the row's values are written in it, and the best one becomes the case
-document. No model is involved.
+[`evals/pdf_cases.jsonl`](evals/pdf_cases.jsonl). A project often has several PDFs about the same sale.
+Which of them announces the deal, and which others give its terms, was first decided by counting how many of
+the row's values each PDF contains; it is now decided by the small model with blind labels on every
+disagreement (see [Which PDF announces the deal](#which-pdf-announces-the-deal)).
 
 What can be checked against a document follows the analyst's field definitions: scraped fields are written
 in the announcement; calculated fields (the aggregate, the shares value) follow a formula; the share price
@@ -247,7 +256,7 @@ matched the analyst's values best, which is circular and hides the analyst's err
 percentage near a word of its kind, a cash amount that is not followed by "worth of exploration",
 "placement" or "in shares", and an area followed by a hectare unit.
 
-This table is not an extraction score. It measures the ground truth: how many of the analyst's values can
+This table is not an extraction score. It measures the analyst's table itself: how many of its values can
 be found in the document. A value that is not written as such can still follow from the document by the
 original pipeline's extraction rules, and the case file records which rule explains it:
 
@@ -317,7 +326,7 @@ Round 2 fixes:
   a stored share price rounded to its decimals still explains the value.
 - A wrong PDF folder used to give empty texts and exit 0; it now stops with an error.
 
-Of the 28 sums the round 1 critic read, 12 were right and are all still found, and 5 of the 13 wrong ones
+Of the 28 sums the round 1 critic read (12 right, 13 wrong, 3 it called arguable), the 12 right ones are all still found, and 5 of the 13 wrong ones
 are still found: they add real dollar amounts that are not part of the payment, such as a fee cap. That is
 why sums stay "probable". A control run ([`scripts/rule_control.py`](scripts/rule_control.py)) multiplies
 every stored amount by 1.13 and by 0.87 and runs the same rules: 1 chance match in 401 values each time.
@@ -339,23 +348,30 @@ or a total for several, is each amount of a sum part of the payment or a fee, is
 acquired or an existing holding. Code cannot settle those, so code proposes the candidates and a decision
 model judges them: TypeSafe's Jev on OpenRouter's Decisions API ([`motherlode/judge.py`](motherlode/judge.py),
 [`scripts/judge_cases.py`](scripts/judge_cases.py)). It answers closed questions with probabilities and
-writes no text. Each question restates a rule of the original extraction rules. 693 questions on the 236
-cases cost 0.042 USD (price checked on OpenRouter's model list: 0.042 USD per million input tokens, output
-free; the ledger adds up the cost each response reports). Every call is cached and traced.
+writes no text. Each question restates a rule of the original extraction rules. On the current cases
+there are 718 such questions; every decision-model call in this project so far, including the PDF choice
+and the experiments, cost 0.18 USD in total (price checked on OpenRouter's model list: 0.042 USD per million
+input tokens, output free; a local ledger adds up the cost each response reports). Every call is cached and
+traced.
 
-The answers were measured before any threshold was chosen. Two labelling agents answered the same
-questions on a stratified sample of 147, in a separate git worktree that held only the questions and texts:
+The answers were measured before any threshold was chosen. Two labelling agents answered the questions of
+a stratified sample of 147 (one the buyer and area questions, the other the percentage and sum questions),
+in a separate git worktree that held only the questions and texts:
 the model's answers were never committed, so they were not there, and
 [`scripts/audit_agent_reads.py`](scripts/audit_agent_reads.py) checked each labeller's tool calls for a read
 outside that folder or of the answers (none; both wrote helper files to `/tmp`, which the audit lists).
 
 | Question | Blind labels | Same verdict at P < 0.5 | Wrong evidence caught | Right evidence rejected |
 |---|---|---|---|---|
-| Buyer, seller or no deal | 40 | 36 | 23 of 25 | 2 of 15 |
+| Buyer, seller or no deal | 40 | 34 | 22 of 25 | 3 of 15 |
 | Area of this project or a total | 26 | 25 | 14 of 15 | 0 of 11 |
-| Percentage is the deal's interest or royalty | 40 | 34 | 18 of 22 | 2 of 18 |
-| Sum, all amounts at once | 41 | 30 | 14 of 14 | 11 of 27 |
-| Sum, one question per amount | 41 | 38 | 14 of 14 | 3 of 27 |
+| Percentage is the deal's interest or royalty | 38 | 32 | 16 of 20 | 2 of 18 |
+| Sum, all amounts at once | 39 | 30 | 14 of 14 | 9 of 25 |
+| Sum, one question per amount | 39 | 36 | 14 of 14 | 3 of 25 |
+
+These are recomputed on the current cases (`python scripts/judge_cases.py calibrate`). Since the labels
+were made, some deals moved to a different set of PDFs; 6 labels no longer match a question and are left
+out. Measured on the cases as they were labelled, the agreement was 36, 25, 34, 30 and 38.
 
 Asking about all amounts of a sum at once rejected too many right sums; one question per amount, with the
 sum right only if every amount is, fixed that, so the scorer uses that form. With these judgments
@@ -373,10 +389,10 @@ counts: the earlier word rule (a word such as project or licence next to the tot
 This was reviewed by a split critic: its own Claude Code session in its own git worktree
 ([`.claude/agents/split-critic.md`](.claude/agents/split-critic.md)), which read only what the decision model
 had triaged ([`scripts/triage_splits.py`](scripts/triage_splits.py): the 10 split candidates in the data)
-plus five controls, used the decision model itself (140 calls, 0.006 USD) and committed failing tests:
+plus four controls, used the decision model itself (140 calls, 0.006 USD) and committed failing tests:
 
-- The word rule accepted 9 of the 10 candidates, and 5 of those are not shared (Kat Gap's single A$7,000,000
-  sale passed because "licence" stands next to the total). It was switched off.
+- The word rule accepted 9 of the 10 candidates, and 5 of those are not shared; it also accepted one of the
+  controls, Kat Gap's single A$7,000,000 sale, because "licence" stands next to the total. It was switched off.
 - Cash candidates ignored the cash exclusions ("$1,000,000 of exploration commitments"); only the first
   number of projects with a written total was proposed; one failing judge call stopped the whole record.
   All fixed, each with the critic's test.
@@ -390,7 +406,7 @@ not available on the trial account.
 
 The largest effect is on the buyer: the model reads the analyst's buyer as the buyer in 156 of the 236
 chosen PDFs (in 157 when the PDF was still chosen by counting, so the choice of PDF is not the cause). In the others the PDF is often a tenement grant notice with no deal in it, or the company named
-as buyer is selling or farming out the project. That points at the ground truth, not at the extractor, and
+as buyer is selling or farming out the project. That points at the analyst's table, not at the extractor, and
 is a question for the analyst: whether the owner column holds the buyer, as its field definition says, or
 the project's holder on the listing site. Not checked yet.
 
@@ -459,7 +475,7 @@ flowchart TD
     class T1,F code
 ```
 
-[`scripts/check_cells.py`](scripts/check_cells.py) ran tiers 1 and 2 on all 236 cases (16 Nov 2026):
+[`scripts/check_cells.py`](scripts/check_cells.py) ran tiers 1 and 2 on the 231 cases that have an announcing PDF (5 of the 236 have none; 16 Nov 2026):
 1,180 cells in 92 seconds, for 0.05 USD of decision-model calls
 ([`evals/cell_checks.jsonl`](evals/cell_checks.jsonl)). Rerun after the choice of each deal's PDFs below:
 
@@ -488,7 +504,7 @@ left out):
 So "contradicted" is a good error flag (the analyst was wrong in 9 of the 11 decidable cases), but the
 decision model's proposed value was right in only 9 of 17: it proposed a signing tranche instead of the
 total, or a company's total shares on issue instead of the consideration shares. That is why the fix comes
-from tier 3, not tier 2. The other 80 cases have not been through tier 3 yet.
+from tier 3, not tier 2. The other 78 cases have not been through tier 3 yet.
 
 ### Which PDF announces the deal
 
@@ -514,7 +530,8 @@ flowchart LR
     class C code
 ```
 
-Measured on the 66 cases the labellers read (58 disagreements and 8 agreements as controls):
+Measured on the 66 cases the labellers read, every case where the model (asked with a "none of these"
+option) and the count rule disagreed:
 
 | Method | Right |
 |---|---|
@@ -523,8 +540,9 @@ Measured on the 66 cases the labellers read (58 disagreements and 8 agreements a
 | Decision model, without that option | **41 of 66** (5 deals have no announcing PDF, so 61 is the most possible) |
 | Decision model, 3,000 characters of each PDF instead of 1,500 | 40 of 66 |
 
-The model is better than counting at every level of its own confidence, but not reliable enough alone (41
-of 61), which is why the disagreements go to tier 3. The PDF changed for 41 cases
+The form without "none" was chosen after seeing these labels, so its 41 is an optimistic figure, not a
+held-out one. Either way the model is not reliable enough alone (at best 41 of 61), and its confidence does
+not sort its right answers from its wrong ones well, which is why every disagreement goes to tier 3. The PDF changed for 41 cases
 ([`evals/pdf_choice.jsonl`](evals/pdf_choice.jsonl), labels in [`evals/pdf_labels.jsonl`](evals/pdf_labels.jsonl)).
 The labellers' instructions are in [`.claude/agents/pdf-labeller.md`](.claude/agents/pdf-labeller.md); their
 worktrees were made from a commit without either method's picks, and the audit of their tool calls found no
@@ -619,7 +637,7 @@ Estimate from the documents on disk (`python scripts/estimate_cost.py`), not a m
 | Screening comparison, `AI_FILTER`, 43 documents | 0.15 |
 | Extraction, `AI_COMPLETE` claude-sonnet-5, 33 cases, one pass | 0.83 |
 | Extraction, `AI_EXTRACT`, 33 cases, one pass | 1.73 |
-| **One full pass** | **3.86** |
+| **One full pass** (computed unrounded, so the rows add to 3.87) | **3.86** |
 | Warehouse, extra small, per hour running | 2.60 |
 
 Agent runs and repeated passes come on top. Measured spend will replace this table.
@@ -665,7 +683,11 @@ Tested, offline, in CI (285 tests, no account or network needed):
 - Building each Cortex statement and reading each documented reply shape.
 - The Snowpark steps end to end against a stand-in session that records every statement and its parameters.
 - The spending guard, the generated DDL, the agent answer check and the eval scorer.
-- Locally only (it needs the original pipeline's cache): the scorer reproduces the published baseline.
+- Locally only (it needs the original pipeline's cache): the scorer, run on the original pipeline's saved
+  replies, gives the numbers in the code-only column of [Evals](#evals) (116 of 129 on the first attempt).
+  The original repository published 122 of 126 with the earlier, looser rules.
+
+Three tests need private data (the PDF texts or that cache) and skip without it, as they do in CI.
 
 Run on a Snowflake trial account (Standard edition, AWS EU Frankfurt) on 16 November 2026:
 
@@ -685,7 +707,7 @@ Run on a Snowflake trial account (Standard edition, AWS EU Frankfurt) on 16 Nove
   and the stage stream reports the uploaded files.
 - **The semantic view** is created and answers a `SEMANTIC_VIEW(...)` query with metrics by dimension.
   **The agent object** `DEAL_ANALYST` is created from its specification, with the semantic view and the
-  four index functions as its tools.
+  six index functions as its tools (read back with `DESCRIBE AGENT`).
 - **The hierarchical index**: `BUILD_OUTLINES` runs inside Snowflake and writes 223 sections for 33
   documents; `FIND_DEALS`, `DOCUMENT_OUTLINE`, `FIND_IN_DOCUMENT` and `READ_SECTION` were called in that
   order for a real deal and returned the matching deal, its outline, the section naming the royalty, and
@@ -740,7 +762,7 @@ python scripts/run_pipeline.py export --extractor claude-sonnet-5
 | [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` was changed after two rounds of critic review, each change marked in the code: a faster sum check with the same answers; units (6 metres is not 6 million; billion added); trailing zeros; physical quantities are no amounts; one kind of amount per sum; a narrower split rule; context words for percentages and metres; cash that is an exploration amount or placement does not count; NaN is no number; the shares value is checked like cash and the shares value stated in the news is checked; a total shared between projects counts only when a judge accepts it. On the original 33 cases it scores 116 of 129 by code alone and 123 of 129 with the split judge, against the published 122 of 126 (see Evals) |
 | [`motherlode/judge.py`](motherlode/judge.py) | Closed questions to a decision model (TypeSafe's Jev on OpenRouter's Decisions API), cached, cost-capped and traced |
 | [`motherlode/telemetry.py`](motherlode/telemetry.py), [`scripts/traces.py`](scripts/traces.py) | OpenTelemetry spans and logs for every step; a query tool for the trace files |
-| [`evals/score_pdf.py`](evals/score_pdf.py), [`scripts/build_pdf_cases.py`](scripts/build_pdf_cases.py) | The 236-case ground truth and its scorer, every field with one rule |
+| [`evals/score_pdf.py`](evals/score_pdf.py), [`scripts/build_pdf_cases.py`](scripts/build_pdf_cases.py) | The 236-case evaluation set and its scorer, every field with one rule |
 | [`scripts/check_cells.py`](scripts/check_cells.py), [`scripts/escalate_cells.py`](scripts/escalate_cells.py) | The three-tier cell check and its tier 3 hand-off |
 | [`.claude/agents/`](.claude/agents/) | The critics', labellers' and cell reviewer's instructions |
 | [`streamlit_app/`](streamlit_app/), [`scripts/load_review_data.py`](scripts/load_review_data.py), [`sql/06_review_app.sql`](sql/06_review_app.sql) | The review app in Streamlit in Snowflake, its data load and its schema |
@@ -749,7 +771,7 @@ python scripts/run_pipeline.py export --extractor claude-sonnet-5
 | [`motherlode/pipeline.py`](motherlode/pipeline.py) | The Snowpark steps and the stored procedure's handler |
 | [`motherlode/cost.py`](motherlode/cost.py) | Published rates, estimates and the spending guard |
 | [`motherlode/fields.py`](motherlode/fields.py), [`ddl.py`](motherlode/ddl.py) | The field list and what is generated from it |
-| [`sql/`](sql/) | Guardrails, objects, the deal table, the procedure and task, search, semantic view and agent, teardown |
+| [`sql/`](sql/) | Guardrails, objects, the deal table, the procedure and task, the hierarchical index, semantic view and agent, the review app, teardown |
 | [`scripts/`](scripts/) | Fetch documents, estimate cost, smoke test, run the pipeline, spend report, agent client |
 | [`evals/`](evals/) | Cases, the scorer and the agent question set |
 | [`tests/`](tests/) | Offline tests |
