@@ -48,7 +48,7 @@ and Claude Code sessions. Their results are loaded into Snowflake and reviewed i
   outputs and evidence of each step, to local files and to a Jaeger viewer when it is configured.
 - **Errors found in the hand-made table**: share prices rounded to two decimals, rows where
   the named buyer is the seller, a price that cannot belong to the named company.
-- 288 offline tests, CI on every pull request: 281 run in CI, and 7 that need the private data skip there.
+- 290 offline tests, CI on every pull request: 282 run in CI, and 8 that need the private data skip there.
 
 ## Architecture
 
@@ -506,6 +506,19 @@ decision model's proposed value was right in only 9 of 17: it proposed a signing
 total, or a company's total shares on issue instead of the consideration shares. That is why the fix comes
 from tier 3, not tier 2. The other 78 cases have not been through tier 3 yet.
 
+Seven of those cells as examples ([`evals/sample_rows.jsonl`](evals/sample_rows.jsonl), copied from the
+results by [`scripts/sample_rows.py`](scripts/sample_rows.py)):
+
+| Deal | Value | Analyst | Tier 2 verdict | Tier 2 proposal | Tier 3, reading every PDF |
+|---|---|---|---|---|---|
+| Elizabeth Hill | Exploration commitment | 700,000 | contradicted | 1,000,000 | 1,000,000: analyst wrong, proposal right |
+| Eagle Downs | Cash payments | 20,100,000 | contradicted | 30,000,000 | 30,000,000: analyst wrong, proposal right |
+| Lakewood Mill | Share price | 0.82 | contradicted | 0.76 | 0.76: analyst wrong, proposal right |
+| Katanning | Cash payments | 10,760,000 | contradicted | 3,120,000 | 10,760,000: analyst right; the proposal was one tranche |
+| Fiery Creek | Shares issued | 26,500,000 | unsure | 223,391,506 | 26,500,000: analyst right; the proposal was the company's total shares on issue |
+| Achilles | Shares value | 301,500 | contradicted | 250,000 | 450,000: analyst and proposal both wrong |
+| Sandover Additional Claims | Cash payments | 720,250 | unsure | 1,075,000 | 1,075,000: analyst wrong, proposal right |
+
 ### Which PDF announces the deal
 
 A project folder often holds several PDFs: the agreement, a completion notice weeks later, a quarterly
@@ -686,7 +699,7 @@ needs a km² or ha unit after the number.
 
 ## Status
 
-Tested, offline, in CI (288 tests, no account or network needed; 281 run in CI and 7 skip there, see below):
+Tested, offline, in CI (290 tests, no account or network needed; 282 run in CI and 8 skip there, see below):
 
 - The validator and schema, with the original pipeline's tests, and one test per finding of the critics
   (`tests/test_critic_*.py`).
@@ -700,8 +713,8 @@ Tested, offline, in CI (288 tests, no account or network needed; 281 run in CI a
   replies, gives the numbers in the code-only column of [Evals](#evals) (116 of 129 on the first attempt).
   The original repository published 122 of 126 with the earlier, looser rules.
 
-Seven tests need private data (the 236 cases, the PDF texts or that cache) and skip without it, as they do
-in CI; all 288 pass on the machine that holds it.
+Eight tests need private data (the 236 cases, the PDF texts or that cache) and skip without it, as they do
+in CI; all 290 pass on the machine that holds it.
 
 Run on a Snowflake trial account (Standard edition, AWS EU Frankfurt) on 16 November 2026:
 
@@ -754,7 +767,7 @@ pipeline does that outside Snowflake).
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 288 tests, offline (7 skip without the private data)
+pytest                               # 290 tests, offline (8 skip without the private data)
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```
