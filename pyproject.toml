@@ -13,7 +13,7 @@ dependencies = [
 # Needed only to talk to a Snowflake account. The tests do not need it.
 snowflake = ["snowflake-snowpark-python>=1.18", "snowflake-cli>=3.24"]
 # Needed only to download the source documents.
-fetch = ["requests>=2.32", "trafilatura>=2.3"]
+fetch = ["requests>=2.32", "trafilatura>=2.3", "pypdf>=7"]
 dev = ["pytest>=9", "ruff>=0.17"]
 
 [tool.setuptools.packages.find]

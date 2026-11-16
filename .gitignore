@@ -15,6 +15,9 @@ rsa_key*
 
 # Source documents and model replies: downloaded or produced locally, not redistributed
 data/documents/
+data/source_pdfs/
+# Rows exported from the client's database: never committed
+data/client/
 data/replies/
 evals/.cache/
 

@@ -122,7 +122,8 @@ def test_build_outlines_rewrites_the_section_table_without_any_model_call():
 
     session = Documents([])
     assert pipeline.build_outlines(session) == "2 documents, 2 sections"
-    rows = session.written("RAW.DOCUMENT_SECTIONS")
+    (batch,) = session.written("RAW.DOCUMENT_SECTIONS")          # both sections go in one statement
+    rows = [batch[i:i + 6] for i in range(0, len(batch), 6)]
     assert [(r[0], r[1], r[2]) for r in rows] == [("7", 1, "Terms of the Option"), ("7", 2, "About Acme Gold")]
     assert rows[0][3].startswith("The Company will pay $250,000") and rows[0][5] == len(rows[0][4])
     statements = [statement for statement, _ in session.calls]

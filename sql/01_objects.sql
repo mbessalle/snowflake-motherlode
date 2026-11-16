@@ -31,9 +31,14 @@ CREATE TABLE IF NOT EXISTS MOTHERLODE.RAW.DOCUMENTS (
     TITLE       VARCHAR,
     COMPANY     VARCHAR,
     SOURCE_URL  VARCHAR,
-    OBTAINED    VARCHAR COMMENT 'downloaded (the page as published) or saved_text (text kept by the original pipeline).',
+    OBTAINED    VARCHAR COMMENT 'downloaded (the page as published), saved_text (text kept by the original pipeline) or source_pdf.',
     LOADED_AT   TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
+-- Added for the source PDFs: the project a document belongs to, and what the text-layer check found.
+ALTER TABLE MOTHERLODE.RAW.DOCUMENTS ADD COLUMN IF NOT EXISTS PROJECT VARCHAR COMMENT 'Project folder the document came from.';
+ALTER TABLE MOTHERLODE.RAW.DOCUMENTS ADD COLUMN IF NOT EXISTS KIND VARCHAR COMMENT 'digital, mixed or scanned: whether the pages carry a text layer (scripts/inventory_pdfs.py).';
+ALTER TABLE MOTHERLODE.RAW.DOCUMENTS ADD COLUMN IF NOT EXISTS PAGES NUMBER;
+ALTER TABLE MOTHERLODE.RAW.DOCUMENTS ADD COLUMN IF NOT EXISTS PAGES_WITHOUT_TEXT NUMBER COMMENT 'Pages that are images only and need OCR.';
 
 CREATE TABLE IF NOT EXISTS MOTHERLODE.RAW.DOCUMENT_TEXT (
     DOC_ID      VARCHAR NOT NULL PRIMARY KEY,

@@ -20,6 +20,7 @@ from .process import NO_DATA, Result, process
 
 STAGE = "@MOTHERLODE.RAW.ANNOUNCEMENTS"
 AI_EXTRACT = "AI_EXTRACT"
+SECTION_BATCH = 50
 
 
 def _value(session, statement: str, params: list):
@@ -199,11 +200,11 @@ def build_outlines(session) -> str:
 
     documents = session.sql("SELECT DOC_ID, TEXT FROM MOTHERLODE.RAW.DOCUMENT_TEXT ORDER BY DOC_ID").collect()
     _run(session, "DELETE FROM MOTHERLODE.RAW.DOCUMENT_SECTIONS")
-    total = 0
-    for doc_id, text in documents:
-        for part in sections(text or ""):
-            _run(session, "INSERT INTO MOTHERLODE.RAW.DOCUMENT_SECTIONS "
-                          "(DOC_ID, SECTION_NO, HEADING, FIRST_SENTENCE, TEXT, CHARS) VALUES (?, ?, ?, ?, ?, ?)",
-                 [doc_id, part.number, part.heading, part.first_sentence, part.text, len(part.text)])
-            total += 1
-    return f"{len(documents)} documents, {total} sections"
+    rows = [[doc_id, part.number, part.heading, part.first_sentence, part.text, len(part.text)]
+            for doc_id, text in documents for part in sections(text or "")]
+    for start in range(0, len(rows), SECTION_BATCH):      # many rows per statement: thousands of sections
+        batch = rows[start:start + SECTION_BATCH]
+        _run(session, "INSERT INTO MOTHERLODE.RAW.DOCUMENT_SECTIONS (DOC_ID, SECTION_NO, HEADING, FIRST_SENTENCE, TEXT, CHARS) "
+                      "VALUES " + ", ".join(["(?, ?, ?, ?, ?, ?)"] * len(batch)),
+             [value for row in batch for value in row])
+    return f"{len(documents)} documents, {len(rows)} sections"

@@ -91,6 +91,25 @@ def test_headlines_are_parsed_flagged_and_merged_without_duplicates():
     assert [r["id"] for r in merged] == [101, 102] and collect.merge(merged, rows) == merged
 
 
+def test_a_pdf_is_digital_scanned_or_mixed_by_the_text_on_its_pages():
+    inventory = load("inventory_pdfs")
+    assert inventory.classify([1800, 2400, 950]) == "digital"
+    assert inventory.classify([0, 12, 0]) == "scanned"                  # a few stray characters are not a text layer
+    assert inventory.classify([1500, 0, 0]) == "mixed"                  # a typed cover page on a scan
+    assert inventory.classify([]) == "unreadable"
+    assert inventory.classify([inventory.MIN_CHARS_PER_PAGE]) == "digital"
+
+
+def test_identical_files_are_marked_as_copies_of_the_first_one():
+    inventory = load("inventory_pdfs")
+    entries = [{"project": "yalgoo", "file": "yalgoo_451.pdf", "sha256_16": "aa"},
+               {"project": "yalgoo", "file": "yalgoo_452.pdf", "sha256_16": "aa"},
+               {"project": "wudinna", "file": "wudinna_9.pdf", "sha256_16": "bb"}]
+    inventory.mark_duplicates(entries)
+    assert "duplicate_of" not in entries[0] and "duplicate_of" not in entries[2]
+    assert entries[1]["duplicate_of"] == "yalgoo/yalgoo_451.pdf"
+
+
 def test_manifest_lists_every_screening_case_and_holds_no_text():
     manifest = [json.loads(line) for line in (ROOT / "data" / "manifest.jsonl").read_text().splitlines() if line.strip()]
     cases = [json.loads(line) for line in (ROOT / "evals" / "screening_cases.jsonl").read_text().splitlines() if line.strip()]

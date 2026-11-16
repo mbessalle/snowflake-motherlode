@@ -1,0 +1,464 @@
+{"project": "achilles", "file": "achilles_1.pdf", "bytes": 919453, "sha256_16": "80472e9feae8ad76", "pages": 20, "chars": 56160, "kind": "digital", "pages_without_text": 0}
+{"project": "adelong", "file": "adelong_2.pdf", "bytes": 466088, "sha256_16": "18c665a68b69e878", "pages": 4, "chars": 8060, "kind": "digital", "pages_without_text": 0}
+{"project": "adelong", "file": "adelong_3.pdf", "bytes": 510644, "sha256_16": "53098fa4112fafe8", "pages": 6, "chars": 10503, "kind": "mixed", "pages_without_text": 2}
+{"project": "adelong", "file": "adelong_4.pdf", "bytes": 510644, "sha256_16": "53098fa4112fafe8", "pages": 6, "chars": 10503, "kind": "mixed", "pages_without_text": 2, "duplicate_of": "adelong/adelong_3.pdf"}
+{"project": "adelong", "file": "adelong_5.pdf", "bytes": 161472, "sha256_16": "2c836c2fc690142c", "pages": 1, "chars": 2651, "kind": "digital", "pages_without_text": 0}
+{"project": "adelong", "file": "adelong_6.pdf", "bytes": 238589, "sha256_16": "d1e3c03ed2642953", "pages": 3, "chars": 6484, "kind": "digital", "pages_without_text": 0}
+{"project": "alinya", "file": "alinya_7.pdf", "bytes": 2239625, "sha256_16": "e22b179e312a162f", "pages": 15, "chars": 18617, "kind": "digital", "pages_without_text": 0}
+{"project": "allaru", "file": "allaru_10.pdf", "bytes": 134444, "sha256_16": "7ac74a29635ba8db", "pages": 1, "chars": 2072, "kind": "digital", "pages_without_text": 0}
+{"project": "allaru", "file": "allaru_11.pdf", "bytes": 1923065, "sha256_16": "7458672b0b58e41a", "pages": 35, "chars": 110091, "kind": "digital", "pages_without_text": 0}
+{"project": "allaru", "file": "allaru_12.pdf", "bytes": 813764, "sha256_16": "74dc1093ca6d191e", "pages": 22, "chars": 74994, "kind": "digital", "pages_without_text": 0}
+{"project": "allaru", "file": "allaru_8.pdf", "bytes": 108023, "sha256_16": "d830d2379c89eeb7", "pages": 1, "chars": 1195, "kind": "digital", "pages_without_text": 0}
+{"project": "allaru", "file": "allaru_9.pdf", "bytes": 128419, "sha256_16": "bba2dff9d0c99550", "pages": 1, "chars": 1140, "kind": "digital", "pages_without_text": 0}
+{"project": "amoco", "file": "amoco_13.pdf", "bytes": 2425860, "sha256_16": "6dea7472d123f6e9", "pages": 29, "chars": 82579, "kind": "digital", "pages_without_text": 0}
+{"project": "andover_south", "file": "andover_south_14.pdf", "bytes": 905134, "sha256_16": "1c8d3737339252c5", "pages": 5, "chars": 8005, "kind": "digital", "pages_without_text": 0}
+{"project": "apollo", "file": "apollo_15.pdf", "bytes": 187560, "sha256_16": "5d8270ae390d6606", "pages": 2, "chars": 4872, "kind": "digital", "pages_without_text": 0}
+{"project": "apollo", "file": "apollo_16.pdf", "bytes": 985299, "sha256_16": "9c635f8cd3a7b2d6", "pages": 16, "chars": 30220, "kind": "digital", "pages_without_text": 0}
+{"project": "apollo", "file": "apollo_17.pdf", "bytes": 398289, "sha256_16": "e5f315025c4dff3c", "pages": 6, "chars": 12751, "kind": "digital", "pages_without_text": 0}
+{"project": "ashford", "file": "ashford_18.pdf", "bytes": 197055, "sha256_16": "640bfd0ded85cbef", "pages": 1, "chars": 762, "kind": "digital", "pages_without_text": 0}
+{"project": "ashford", "file": "ashford_19.pdf", "bytes": 389761, "sha256_16": "66fd8c3636ccd1f0", "pages": 2, "chars": 2095, "kind": "digital", "pages_without_text": 0}
+{"project": "avon_plains", "file": "avon_plains_20.pdf", "bytes": 2018426, "sha256_16": "1d032439d962ca2d", "pages": 25, "chars": 44991, "kind": "mixed", "pages_without_text": 1}
+{"project": "ballarat_west", "file": "ballarat_west_21.pdf", "bytes": 1049554, "sha256_16": "d00d2b6235beffde", "pages": 2, "chars": 8145, "kind": "digital", "pages_without_text": 0}
+{"project": "bamboo_creek", "file": "bamboo_creek_22.pdf", "bytes": 2475223, "sha256_16": "92c8958eea50399b", "pages": 3, "chars": 6363, "kind": "digital", "pages_without_text": 0}
+{"project": "barbwire_terrace", "file": "barbwire_terrace_23.pdf", "bytes": 131805, "sha256_16": "026a26f3b3b71487", "pages": 3, "chars": 4304, "kind": "digital", "pages_without_text": 0}
+{"project": "barlee", "file": "barlee_24.pdf", "bytes": 1603317, "sha256_16": "2fb507fbd9d8345e", "pages": 23, "chars": 44640, "kind": "digital", "pages_without_text": 0}
+{"project": "beaconsfield", "file": "beaconsfield_25.pdf", "bytes": 785001, "sha256_16": "1d2e9ae9a326cd3a", "pages": 7, "chars": 13265, "kind": "digital", "pages_without_text": 0}
+{"project": "beaconsfield", "file": "beaconsfield_26.pdf", "bytes": 750725, "sha256_16": "98006cb582b9910f", "pages": 6, "chars": 10390, "kind": "digital", "pages_without_text": 0}
+{"project": "beebynganna_hills", "file": "beebynganna_hills_27.pdf", "bytes": 1176755, "sha256_16": "f5cde4d2fd795229", "pages": 17, "chars": 37012, "kind": "digital", "pages_without_text": 0}
+{"project": "beebynganna_hills", "file": "beebynganna_hills_28.pdf", "bytes": 1176755, "sha256_16": "f5cde4d2fd795229", "pages": 17, "chars": 37012, "kind": "digital", "pages_without_text": 0, "duplicate_of": "beebynganna_hills/beebynganna_hills_27.pdf"}
+{"project": "belara", "file": "belara_29.pdf", "bytes": 1086200, "sha256_16": "be15641b3b610c7a", "pages": 21, "chars": 63726, "kind": "digital", "pages_without_text": 0}
+{"project": "bencubbin", "file": "bencubbin_30.pdf", "bytes": 2464356, "sha256_16": "557cdde2feae1e08", "pages": 49, "chars": 162850, "kind": "digital", "pages_without_text": 0}
+{"project": "big_hill", "file": "big_hill_31.pdf", "bytes": 1333427, "sha256_16": "fdc94dfcca8ba566", "pages": 4, "chars": 11834, "kind": "digital", "pages_without_text": 0}
+{"project": "bindi", "file": "bindi_32.pdf", "bytes": 2666840, "sha256_16": "f4fc2476f8c10d94", "pages": 18, "chars": 28670, "kind": "mixed", "pages_without_text": 1}
+{"project": "bingara", "file": "bingara_33.pdf", "bytes": 4762846, "sha256_16": "1c905e6d136132fd", "pages": 57, "chars": 103752, "kind": "digital", "pages_without_text": 0}
+{"project": "bingara", "file": "bingara_34.pdf", "bytes": 2090194, "sha256_16": "2896ec2d06199fe9", "pages": 62, "chars": 128807, "kind": "digital", "pages_without_text": 0}
+{"project": "blue_bore", "file": "blue_bore_35.pdf", "bytes": 1152685, "sha256_16": "b8c57c1f38a85f3b", "pages": 13, "chars": 35338, "kind": "digital", "pages_without_text": 0}
+{"project": "bogong", "file": "bogong_36.pdf", "bytes": 714803, "sha256_16": "2b38acd0d2be8da9", "pages": 5, "chars": 10357, "kind": "digital", "pages_without_text": 0}
+{"project": "bonnie_vale", "file": "bonnie_vale_37.pdf", "bytes": 5404245, "sha256_16": "60778582d4e595eb", "pages": 129, "chars": 174753, "kind": "digital", "pages_without_text": 0}
+{"project": "briggs", "file": "briggs_38.pdf", "bytes": 3103484, "sha256_16": "8f8c44b36891da30", "pages": 6, "chars": 9409, "kind": "digital", "pages_without_text": 0}
+{"project": "broken_hill_east", "file": "broken_hill_east_39.pdf", "bytes": 1979356, "sha256_16": "b3c1e68246c3bcaf", "pages": 10, "chars": 26276, "kind": "digital", "pages_without_text": 0}
+{"project": "broken_hill_east", "file": "broken_hill_east_40.pdf", "bytes": 1979356, "sha256_16": "b3c1e68246c3bcaf", "pages": 10, "chars": 26276, "kind": "digital", "pages_without_text": 0, "duplicate_of": "broken_hill_east/broken_hill_east_39.pdf"}
+{"project": "broken_hill_east", "file": "broken_hill_east_41.pdf", "bytes": 906195, "sha256_16": "0ea26fa33ca85bef", "pages": 2, "chars": 4893, "kind": "digital", "pages_without_text": 0}
+{"project": "broken_hill_east", "file": "broken_hill_east_42.pdf", "bytes": 906195, "sha256_16": "0ea26fa33ca85bef", "pages": 2, "chars": 4893, "kind": "digital", "pages_without_text": 0, "duplicate_of": "broken_hill_east/broken_hill_east_41.pdf"}
+{"project": "bukkulla", "file": "bukkulla_43.pdf", "bytes": 678533, "sha256_16": "7e8b629d5e2ce7ec", "pages": 17, "chars": 29508, "kind": "digital", "pages_without_text": 0}
+{"project": "bullabulling", "file": "bullabulling_44.pdf", "bytes": 399127, "sha256_16": "4962b8e7be88b1bc", "pages": 3, "chars": 5656, "kind": "digital", "pages_without_text": 0}
+{"project": "bullabulling", "file": "bullabulling_45.pdf", "bytes": 4442500, "sha256_16": "da8e0306783e7aa5", "pages": 19, "chars": 18879, "kind": "mixed", "pages_without_text": 3}
+{"project": "bullabulling", "file": "bullabulling_46.pdf", "bytes": 156937, "sha256_16": "6f757147e91dd7db", "pages": 1, "chars": 1351, "kind": "digital", "pages_without_text": 0}
+{"project": "bullabulling", "file": "bullabulling_47.pdf", "bytes": 1932053, "sha256_16": "d72a1c50ca5e8172", "pages": 33, "chars": 86145, "kind": "mixed", "pages_without_text": 1}
+{"project": "bullfinch", "file": "bullfinch_48.pdf", "bytes": 1562402, "sha256_16": "3e797436733fc52e", "pages": 5, "chars": 11761, "kind": "digital", "pages_without_text": 0}
+{"project": "butchers_creek", "file": "butchers_creek_49.pdf", "bytes": 85302, "sha256_16": "dac32f1b78e3e294", "pages": 2, "chars": 3526, "kind": "digital", "pages_without_text": 0}
+{"project": "butchers_creek", "file": "butchers_creek_50.pdf", "bytes": 135546, "sha256_16": "772a9b442f967e5d", "pages": 2, "chars": 4433, "kind": "digital", "pages_without_text": 0}
+{"project": "bygoo", "file": "bygoo_51.pdf", "bytes": 1520924, "sha256_16": "6f31f08f2c35d921", "pages": 14, "chars": 34810, "kind": "digital", "pages_without_text": 0}
+{"project": "bygoo", "file": "bygoo_52.pdf", "bytes": 414547, "sha256_16": "172b72d1f765195d", "pages": 1, "chars": 2382, "kind": "digital", "pages_without_text": 0}
+{"project": "bygoo", "file": "bygoo_53.pdf", "bytes": 6237080, "sha256_16": "ce27553303e38618", "pages": 17, "chars": 17412, "kind": "digital", "pages_without_text": 0}
+{"project": "bygoo", "file": "bygoo_54.pdf", "bytes": 1674285, "sha256_16": "37767c584c84b938", "pages": 19, "chars": 41786, "kind": "digital", "pages_without_text": 0}
+{"project": "bynoe", "file": "bynoe_55.pdf", "bytes": 1602656, "sha256_16": "9cfa2341d58880ce", "pages": 5, "chars": 7685, "kind": "digital", "pages_without_text": 0}
+{"project": "bynoe", "file": "bynoe_56.pdf", "bytes": 255383, "sha256_16": "910f50c462601d82", "pages": 2, "chars": 5333, "kind": "digital", "pages_without_text": 0}
+{"project": "bynoe", "file": "bynoe_57.pdf", "bytes": 364344, "sha256_16": "d90321679bae3c29", "pages": 3, "chars": 6099, "kind": "digital", "pages_without_text": 0}
+{"project": "bynoe", "file": "bynoe_58.pdf", "bytes": 364344, "sha256_16": "d90321679bae3c29", "pages": 3, "chars": 6099, "kind": "digital", "pages_without_text": 0, "duplicate_of": "bynoe/bynoe_57.pdf"}
+{"project": "byrock", "file": "byrock_59.pdf", "bytes": 15642810, "sha256_16": "c0d68f1eba06ec05", "pages": 45, "chars": 101998, "kind": "mixed", "pages_without_text": 1}
+{"project": "cane_bore", "file": "cane_bore_60.pdf", "bytes": 2680627, "sha256_16": "a1b84927bd0275b3", "pages": 18, "chars": 37172, "kind": "digital", "pages_without_text": 0}
+{"project": "cane_bore", "file": "cane_bore_61.pdf", "bytes": 1281805, "sha256_16": "e3c63c036f108dae", "pages": 18, "chars": 29116, "kind": "digital", "pages_without_text": 0}
+{"project": "canegrass", "file": "canegrass_62.pdf", "bytes": 440964, "sha256_16": "861df8176ab34650", "pages": 6, "chars": 18571, "kind": "digital", "pages_without_text": 0}
+{"project": "cangai", "file": "cangai_63.pdf", "bytes": 390995, "sha256_16": "0f2ff4023adcbec9", "pages": 2, "chars": 3405, "kind": "digital", "pages_without_text": 0}
+{"project": "cangai", "file": "cangai_64.pdf", "bytes": 390995, "sha256_16": "0f2ff4023adcbec9", "pages": 2, "chars": 3405, "kind": "digital", "pages_without_text": 0, "duplicate_of": "cangai/cangai_63.pdf"}
+{"project": "cangai", "file": "cangai_65.pdf", "bytes": 857140, "sha256_16": "d93698f68a669c5c", "pages": 7, "chars": 12514, "kind": "digital", "pages_without_text": 0}
+{"project": "cangai", "file": "cangai_66.pdf", "bytes": 428909, "sha256_16": "789ceda2ae731a77", "pages": 4, "chars": 7326, "kind": "digital", "pages_without_text": 0}
+{"project": "cangai", "file": "cangai_67.pdf", "bytes": 428909, "sha256_16": "789ceda2ae731a77", "pages": 4, "chars": 7326, "kind": "digital", "pages_without_text": 0, "duplicate_of": "cangai/cangai_66.pdf"}
+{"project": "central_cobar", "file": "central_cobar_68.pdf", "bytes": 1033470, "sha256_16": "99941599cfd5fe39", "pages": 7, "chars": 14344, "kind": "digital", "pages_without_text": 0}
+{"project": "central_cobar", "file": "central_cobar_69.pdf", "bytes": 1033470, "sha256_16": "99941599cfd5fe39", "pages": 7, "chars": 14344, "kind": "digital", "pages_without_text": 0, "duplicate_of": "central_cobar/central_cobar_68.pdf"}
+{"project": "central_cobar", "file": "central_cobar_70.pdf", "bytes": 1035314, "sha256_16": "ce98bbb03c283439", "pages": 6, "chars": 11637, "kind": "digital", "pages_without_text": 0}
+{"project": "central_sandstone", "file": "central_sandstone_71.pdf", "bytes": 1774144, "sha256_16": "37b5fcdc5c89b796", "pages": 6, "chars": 10442, "kind": "digital", "pages_without_text": 0}
+{"project": "challenger_west", "file": "challenger_west_72.pdf", "bytes": 1512865, "sha256_16": "c21b8eabfd14e85e", "pages": 8, "chars": 7431, "kind": "mixed", "pages_without_text": 1}
+{"project": "cloncurry", "file": "cloncurry_73.pdf", "bytes": 937508, "sha256_16": "8f5b88554ea1d5fc", "pages": 4, "chars": 5925, "kind": "digital", "pages_without_text": 0}
+{"project": "coonambula", "file": "coonambula_74.pdf", "bytes": 1592745, "sha256_16": "334d82ea05ad9324", "pages": 14, "chars": 25027, "kind": "mixed", "pages_without_text": 1}
+{"project": "coonambula", "file": "coonambula_75.pdf", "bytes": 1526213, "sha256_16": "f9ce222093fff00a", "pages": 13, "chars": 23373, "kind": "mixed", "pages_without_text": 1}
+{"project": "coonambula", "file": "coonambula_76.pdf", "bytes": 1526213, "sha256_16": "f9ce222093fff00a", "pages": 13, "chars": 23373, "kind": "mixed", "pages_without_text": 1, "duplicate_of": "coonambula/coonambula_75.pdf"}
+{"project": "coonambula", "file": "coonambula_77.pdf", "bytes": 799254, "sha256_16": "c3a1a17a37bf9df5", "pages": 9, "chars": 17469, "kind": "mixed", "pages_without_text": 1}
+{"project": "coonambula", "file": "coonambula_78.pdf", "bytes": 799254, "sha256_16": "c3a1a17a37bf9df5", "pages": 9, "chars": 17469, "kind": "mixed", "pages_without_text": 1, "duplicate_of": "coonambula/coonambula_77.pdf"}
+{"project": "copperhead", "file": "copperhead_79.pdf", "bytes": 1058962, "sha256_16": "e40767e412cc12d6", "pages": 2, "chars": 6638, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_80.pdf", "bytes": 218006, "sha256_16": "d98822e1aa9ad3df", "pages": 2, "chars": 6230, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_81.pdf", "bytes": 595641, "sha256_16": "35af0f4b9a88ffa7", "pages": 4, "chars": 13206, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_82.pdf", "bytes": 1262353, "sha256_16": "f913b06620b8ae3f", "pages": 4, "chars": 14017, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_83.pdf", "bytes": 4015211, "sha256_16": "e3d4045e31bda0de", "pages": 4, "chars": 14208, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_84.pdf", "bytes": 578016, "sha256_16": "1fd06ec6fdbcd5a9", "pages": 4, "chars": 12587, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_85.pdf", "bytes": 1097022, "sha256_16": "c36048559f78e402", "pages": 4, "chars": 12809, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_86.pdf", "bytes": 2146501, "sha256_16": "577ab8cdec1f943b", "pages": 5, "chars": 11182, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_87.pdf", "bytes": 981668, "sha256_16": "fc7245062e32ae90", "pages": 4, "chars": 12444, "kind": "digital", "pages_without_text": 0}
+{"project": "cosmo_newbery", "file": "cosmo_newbery_88.pdf", "bytes": 1076173, "sha256_16": "0c670c5b12891147", "pages": 4, "chars": 13027, "kind": "digital", "pages_without_text": 0}
+{"project": "coyote", "file": "coyote_89.pdf", "bytes": 104107, "sha256_16": "7d58d11d7e440d85", "pages": 1, "chars": 1508, "kind": "digital", "pages_without_text": 0}
+{"project": "crosbie", "file": "crosbie_90.pdf", "bytes": 1989214, "sha256_16": "39c8aac4e22128ff", "pages": 19, "chars": 21966, "kind": "digital", "pages_without_text": 0}
+{"project": "crosbie", "file": "crosbie_91.pdf", "bytes": 2762126, "sha256_16": "dabce287c5b56a36", "pages": 38, "chars": 102039, "kind": "digital", "pages_without_text": 0}
+{"project": "csa", "file": "csa_92.pdf", "bytes": 1609502, "sha256_16": "46f996bb2889e20e", "pages": 2, "chars": 9176, "kind": "digital", "pages_without_text": 0}
+{"project": "csa", "file": "csa_93.pdf", "bytes": 1618661, "sha256_16": "5d064f3149117f6b", "pages": 2, "chars": 7066, "kind": "digital", "pages_without_text": 0}
+{"project": "cue", "file": "cue_94.pdf", "bytes": 125875, "sha256_16": "e402162275ddef91", "pages": 1, "chars": 2665, "kind": "digital", "pages_without_text": 0}
+{"project": "cummins", "file": "cummins_95.pdf", "bytes": 2076740, "sha256_16": "91d6ef30ec50ac54", "pages": 28, "chars": 65472, "kind": "digital", "pages_without_text": 0}
+{"project": "cummins", "file": "cummins_96.pdf", "bytes": 1522477, "sha256_16": "b9c70cbf085641d3", "pages": 18, "chars": 43255, "kind": "digital", "pages_without_text": 0}
+{"project": "curnamona", "file": "curnamona_100.pdf", "bytes": 243325, "sha256_16": "d937bf5cd1283e70", "pages": 4, "chars": 7134, "kind": "digital", "pages_without_text": 0}
+{"project": "curnamona", "file": "curnamona_97.pdf", "bytes": 714816, "sha256_16": "7dcfd93beed7089d", "pages": 5, "chars": 8983, "kind": "digital", "pages_without_text": 0}
+{"project": "curnamona", "file": "curnamona_98.pdf", "bytes": 714816, "sha256_16": "7dcfd93beed7089d", "pages": 5, "chars": 8983, "kind": "digital", "pages_without_text": 0, "duplicate_of": "curnamona/curnamona_97.pdf"}
+{"project": "curnamona", "file": "curnamona_99.pdf", "bytes": 243325, "sha256_16": "d937bf5cd1283e70", "pages": 4, "chars": 7134, "kind": "digital", "pages_without_text": 0, "duplicate_of": "curnamona/curnamona_100.pdf"}
+{"project": "dante", "file": "dante_101.pdf", "bytes": 991708, "sha256_16": "d8c862509fab6ae5", "pages": 6, "chars": 11892, "kind": "digital", "pages_without_text": 0}
+{"project": "deadmans_flat", "file": "deadmans_flat_102.pdf", "bytes": 275239, "sha256_16": "1282e96b64d4abaf", "pages": 2, "chars": 3366, "kind": "digital", "pages_without_text": 0}
+{"project": "deadmans_flat", "file": "deadmans_flat_103.pdf", "bytes": 314014, "sha256_16": "87bacfaf32fc73fa", "pages": 2, "chars": 4351, "kind": "digital", "pages_without_text": 0}
+{"project": "deadmans_flat", "file": "deadmans_flat_104.pdf", "bytes": 314014, "sha256_16": "87bacfaf32fc73fa", "pages": 2, "chars": 4351, "kind": "digital", "pages_without_text": 0, "duplicate_of": "deadmans_flat/deadmans_flat_103.pdf"}
+{"project": "deadmans_flat", "file": "deadmans_flat_105.pdf", "bytes": 805159, "sha256_16": "20db129ea96422d4", "pages": 3, "chars": 6279, "kind": "digital", "pages_without_text": 0}
+{"project": "deadmans_flat", "file": "deadmans_flat_106.pdf", "bytes": 805159, "sha256_16": "20db129ea96422d4", "pages": 3, "chars": 6279, "kind": "digital", "pages_without_text": 0, "duplicate_of": "deadmans_flat/deadmans_flat_105.pdf"}
+{"project": "develin_creek", "file": "develin_creek_107.pdf", "bytes": 734354, "sha256_16": "d1c799cadd70f02f", "pages": 5, "chars": 7895, "kind": "digital", "pages_without_text": 0}
+{"project": "devils_mountain", "file": "devils_mountain_108.pdf", "bytes": 384535, "sha256_16": "518fc046d7033a2d", "pages": 5, "chars": 8584, "kind": "digital", "pages_without_text": 0}
+{"project": "disraeli", "file": "disraeli_109.pdf", "bytes": 112898, "sha256_16": "0a63208b8d08a48b", "pages": 2, "chars": 4504, "kind": "digital", "pages_without_text": 0}
+{"project": "doms_hill", "file": "doms_hill_110.pdf", "bytes": 459829, "sha256_16": "fee51c27294bba83", "pages": 5, "chars": 9282, "kind": "digital", "pages_without_text": 0}
+{"project": "douglas_river", "file": "douglas_river_111.pdf", "bytes": 1884100, "sha256_16": "b54b56181dc95ebd", "pages": 7, "chars": 11923, "kind": "digital", "pages_without_text": 0}
+{"project": "douglas_river", "file": "douglas_river_112.pdf", "bytes": 1497746, "sha256_16": "9369e1ef7dabc9fc", "pages": 6, "chars": 10298, "kind": "digital", "pages_without_text": 0}
+{"project": "drake_east", "file": "drake_east_113.pdf", "bytes": 2309966, "sha256_16": "d2c7ea7cd193386c", "pages": 25, "chars": 54587, "kind": "digital", "pages_without_text": 0}
+{"project": "drake_east", "file": "drake_east_114.pdf", "bytes": 2316982, "sha256_16": "0e6ed7bd870092cd", "pages": 25, "chars": 13520, "kind": "mixed", "pages_without_text": 3}
+{"project": "drake_east", "file": "drake_east_115.pdf", "bytes": 2376735, "sha256_16": "9e07776d4c64fe6c", "pages": 22, "chars": 42353, "kind": "digital", "pages_without_text": 0}
+{"project": "dudley", "file": "dudley_116.pdf", "bytes": 1889207, "sha256_16": "30aedabf889f8aa6", "pages": 18, "chars": 39806, "kind": "digital", "pages_without_text": 0}
+{"project": "dundas", "file": "dundas_117.pdf", "bytes": 204887, "sha256_16": "db541a4012748494", "pages": 2, "chars": 1950, "kind": "digital", "pages_without_text": 0}
+{"project": "e151972", "file": "e151972_118.pdf", "bytes": 833559, "sha256_16": "2bbf35882ea76f4a", "pages": 6, "chars": 9864, "kind": "digital", "pages_without_text": 0}
+{"project": "eagle_downs", "file": "eagle_downs_119.pdf", "bytes": 163202, "sha256_16": "3acc46b00a981ee2", "pages": 1, "chars": 2813, "kind": "digital", "pages_without_text": 0}
+{"project": "earaheedy", "file": "earaheedy_120.pdf", "bytes": 743696, "sha256_16": "7926ce0b64ac9fca", "pages": 11, "chars": 21442, "kind": "digital", "pages_without_text": 0}
+{"project": "eastman", "file": "eastman_121.pdf", "bytes": 927113, "sha256_16": "40fed03c22031f72", "pages": 2, "chars": 2039, "kind": "digital", "pages_without_text": 0}
+{"project": "edjudina", "file": "edjudina_122.pdf", "bytes": 4011569, "sha256_16": "dcf6a50e81e438b9", "pages": 6, "chars": 10415, "kind": "digital", "pages_without_text": 0}
+{"project": "edjudina", "file": "edjudina_123.pdf", "bytes": 4011569, "sha256_16": "dcf6a50e81e438b9", "pages": 6, "chars": 10415, "kind": "digital", "pages_without_text": 0, "duplicate_of": "edjudina/edjudina_122.pdf"}
+{"project": "ela6810", "file": "ela6810_124.pdf", "bytes": 1731560, "sha256_16": "7c0874e62bd23bbe", "pages": 11, "chars": 23676, "kind": "digital", "pages_without_text": 0}
+{"project": "elizabeth_hill", "file": "elizabeth_hill_125.pdf", "bytes": 1477354, "sha256_16": "717a2f161d9f614a", "pages": 23, "chars": 56755, "kind": "digital", "pages_without_text": 0}
+{"project": "elkedra", "file": "elkedra_126.pdf", "bytes": 1035230, "sha256_16": "e9b44d02bf53ceec", "pages": 8, "chars": 13496, "kind": "digital", "pages_without_text": 0}
+{"project": "empress_springs", "file": "empress_springs_127.pdf", "bytes": 135247, "sha256_16": "4214086d841e0b48", "pages": 4, "chars": 6103, "kind": "digital", "pages_without_text": 0}
+{"project": "enmore", "file": "enmore_128.pdf", "bytes": 1970432, "sha256_16": "3951f53224501120", "pages": 18, "chars": 45881, "kind": "digital", "pages_without_text": 0}
+{"project": "enmore", "file": "enmore_129.pdf", "bytes": 1013808, "sha256_16": "a9d9a0cdd2f7bbdf", "pages": 2, "chars": 4368, "kind": "digital", "pages_without_text": 0}
+{"project": "enmore", "file": "enmore_130.pdf", "bytes": 1013808, "sha256_16": "a9d9a0cdd2f7bbdf", "pages": 2, "chars": 4368, "kind": "digital", "pages_without_text": 0, "duplicate_of": "enmore/enmore_129.pdf"}
+{"project": "enmore", "file": "enmore_131.pdf", "bytes": 15773572, "sha256_16": "6e3488ecc7bc746b", "pages": 24, "chars": 32401, "kind": "digital", "pages_without_text": 0}
+{"project": "enmore", "file": "enmore_132.pdf", "bytes": 2140733, "sha256_16": "9b1466eaeb3b796c", "pages": 42, "chars": 106666, "kind": "digital", "pages_without_text": 0}
+{"project": "enmore", "file": "enmore_133.pdf", "bytes": 419751, "sha256_16": "7e5d8a177ed4746e", "pages": 3, "chars": 6582, "kind": "digital", "pages_without_text": 0}
+{"project": "errabiddy", "file": "errabiddy_134.pdf", "bytes": 839001, "sha256_16": "1c30b9502c5171b2", "pages": 7, "chars": 14499, "kind": "digital", "pages_without_text": 0}
+{"project": "errabiddy", "file": "errabiddy_135.pdf", "bytes": 1236210, "sha256_16": "a1da95c71c0ff6d2", "pages": 5, "chars": 8903, "kind": "digital", "pages_without_text": 0}
+{"project": "eureka", "file": "eureka_136.pdf", "bytes": 760894, "sha256_16": "efeed3a73c3ca011", "pages": 5, "chars": 10997, "kind": "digital", "pages_without_text": 0}
+{"project": "evanston", "file": "evanston_137.pdf", "bytes": 441597, "sha256_16": "6615f7382e2e7f73", "pages": 4, "chars": 12977, "kind": "digital", "pages_without_text": 0}
+{"project": "evanston", "file": "evanston_138.pdf", "bytes": 441597, "sha256_16": "6615f7382e2e7f73", "pages": 4, "chars": 12977, "kind": "digital", "pages_without_text": 0, "duplicate_of": "evanston/evanston_137.pdf"}
+{"project": "evanston", "file": "evanston_139.pdf", "bytes": 7564792, "sha256_16": "dc4837b71c23fc04", "pages": 39, "chars": 50003, "kind": "mixed", "pages_without_text": 2}
+{"project": "everton", "file": "everton_140.pdf", "bytes": 1435434, "sha256_16": "3c01ee6b7e94dee2", "pages": 4, "chars": 8112, "kind": "digital", "pages_without_text": 0}
+{"project": "eyre", "file": "eyre_141.pdf", "bytes": 480836, "sha256_16": "4988e18077777e9e", "pages": 2, "chars": 2918, "kind": "digital", "pages_without_text": 0}
+{"project": "fiery_creek", "file": "fiery_creek_142.pdf", "bytes": 354655, "sha256_16": "d9baa1e1236f3a5c", "pages": 4, "chars": 11087, "kind": "digital", "pages_without_text": 0}
+{"project": "forrestania", "file": "forrestania_143.pdf", "bytes": 157836, "sha256_16": "9c9eeffe3608143f", "pages": 1, "chars": 1878, "kind": "digital", "pages_without_text": 0}
+{"project": "forrestania", "file": "forrestania_144.pdf", "bytes": 170606, "sha256_16": "b18250f5903621ad", "pages": 2, "chars": 2557, "kind": "digital", "pages_without_text": 0}
+{"project": "forrestania", "file": "forrestania_145.pdf", "bytes": 341028, "sha256_16": "dce8f3c6f7854ec2", "pages": 2, "chars": 7874, "kind": "digital", "pages_without_text": 0}
+{"project": "forrestania", "file": "forrestania_146.pdf", "bytes": 120653, "sha256_16": "045f442839384106", "pages": 1, "chars": 1425, "kind": "digital", "pages_without_text": 0}
+{"project": "forrestania", "file": "forrestania_147.pdf", "bytes": 142755, "sha256_16": "afb0b0fb282389e0", "pages": 1, "chars": 2178, "kind": "digital", "pages_without_text": 0}
+{"project": "fraser_range", "file": "fraser_range_148.pdf", "bytes": 1458424, "sha256_16": "b9b3fb0690753530", "pages": 12, "chars": 26534, "kind": "digital", "pages_without_text": 0}
+{"project": "fraser_range", "file": "fraser_range_149.pdf", "bytes": 1458424, "sha256_16": "b9b3fb0690753530", "pages": 12, "chars": 26534, "kind": "digital", "pages_without_text": 0, "duplicate_of": "fraser_range/fraser_range_148.pdf"}
+{"project": "geolsec", "file": "geolsec_150.pdf", "bytes": 142987, "sha256_16": "c85455793ed3d540", "pages": 2, "chars": 6008, "kind": "digital", "pages_without_text": 0}
+{"project": "geolsec", "file": "geolsec_151.pdf", "bytes": 142630, "sha256_16": "e631e46774794c3d", "pages": 2, "chars": 6393, "kind": "digital", "pages_without_text": 0}
+{"project": "geolsec", "file": "geolsec_152.pdf", "bytes": 802407, "sha256_16": "e1c3e916d51ce859", "pages": 5, "chars": 13015, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_153.pdf", "bytes": 1253410, "sha256_16": "513783a2d507cd68", "pages": 4, "chars": 12252, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_154.pdf", "bytes": 706888, "sha256_16": "757b1256b982f909", "pages": 4, "chars": 6007, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_155.pdf", "bytes": 1802708, "sha256_16": "24da61f1dc84a810", "pages": 4, "chars": 14661, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_156.pdf", "bytes": 343462, "sha256_16": "41daecbd19203b6e", "pages": 4, "chars": 10797, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_157.pdf", "bytes": 343462, "sha256_16": "41daecbd19203b6e", "pages": 4, "chars": 10797, "kind": "digital", "pages_without_text": 0, "duplicate_of": "glenburgh/glenburgh_156.pdf"}
+{"project": "glenburgh", "file": "glenburgh_158.pdf", "bytes": 770797, "sha256_16": "cbe141c56b588906", "pages": 4, "chars": 13247, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_159.pdf", "bytes": 739311, "sha256_16": "22c904404533d00b", "pages": 6, "chars": 11783, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_160.pdf", "bytes": 1886798, "sha256_16": "e352addbea5385a7", "pages": 10, "chars": 34613, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_161.pdf", "bytes": 4171674, "sha256_16": "cd679c149e6b8955", "pages": 122, "chars": 300136, "kind": "digital", "pages_without_text": 0}
+{"project": "glenburgh", "file": "glenburgh_162.pdf", "bytes": 381925, "sha256_16": "308a0cb65c583c90", "pages": 6, "chars": 16391, "kind": "digital", "pages_without_text": 0}
+{"project": "glenfine", "file": "glenfine_163.pdf", "bytes": 965332, "sha256_16": "51b3d912a0e9a3b1", "pages": 19, "chars": 36714, "kind": "digital", "pages_without_text": 0}
+{"project": "golden_mountain", "file": "golden_mountain_164.pdf", "bytes": 1742142, "sha256_16": "bd0e244a6db9f870", "pages": 2, "chars": 8859, "kind": "digital", "pages_without_text": 0}
+{"project": "golden_range", "file": "golden_range_165.pdf", "bytes": 281404, "sha256_16": "5d6330498c7cb31a", "pages": 1, "chars": 2776, "kind": "digital", "pages_without_text": 0}
+{"project": "goldsworthy_east", "file": "goldsworthy_east_166.pdf", "bytes": 587055, "sha256_16": "625fddc161dbc7df", "pages": 5, "chars": 10536, "kind": "digital", "pages_without_text": 0}
+{"project": "gonneville", "file": "gonneville_167.pdf", "bytes": 1196786, "sha256_16": "079507164fee2d97", "pages": 8, "chars": 15284, "kind": "digital", "pages_without_text": 0}
+{"project": "goodia", "file": "goodia_168.pdf", "bytes": 1021035, "sha256_16": "a1557a110a7a8293", "pages": 8, "chars": 19058, "kind": "mixed", "pages_without_text": 1}
+{"project": "goongarrie", "file": "goongarrie_169.pdf", "bytes": 751431, "sha256_16": "6466a1d82f3edba4", "pages": 5, "chars": 10371, "kind": "digital", "pages_without_text": 0}
+{"project": "goongarrie", "file": "goongarrie_170.pdf", "bytes": 751431, "sha256_16": "6466a1d82f3edba4", "pages": 5, "chars": 10371, "kind": "digital", "pages_without_text": 0, "duplicate_of": "goongarrie/goongarrie_169.pdf"}
+{"project": "goongarrie", "file": "goongarrie_171.pdf", "bytes": 821649, "sha256_16": "eb729c378dbae961", "pages": 6, "chars": 12380, "kind": "digital", "pages_without_text": 0}
+{"project": "goongarrie", "file": "goongarrie_172.pdf", "bytes": 821649, "sha256_16": "eb729c378dbae961", "pages": 6, "chars": 12380, "kind": "digital", "pages_without_text": 0, "duplicate_of": "goongarrie/goongarrie_171.pdf"}
+{"project": "goongarrie", "file": "goongarrie_173.pdf", "bytes": 710267, "sha256_16": "e3ec2d7014e07f3c", "pages": 9, "chars": 20765, "kind": "digital", "pages_without_text": 0}
+{"project": "governor_broome", "file": "governor_broome_174.pdf", "bytes": 93763, "sha256_16": "b74cfc7826e5b9a1", "pages": 2, "chars": 3700, "kind": "digital", "pages_without_text": 0}
+{"project": "greater_duchess", "file": "greater_duchess_175.pdf", "bytes": 5084002, "sha256_16": "f8e2ec9ff6d893cb", "pages": 30, "chars": 26388, "kind": "mixed", "pages_without_text": 4}
+{"project": "greater_duchess", "file": "greater_duchess_176.pdf", "bytes": 2984491, "sha256_16": "a63a594a99d5a526", "pages": 34, "chars": 86831, "kind": "digital", "pages_without_text": 0}
+{"project": "gulf_creek", "file": "gulf_creek_177.pdf", "bytes": 133554, "sha256_16": "fb47548a9fbc1355", "pages": 3, "chars": 7632, "kind": "digital", "pages_without_text": 0}
+{"project": "gulf_creek", "file": "gulf_creek_178.pdf", "bytes": 2677814, "sha256_16": "88739f06a88342de", "pages": 22, "chars": 24668, "kind": "digital", "pages_without_text": 0}
+{"project": "gulf_creek", "file": "gulf_creek_179.pdf", "bytes": 1088439, "sha256_16": "93ac5104741b899f", "pages": 17, "chars": 46179, "kind": "digital", "pages_without_text": 0}
+{"project": "guyer", "file": "guyer_180.pdf", "bytes": 1653808, "sha256_16": "0b93d367b0db9842", "pages": 12, "chars": 28516, "kind": "digital", "pages_without_text": 0}
+{"project": "hakes_find", "file": "hakes_find_181.pdf", "bytes": 801143, "sha256_16": "3b26d194862b9c4e", "pages": 4, "chars": 14074, "kind": "digital", "pages_without_text": 0}
+{"project": "hakes_find", "file": "hakes_find_182.pdf", "bytes": 835140, "sha256_16": "09c39c3e190b3440", "pages": 4, "chars": 8736, "kind": "digital", "pages_without_text": 0}
+{"project": "halls_creek", "file": "halls_creek_183.pdf", "bytes": 352519, "sha256_16": "f49f3f4d84822a53", "pages": 6, "chars": 13117, "kind": "digital", "pages_without_text": 0}
+{"project": "halls_creek", "file": "halls_creek_184.pdf", "bytes": 352519, "sha256_16": "f49f3f4d84822a53", "pages": 6, "chars": 13117, "kind": "digital", "pages_without_text": 0, "duplicate_of": "halls_creek/halls_creek_183.pdf"}
+{"project": "halls_creek", "file": "halls_creek_185.pdf", "bytes": 4797647, "sha256_16": "62760e9b1d433590", "pages": 49, "chars": 149171, "kind": "mixed", "pages_without_text": 3}
+{"project": "halls_creek", "file": "halls_creek_186.pdf", "bytes": 4797647, "sha256_16": "62760e9b1d433590", "pages": 49, "chars": 149171, "kind": "mixed", "pages_without_text": 3, "duplicate_of": "halls_creek/halls_creek_185.pdf"}
+{"project": "harden", "file": "harden_187.pdf", "bytes": 142626, "sha256_16": "b30ff4f81bd7cfb1", "pages": 2, "chars": 4158, "kind": "digital", "pages_without_text": 0}
+{"project": "harris_lake", "file": "harris_lake_188.pdf", "bytes": 445558, "sha256_16": "07396773c0ed26e7", "pages": 4, "chars": 9405, "kind": "digital", "pages_without_text": 0}
+{"project": "harts_range", "file": "harts_range_189.pdf", "bytes": 297451, "sha256_16": "bbbe668ad76019a5", "pages": 2, "chars": 1558, "kind": "digital", "pages_without_text": 0}
+{"project": "harts_range", "file": "harts_range_190.pdf", "bytes": 668104, "sha256_16": "396b617cd036c029", "pages": 7, "chars": 11493, "kind": "digital", "pages_without_text": 0}
+{"project": "harts_range", "file": "harts_range_191.pdf", "bytes": 6894527, "sha256_16": "7f209019546eb9ee", "pages": 32, "chars": 62314, "kind": "mixed", "pages_without_text": 1}
+{"project": "harts_range", "file": "harts_range_192.pdf", "bytes": 6568470, "sha256_16": "e790d1da6b6692c1", "pages": 30, "chars": 59520, "kind": "digital", "pages_without_text": 0}
+{"project": "hatches_creek", "file": "hatches_creek_193.pdf", "bytes": 150834, "sha256_16": "281cb330bd016ba4", "pages": 2, "chars": 3779, "kind": "digital", "pages_without_text": 0}
+{"project": "hatches_creek", "file": "hatches_creek_194.pdf", "bytes": 431607, "sha256_16": "a1783ba670cd2fb8", "pages": 2, "chars": 4501, "kind": "digital", "pages_without_text": 0}
+{"project": "hatches_creek", "file": "hatches_creek_195.pdf", "bytes": 220364, "sha256_16": "fed1119ddfb585a9", "pages": 3, "chars": 6664, "kind": "digital", "pages_without_text": 0}
+{"project": "hatches_creek", "file": "hatches_creek_196.pdf", "bytes": 497699, "sha256_16": "3923343312174545", "pages": 3, "chars": 7724, "kind": "digital", "pages_without_text": 0}
+{"project": "havilah", "file": "havilah_197.pdf", "bytes": 984198, "sha256_16": "8739d1df7e1bd24b", "pages": 7, "chars": 14367, "kind": "digital", "pages_without_text": 0}
+{"project": "heemskirk", "file": "heemskirk_198.pdf", "bytes": 399784, "sha256_16": "eb8226db80737601", "pages": 4, "chars": 7913, "kind": "digital", "pages_without_text": 0}
+{"project": "hendeka", "file": "hendeka_199.pdf", "bytes": 268300, "sha256_16": "fd500eb0727da417", "pages": 2, "chars": 4005, "kind": "digital", "pages_without_text": 0}
+{"project": "hendeka", "file": "hendeka_200.pdf", "bytes": 487877, "sha256_16": "1b7d98f0b3457177", "pages": 3, "chars": 6652, "kind": "digital", "pages_without_text": 0}
+{"project": "henty", "file": "henty_201.pdf", "bytes": 1555575, "sha256_16": "05189fb58888ed2b", "pages": 40, "chars": 129589, "kind": "digital", "pages_without_text": 0}
+{"project": "henty", "file": "henty_202.pdf", "bytes": 248042, "sha256_16": "55c08cde32cba6ba", "pages": 3, "chars": 11321, "kind": "digital", "pages_without_text": 0}
+{"project": "henty", "file": "henty_203.pdf", "bytes": 248042, "sha256_16": "55c08cde32cba6ba", "pages": 3, "chars": 11321, "kind": "digital", "pages_without_text": 0, "duplicate_of": "henty/henty_202.pdf"}
+{"project": "higginsville", "file": "higginsville_204.pdf", "bytes": 266883, "sha256_16": "6a34f3d4ac4c56f9", "pages": 2, "chars": 2937, "kind": "digital", "pages_without_text": 0}
+{"project": "horseshoe_lights", "file": "horseshoe_lights_205.pdf", "bytes": 970233, "sha256_16": "6c7804f12c4de4c8", "pages": 9, "chars": 22525, "kind": "digital", "pages_without_text": 0}
+{"project": "horseshoe_lights", "file": "horseshoe_lights_206.pdf", "bytes": 2724369, "sha256_16": "c11afcb00dc3a474", "pages": 22, "chars": 65292, "kind": "digital", "pages_without_text": 0}
+{"project": "hurricane", "file": "hurricane_207.pdf", "bytes": 2486625, "sha256_16": "4dc7f1926bc65889", "pages": 68, "chars": 170681, "kind": "digital", "pages_without_text": 0}
+{"project": "ida_holmes_junction", "file": "ida_holmes_junction_208.pdf", "bytes": 508140, "sha256_16": "e94753eed61bd958", "pages": 4, "chars": 9688, "kind": "digital", "pages_without_text": 0}
+{"project": "ida_holmes_junction", "file": "ida_holmes_junction_209.pdf", "bytes": 1447728, "sha256_16": "65e8bc776dc0ed1b", "pages": 10, "chars": 15523, "kind": "digital", "pages_without_text": 0}
+{"project": "ilgarari", "file": "ilgarari_210.pdf", "bytes": 4334586, "sha256_16": "a13e5ed53c4318ed", "pages": 23, "chars": 45169, "kind": "digital", "pages_without_text": 0}
+{"project": "irvine", "file": "irvine_211.pdf", "bytes": 253193, "sha256_16": "d38c8ca22e506689", "pages": 4, "chars": 14291, "kind": "digital", "pages_without_text": 0}
+{"project": "jaurdi", "file": "jaurdi_212.pdf", "bytes": 436305, "sha256_16": "528b80d64e21a1f5", "pages": 5, "chars": 9704, "kind": "digital", "pages_without_text": 0}
+{"project": "john_bull", "file": "john_bull_213.pdf", "bytes": 425794, "sha256_16": "e01d6befd20837d6", "pages": 4, "chars": 7930, "kind": "digital", "pages_without_text": 0}
+{"project": "john_bull", "file": "john_bull_214.pdf", "bytes": 425794, "sha256_16": "e01d6befd20837d6", "pages": 4, "chars": 7930, "kind": "digital", "pages_without_text": 0, "duplicate_of": "john_bull/john_bull_213.pdf"}
+{"project": "john_bull", "file": "john_bull_215.pdf", "bytes": 3044456, "sha256_16": "026998df88fcb094", "pages": 33, "chars": 107928, "kind": "digital", "pages_without_text": 0}
+{"project": "john_bull", "file": "john_bull_216.pdf", "bytes": 2813686, "sha256_16": "17c5b089889fa787", "pages": 43, "chars": 116308, "kind": "digital", "pages_without_text": 0}
+{"project": "john_bull", "file": "john_bull_217.pdf", "bytes": 2813686, "sha256_16": "17c5b089889fa787", "pages": 43, "chars": 116308, "kind": "digital", "pages_without_text": 0, "duplicate_of": "john_bull/john_bull_216.pdf"}
+{"project": "jungar_flats", "file": "jungar_flats_218.pdf", "bytes": 11875014, "sha256_16": "db3a0e5f0b9de4a5", "pages": 18, "chars": 14675, "kind": "mixed", "pages_without_text": 2}
+{"project": "jungar_flats", "file": "jungar_flats_219.pdf", "bytes": 4090062, "sha256_16": "995cb08e5d0a37d5", "pages": 31, "chars": 88649, "kind": "mixed", "pages_without_text": 3}
+{"project": "jungar_flats", "file": "jungar_flats_220.pdf", "bytes": 4090062, "sha256_16": "995cb08e5d0a37d5", "pages": 31, "chars": 88649, "kind": "mixed", "pages_without_text": 3, "duplicate_of": "jungar_flats/jungar_flats_219.pdf"}
+{"project": "jungar_flats", "file": "jungar_flats_221.pdf", "bytes": 1459954, "sha256_16": "d0740d9c4269009a", "pages": 10, "chars": 9205, "kind": "mixed", "pages_without_text": 1}
+{"project": "jungar_flats", "file": "jungar_flats_222.pdf", "bytes": 1459954, "sha256_16": "d0740d9c4269009a", "pages": 10, "chars": 9205, "kind": "mixed", "pages_without_text": 1, "duplicate_of": "jungar_flats/jungar_flats_221.pdf"}
+{"project": "jwd", "file": "jwd_223.pdf", "bytes": 428083, "sha256_16": "bb2b6fd023126701", "pages": 2, "chars": 2258, "kind": "digital", "pages_without_text": 0}
+{"project": "kangaroo_hills", "file": "kangaroo_hills_224.pdf", "bytes": 1615818, "sha256_16": "f3396a969ed3f0a6", "pages": 45, "chars": 81220, "kind": "digital", "pages_without_text": 0}
+{"project": "kanowna", "file": "kanowna_225.pdf", "bytes": 1069167, "sha256_16": "49371d3f2bbea65f", "pages": 3, "chars": 2776, "kind": "digital", "pages_without_text": 0}
+{"project": "kanowna_east", "file": "kanowna_east_226.pdf", "bytes": 2452602, "sha256_16": "c513cdbf2bc9dd72", "pages": 17, "chars": 36195, "kind": "digital", "pages_without_text": 0}
+{"project": "kanowna_east", "file": "kanowna_east_227.pdf", "bytes": 1390883, "sha256_16": "8d241eb3d82e89ab", "pages": 15, "chars": 34603, "kind": "digital", "pages_without_text": 0}
+{"project": "kanowna_east", "file": "kanowna_east_228.pdf", "bytes": 1390883, "sha256_16": "8d241eb3d82e89ab", "pages": 15, "chars": 34603, "kind": "digital", "pages_without_text": 0, "duplicate_of": "kanowna_east/kanowna_east_227.pdf"}
+{"project": "karonie", "file": "karonie_229.pdf", "bytes": 809679, "sha256_16": "c88a8a82a637a345", "pages": 4, "chars": 7935, "kind": "digital", "pages_without_text": 0}
+{"project": "kat_gap", "file": "kat_gap_230.pdf", "bytes": 236460, "sha256_16": "b670824ebc1e9569", "pages": 1, "chars": 2552, "kind": "digital", "pages_without_text": 0}
+{"project": "kat_gap", "file": "kat_gap_231.pdf", "bytes": 351045, "sha256_16": "32e98d79083c55cd", "pages": 5, "chars": 12556, "kind": "digital", "pages_without_text": 0}
+{"project": "katanning", "file": "katanning_232.pdf", "bytes": 996452, "sha256_16": "772068963b2f8b1f", "pages": 3, "chars": 5228, "kind": "mixed", "pages_without_text": 1}
+{"project": "katanning", "file": "katanning_233.pdf", "bytes": 1172187, "sha256_16": "93ec09d561718ae2", "pages": 3, "chars": 8212, "kind": "digital", "pages_without_text": 0}
+{"project": "kings_find", "file": "kings_find_234.pdf", "bytes": 487174, "sha256_16": "b15c422d110205f0", "pages": 3, "chars": 6593, "kind": "digital", "pages_without_text": 0}
+{"project": "kingsgate", "file": "kingsgate_235.pdf", "bytes": 1335442, "sha256_16": "5b5448b1a6133ff1", "pages": 22, "chars": 31015, "kind": "digital", "pages_without_text": 0}
+{"project": "kookabookra", "file": "kookabookra_236.pdf", "bytes": 899162, "sha256_16": "5a0f981c9c5e01cf", "pages": 5, "chars": 10590, "kind": "digital", "pages_without_text": 0}
+{"project": "kookabookra", "file": "kookabookra_237.pdf", "bytes": 337860, "sha256_16": "803c82c3607a7ec7", "pages": 2, "chars": 2781, "kind": "digital", "pages_without_text": 0}
+{"project": "kookynie", "file": "kookynie_238.pdf", "bytes": 336881, "sha256_16": "5f0de1e2cbe30279", "pages": 2, "chars": 3996, "kind": "digital", "pages_without_text": 0}
+{"project": "kookynie_west", "file": "kookynie_west_239.pdf", "bytes": 260521, "sha256_16": "72226c967362d468", "pages": 2, "chars": 3850, "kind": "digital", "pages_without_text": 0}
+{"project": "lady_grey", "file": "lady_grey_240.pdf", "bytes": 186511, "sha256_16": "2322f8e27c6a57c9", "pages": 5, "chars": 11885, "kind": "digital", "pages_without_text": 0}
+{"project": "lady_ida", "file": "lady_ida_241.pdf", "bytes": 273873, "sha256_16": "7a2fb27147d12402", "pages": 5, "chars": 10961, "kind": "digital", "pages_without_text": 0}
+{"project": "lady_jenny", "file": "lady_jenny_242.pdf", "bytes": 838961, "sha256_16": "0d0c62be1f0456b1", "pages": 3, "chars": 5122, "kind": "digital", "pages_without_text": 0}
+{"project": "lady_jenny", "file": "lady_jenny_243.pdf", "bytes": 3140067, "sha256_16": "91702ab62090ccd8", "pages": 14, "chars": 27589, "kind": "digital", "pages_without_text": 0}
+{"project": "lake_carey", "file": "lake_carey_244.pdf", "bytes": 652121, "sha256_16": "ea75fd5215c07057", "pages": 7, "chars": 16312, "kind": "digital", "pages_without_text": 0}
+{"project": "lake_carey", "file": "lake_carey_245.pdf", "bytes": 504104, "sha256_16": "4da5e9ef17be61f6", "pages": 4, "chars": 6114, "kind": "digital", "pages_without_text": 0}
+{"project": "lake_rebecca", "file": "lake_rebecca_246.pdf", "bytes": 463274, "sha256_16": "3000bf6ef51daba9", "pages": 4, "chars": 7455, "kind": "digital", "pages_without_text": 0}
+{"project": "lake_rebecca", "file": "lake_rebecca_247.pdf", "bytes": 603865, "sha256_16": "20563fba668f4fd1", "pages": 2, "chars": 2237, "kind": "digital", "pages_without_text": 0}
+{"project": "lakewood_mill", "file": "lakewood_mill_248.pdf", "bytes": 98047, "sha256_16": "69fd5d77443a59d3", "pages": 1, "chars": 2601, "kind": "digital", "pages_without_text": 0}
+{"project": "lakewood_mill", "file": "lakewood_mill_249.pdf", "bytes": 4484632, "sha256_16": "e59399fae0269017", "pages": 9, "chars": 23196, "kind": "digital", "pages_without_text": 0}
+{"project": "laverton", "file": "laverton_250.pdf", "bytes": 1208752, "sha256_16": "d32c60ff7fba04e1", "pages": 4, "chars": 5686, "kind": "digital", "pages_without_text": 0}
+{"project": "leake", "file": "leake_251.pdf", "bytes": 907412, "sha256_16": "722bd8f43db7da0b", "pages": 15, "chars": 32966, "kind": "digital", "pages_without_text": 0}
+{"project": "lindsays", "file": "lindsays_252.pdf", "bytes": 1271206, "sha256_16": "e458cd6d29d2ce2d", "pages": 7, "chars": 10647, "kind": "digital", "pages_without_text": 0}
+{"project": "liverpool", "file": "liverpool_253.pdf", "bytes": 220392, "sha256_16": "5d6d34b1eb06d33c", "pages": 2, "chars": 4907, "kind": "digital", "pages_without_text": 0}
+{"project": "liverpool", "file": "liverpool_254.pdf", "bytes": 220392, "sha256_16": "5d6d34b1eb06d33c", "pages": 2, "chars": 4907, "kind": "digital", "pages_without_text": 0, "duplicate_of": "liverpool/liverpool_253.pdf"}
+{"project": "liverpool", "file": "liverpool_255.pdf", "bytes": 412671, "sha256_16": "386519c3f3335fb7", "pages": 4, "chars": 9936, "kind": "digital", "pages_without_text": 0}
+{"project": "liverpool", "file": "liverpool_256.pdf", "bytes": 412671, "sha256_16": "386519c3f3335fb7", "pages": 4, "chars": 9936, "kind": "digital", "pages_without_text": 0, "duplicate_of": "liverpool/liverpool_255.pdf"}
+{"project": "loded_dog", "file": "loded_dog_257.pdf", "bytes": 2793291, "sha256_16": "3a589d27fc7aff2f", "pages": 26, "chars": 47816, "kind": "digital", "pages_without_text": 0}
+{"project": "macdonnell_ranges", "file": "macdonnell_ranges_258.pdf", "bytes": 595151, "sha256_16": "ec7debe3bcc7b6d6", "pages": 8, "chars": 13823, "kind": "mixed", "pages_without_text": 2}
+{"project": "mangaroon", "file": "mangaroon_259.pdf", "bytes": 938138, "sha256_16": "c16e3c207bf13dfd", "pages": 10, "chars": 36855, "kind": "digital", "pages_without_text": 0}
+{"project": "mangaroon", "file": "mangaroon_260.pdf", "bytes": 873851, "sha256_16": "3e00dcfa14be242e", "pages": 2, "chars": 1015, "kind": "digital", "pages_without_text": 0}
+{"project": "mangaroon", "file": "mangaroon_261.pdf", "bytes": 841227, "sha256_16": "15989ce1628ae8b6", "pages": 2, "chars": 1014, "kind": "digital", "pages_without_text": 0}
+{"project": "mangaroon", "file": "mangaroon_262.pdf", "bytes": 872123, "sha256_16": "2ee6515a8434b25d", "pages": 2, "chars": 1015, "kind": "digital", "pages_without_text": 0}
+{"project": "mangaroon", "file": "mangaroon_263.pdf", "bytes": 871167, "sha256_16": "bc3abc01cac30cc4", "pages": 2, "chars": 1015, "kind": "digital", "pages_without_text": 0}
+{"project": "marble_bar", "file": "marble_bar_264.pdf", "bytes": 728793, "sha256_16": "eb160d01dc631f6c", "pages": 4, "chars": 6296, "kind": "digital", "pages_without_text": 0}
+{"project": "marda", "file": "marda_265.pdf", "bytes": 541392, "sha256_16": "c41984ffdff851bf", "pages": 5, "chars": 7455, "kind": "digital", "pages_without_text": 0}
+{"project": "marda", "file": "marda_266.pdf", "bytes": 1478772, "sha256_16": "71e005a670b14432", "pages": 7, "chars": 12442, "kind": "digital", "pages_without_text": 0}
+{"project": "marda", "file": "marda_267.pdf", "bytes": 6685382, "sha256_16": "eb3e207c8d5f4ee4", "pages": 17, "chars": 18810, "kind": "digital", "pages_without_text": 0}
+{"project": "marda", "file": "marda_268.pdf", "bytes": 3368777, "sha256_16": "365dcf9d43af3ef5", "pages": 20, "chars": 44897, "kind": "digital", "pages_without_text": 0}
+{"project": "mersey", "file": "mersey_269.pdf", "bytes": 220509, "sha256_16": "1849bcc7736336d2", "pages": 2, "chars": 2500, "kind": "digital", "pages_without_text": 0}
+{"project": "mersey", "file": "mersey_270.pdf", "bytes": 2642527, "sha256_16": "27d9bad75b235ec4", "pages": 4, "chars": 5640, "kind": "digital", "pages_without_text": 0}
+{"project": "montague_east", "file": "montague_east_271.pdf", "bytes": 646435, "sha256_16": "a7acdb6f154b9986", "pages": 8, "chars": 14351, "kind": "digital", "pages_without_text": 0}
+{"project": "montague_east", "file": "montague_east_272.pdf", "bytes": 1176226, "sha256_16": "3ac8fbb4a483f40d", "pages": 13, "chars": 24386, "kind": "digital", "pages_without_text": 0}
+{"project": "montezuma", "file": "montezuma_273.pdf", "bytes": 991119, "sha256_16": "e989c3ea3d27f37e", "pages": 8, "chars": 13482, "kind": "digital", "pages_without_text": 0}
+{"project": "montezuma", "file": "montezuma_274.pdf", "bytes": 2246011, "sha256_16": "17115621640dba6c", "pages": 23, "chars": 46149, "kind": "digital", "pages_without_text": 0}
+{"project": "mount_lindsay", "file": "mount_lindsay_275.pdf", "bytes": 199488, "sha256_16": "0b9184150671db2a", "pages": 2, "chars": 5218, "kind": "digital", "pages_without_text": 0}
+{"project": "mount_maurice", "file": "mount_maurice_276.pdf", "bytes": 1630376, "sha256_16": "4a00557a0aaa4a98", "pages": 3, "chars": 11420, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_cannindah", "file": "mt_cannindah_277.pdf", "bytes": 553900, "sha256_16": "5e7a397065704d59", "pages": 1, "chars": 3164, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_chalmers", "file": "mt_chalmers_278.pdf", "bytes": 2342160, "sha256_16": "cacaa891c700d02b", "pages": 17, "chars": 30839, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_clere", "file": "mt_clere_279.pdf", "bytes": 1153770, "sha256_16": "1aacb479dc1c2c17", "pages": 22, "chars": 42076, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_edwards", "file": "mt_edwards_280.pdf", "bytes": 473610, "sha256_16": "d4a0f19386357a34", "pages": 3, "chars": 4511, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_egerton", "file": "mt_egerton_281.pdf", "bytes": 623199, "sha256_16": "4399baff29dcd53d", "pages": 6, "chars": 13624, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_egerton", "file": "mt_egerton_282.pdf", "bytes": 623199, "sha256_16": "4399baff29dcd53d", "pages": 6, "chars": 13624, "kind": "digital", "pages_without_text": 0, "duplicate_of": "mt_egerton/mt_egerton_281.pdf"}
+{"project": "mt_egerton", "file": "mt_egerton_283.pdf", "bytes": 5239670, "sha256_16": "cd0bbc7b5c47b8da", "pages": 26, "chars": 55448, "kind": "mixed", "pages_without_text": 2}
+{"project": "mt_egerton", "file": "mt_egerton_284.pdf", "bytes": 381925, "sha256_16": "308a0cb65c583c90", "pages": 6, "chars": 16391, "kind": "digital", "pages_without_text": 0, "duplicate_of": "glenburgh/glenburgh_162.pdf"}
+{"project": "mt_fisher", "file": "mt_fisher_285.pdf", "bytes": 4227055, "sha256_16": "8b59fd5784d2a87c", "pages": 21, "chars": 22547, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_fisher", "file": "mt_fisher_286.pdf", "bytes": 2833431, "sha256_16": "540c772b98f46cf1", "pages": 32, "chars": 71771, "kind": "mixed", "pages_without_text": 1}
+{"project": "mt_fisher", "file": "mt_fisher_287.pdf", "bytes": 2833431, "sha256_16": "540c772b98f46cf1", "pages": 32, "chars": 71771, "kind": "mixed", "pages_without_text": 1, "duplicate_of": "mt_fisher/mt_fisher_286.pdf"}
+{"project": "mt_fisher", "file": "mt_fisher_288.pdf", "bytes": 271204, "sha256_16": "4a1f4c0df79d618b", "pages": 4, "chars": 9958, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_fisher", "file": "mt_fisher_289.pdf", "bytes": 271204, "sha256_16": "4a1f4c0df79d618b", "pages": 4, "chars": 9958, "kind": "digital", "pages_without_text": 0, "duplicate_of": "mt_fisher/mt_fisher_288.pdf"}
+{"project": "mt_gibson", "file": "mt_gibson_290.pdf", "bytes": 392203, "sha256_16": "b1e9e468f26fd803", "pages": 3, "chars": 6421, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_isa_north", "file": "mt_isa_north_291.pdf", "bytes": 5441130, "sha256_16": "8c6aa87eee9c5adc", "pages": 27, "chars": 30097, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_isa_north", "file": "mt_isa_north_292.pdf", "bytes": 4152577, "sha256_16": "6f8694b66731a8e5", "pages": 95, "chars": 193464, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_lyell", "file": "mt_lyell_293.pdf", "bytes": 625641, "sha256_16": "19419b1665a0a6df", "pages": 11, "chars": 24344, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_mansbridge", "file": "mt_mansbridge_294.pdf", "bytes": 608066, "sha256_16": "7c6c38193a4f3e23", "pages": 10, "chars": 29209, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_morgan_capricorn", "file": "mt_morgan_capricorn_295.pdf", "bytes": 650937, "sha256_16": "f7755ccf98dc89a8", "pages": 9, "chars": 25152, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_morgan_capricorn", "file": "mt_morgan_capricorn_296.pdf", "bytes": 1334257, "sha256_16": "2a0481222e121b71", "pages": 10, "chars": 21998, "kind": "mixed", "pages_without_text": 1}
+{"project": "mt_mulgine", "file": "mt_mulgine_297.pdf", "bytes": 2178616, "sha256_16": "bcfc5f95b1e11ba0", "pages": 2, "chars": 3509, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_mulgine", "file": "mt_mulgine_298.pdf", "bytes": 394008, "sha256_16": "d4d4d1e7ced7835f", "pages": 3, "chars": 6718, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_stirling", "file": "mt_stirling_299.pdf", "bytes": 584258, "sha256_16": "992ecba72b9af395", "pages": 7, "chars": 12360, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_venn", "file": "mt_venn_300.pdf", "bytes": 1530813, "sha256_16": "5233435360cab635", "pages": 4, "chars": 16074, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_venn", "file": "mt_venn_301.pdf", "bytes": 105508, "sha256_16": "d20520f784055053", "pages": 2, "chars": 2862, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_venn", "file": "mt_venn_302.pdf", "bytes": 105508, "sha256_16": "d20520f784055053", "pages": 2, "chars": 2862, "kind": "digital", "pages_without_text": 0, "duplicate_of": "mt_venn/mt_venn_301.pdf"}
+{"project": "mt_venn", "file": "mt_venn_303.pdf", "bytes": 679192, "sha256_16": "43bc16a5528e1f88", "pages": 4, "chars": 15214, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_venn", "file": "mt_venn_304.pdf", "bytes": 679192, "sha256_16": "43bc16a5528e1f88", "pages": 4, "chars": 15214, "kind": "digital", "pages_without_text": 0, "duplicate_of": "mt_venn/mt_venn_303.pdf"}
+{"project": "mt_venn", "file": "mt_venn_305.pdf", "bytes": 2205431, "sha256_16": "2a8ccfcdefd3d4bc", "pages": 5, "chars": 16855, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_venn", "file": "mt_venn_306.pdf", "bytes": 271376, "sha256_16": "7debeb45683f450d", "pages": 4, "chars": 6325, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_venn", "file": "mt_venn_307.pdf", "bytes": 271376, "sha256_16": "7debeb45683f450d", "pages": 4, "chars": 6325, "kind": "digital", "pages_without_text": 0, "duplicate_of": "mt_venn/mt_venn_306.pdf"}
+{"project": "mt_venn", "file": "mt_venn_308.pdf", "bytes": 618672, "sha256_16": "eb38f32274466767", "pages": 4, "chars": 15786, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_venn", "file": "mt_venn_309.pdf", "bytes": 618672, "sha256_16": "eb38f32274466767", "pages": 4, "chars": 15786, "kind": "digital", "pages_without_text": 0, "duplicate_of": "mt_venn/mt_venn_308.pdf"}
+{"project": "mt_york", "file": "mt_york_310.pdf", "bytes": 948930, "sha256_16": "e2abca693ddfc55e", "pages": 9, "chars": 16960, "kind": "digital", "pages_without_text": 0}
+{"project": "mt_york", "file": "mt_york_311.pdf", "bytes": 1307255, "sha256_16": "4b7464c02a52b15b", "pages": 19, "chars": 40852, "kind": "digital", "pages_without_text": 0}
+{"project": "mulga_rock", "file": "mulga_rock_312.pdf", "bytes": 671456, "sha256_16": "4d95e8f5fd92c8ee", "pages": 4, "chars": 7576, "kind": "digital", "pages_without_text": 0}
+{"project": "mulline", "file": "mulline_313.pdf", "bytes": 468111, "sha256_16": "97a0369574e8cad7", "pages": 2, "chars": 3033, "kind": "digital", "pages_without_text": 0}
+{"project": "mulwarrie", "file": "mulwarrie_314.pdf", "bytes": 224460, "sha256_16": "776b8ddd0318da33", "pages": 1, "chars": 1775, "kind": "digital", "pages_without_text": 0}
+{"project": "music_well", "file": "music_well_315.pdf", "bytes": 1221872, "sha256_16": "e72532f6fd582bef", "pages": 8, "chars": 15691, "kind": "digital", "pages_without_text": 0}
+{"project": "mutooroo", "file": "mutooroo_316.pdf", "bytes": 785336, "sha256_16": "299801d2e6f7428b", "pages": 4, "chars": 9555, "kind": "digital", "pages_without_text": 0}
+{"project": "myrtleford", "file": "myrtleford_317.pdf", "bytes": 3650219, "sha256_16": "5e0e6e6069cdc86d", "pages": 27, "chars": 29868, "kind": "digital", "pages_without_text": 0}
+{"project": "myrtleford", "file": "myrtleford_318.pdf", "bytes": 7409228, "sha256_16": "b75ea6ae60e8e4a3", "pages": 162, "chars": 411567, "kind": "mixed", "pages_without_text": 5}
+{"project": "mystique", "file": "mystique_319.pdf", "bytes": 929649, "sha256_16": "38ae8e44bd55d9c3", "pages": 18, "chars": 39308, "kind": "digital", "pages_without_text": 0}
+{"project": "nabarlek", "file": "nabarlek_320.pdf", "bytes": 822734, "sha256_16": "fc69d17c45d4576d", "pages": 4, "chars": 6023, "kind": "digital", "pages_without_text": 0}
+{"project": "nanadie_well", "file": "nanadie_well_321.pdf", "bytes": 168079, "sha256_16": "858cf2f91e53b65b", "pages": 3, "chars": 8462, "kind": "digital", "pages_without_text": 0}
+{"project": "nanadie_well", "file": "nanadie_well_322.pdf", "bytes": 138653, "sha256_16": "8f2da2239fe039b2", "pages": 1, "chars": 2594, "kind": "digital", "pages_without_text": 0}
+{"project": "nanadie_well", "file": "nanadie_well_323.pdf", "bytes": 138653, "sha256_16": "8f2da2239fe039b2", "pages": 1, "chars": 2594, "kind": "digital", "pages_without_text": 0, "duplicate_of": "nanadie_well/nanadie_well_322.pdf"}
+{"project": "nanadie_well", "file": "nanadie_well_324.pdf", "bytes": 2963172, "sha256_16": "72b9f4ef1977fae7", "pages": 53, "chars": 183512, "kind": "digital", "pages_without_text": 0}
+{"project": "nevertire_south", "file": "nevertire_south_325.pdf", "bytes": 3674582, "sha256_16": "e059ad265fbc95e0", "pages": 9, "chars": 28230, "kind": "digital", "pages_without_text": 0}
+{"project": "new_england", "file": "new_england_326.pdf", "bytes": 777605, "sha256_16": "c948e0d9a34896a2", "pages": 7, "chars": 9731, "kind": "digital", "pages_without_text": 0}
+{"project": "newman", "file": "newman_327.pdf", "bytes": 1230627, "sha256_16": "da80c2266ad2e3df", "pages": 6, "chars": 8074, "kind": "digital", "pages_without_text": 0}
+{"project": "newman", "file": "newman_328.pdf", "bytes": 1214784, "sha256_16": "834827643a654ab3", "pages": 5, "chars": 6260, "kind": "digital", "pages_without_text": 0}
+{"project": "norcia", "file": "norcia_329.pdf", "bytes": 2673828, "sha256_16": "d2c7b049c0a411ef", "pages": 29, "chars": 78104, "kind": "digital", "pages_without_text": 0}
+{"project": "nullagine", "file": "nullagine_330.pdf", "bytes": 1267673, "sha256_16": "42c020755ef49275", "pages": 5, "chars": 10071, "kind": "digital", "pages_without_text": 0}
+{"project": "nundle", "file": "nundle_331.pdf", "bytes": 1135346, "sha256_16": "73f1397e6fb05b67", "pages": 18, "chars": 32613, "kind": "digital", "pages_without_text": 0}
+{"project": "nyngan_west", "file": "nyngan_west_332.pdf", "bytes": 1135381, "sha256_16": "648e4ca5ed33435a", "pages": 7, "chars": 25964, "kind": "digital", "pages_without_text": 0}
+{"project": "oasis", "file": "oasis_333.pdf", "bytes": 1325205, "sha256_16": "18cc3e29c4d72a94", "pages": 31, "chars": 56637, "kind": "digital", "pages_without_text": 0}
+{"project": "oonagalabi", "file": "oonagalabi_334.pdf", "bytes": 3932559, "sha256_16": "b9fc02edc187bf51", "pages": 31, "chars": 38834, "kind": "mixed", "pages_without_text": 2}
+{"project": "oonagalabi", "file": "oonagalabi_335.pdf", "bytes": 3798713, "sha256_16": "83110e6e08102a65", "pages": 27, "chars": 32914, "kind": "mixed", "pages_without_text": 2}
+{"project": "ottery", "file": "ottery_336.pdf", "bytes": 1428193, "sha256_16": "e990786027acf793", "pages": 20, "chars": 54607, "kind": "digital", "pages_without_text": 0}
+{"project": "overland", "file": "overland_337.pdf", "bytes": 1328788, "sha256_16": "7e102c9436831c0e", "pages": 5, "chars": 8182, "kind": "digital", "pages_without_text": 0}
+{"project": "overland", "file": "overland_338.pdf", "bytes": 940346, "sha256_16": "a9aebc0c3dffa380", "pages": 5, "chars": 8234, "kind": "digital", "pages_without_text": 0}
+{"project": "parker_dome", "file": "parker_dome_339.pdf", "bytes": 3315556, "sha256_16": "a5f5f4e99ed9b1d5", "pages": 4, "chars": 8295, "kind": "digital", "pages_without_text": 0}
+{"project": "parkes", "file": "parkes_340.pdf", "bytes": 1263213, "sha256_16": "7287c2a0bc76b6a3", "pages": 7, "chars": 13061, "kind": "digital", "pages_without_text": 0}
+{"project": "parkes", "file": "parkes_341.pdf", "bytes": 1571043, "sha256_16": "bb8b32001473f570", "pages": 21, "chars": 52130, "kind": "mixed", "pages_without_text": 1}
+{"project": "paynes_find", "file": "paynes_find_342.pdf", "bytes": 2925469, "sha256_16": "93d2fefb444a2777", "pages": 9, "chars": 27078, "kind": "digital", "pages_without_text": 0}
+{"project": "peake", "file": "peake_343.pdf", "bytes": 825406, "sha256_16": "170b9af5038c8baa", "pages": 2, "chars": 3771, "kind": "digital", "pages_without_text": 0}
+{"project": "penny_south", "file": "penny_south_344.pdf", "bytes": 1138750, "sha256_16": "0637418b41d27d89", "pages": 7, "chars": 13967, "kind": "digital", "pages_without_text": 0}
+{"project": "pilbara", "file": "pilbara_345.pdf", "bytes": 1541744, "sha256_16": "b869fdb26edcc838", "pages": 3, "chars": 6616, "kind": "digital", "pages_without_text": 0}
+{"project": "pinjin", "file": "pinjin_346.pdf", "bytes": 502191, "sha256_16": "8421a7e754e06693", "pages": 4, "chars": 9678, "kind": "digital", "pages_without_text": 0}
+{"project": "pinjin", "file": "pinjin_347.pdf", "bytes": 921682, "sha256_16": "598a342db15b072a", "pages": 7, "chars": 17352, "kind": "digital", "pages_without_text": 0}
+{"project": "pinjin", "file": "pinjin_348.pdf", "bytes": 697319, "sha256_16": "8b43adaf26ebb15a", "pages": 4, "chars": 11839, "kind": "digital", "pages_without_text": 0}
+{"project": "piper", "file": "piper_349.pdf", "bytes": 642386, "sha256_16": "7366c01a492647c1", "pages": 11, "chars": 26564, "kind": "digital", "pages_without_text": 0}
+{"project": "piper", "file": "piper_350.pdf", "bytes": 549837, "sha256_16": "932717e0c0add990", "pages": 5, "chars": 10725, "kind": "digital", "pages_without_text": 0}
+{"project": "polelle", "file": "polelle_351.pdf", "bytes": 861698, "sha256_16": "11c26a4705368441", "pages": 7, "chars": 17615, "kind": "digital", "pages_without_text": 0}
+{"project": "port_hedland_logistics_hub", "file": "port_hedland_logistics_hub_352.pdf", "bytes": 834455, "sha256_16": "6bc7bb8e31b324d0", "pages": 8, "chars": 22107, "kind": "digital", "pages_without_text": 0}
+{"project": "prospect_hill", "file": "prospect_hill_353.pdf", "bytes": 962928, "sha256_16": "8464754023b8ec3d", "pages": 1, "chars": 1469, "kind": "digital", "pages_without_text": 0}
+{"project": "queens_birthday", "file": "queens_birthday_354.pdf", "bytes": 2620312, "sha256_16": "1e2a014b66e36791", "pages": 4, "chars": 14758, "kind": "digital", "pages_without_text": 0}
+{"project": "rabbit_trap", "file": "rabbit_trap_355.pdf", "bytes": 4624232, "sha256_16": "0d86d095b24950c0", "pages": 4, "chars": 4967, "kind": "digital", "pages_without_text": 0}
+{"project": "rabbit_trap", "file": "rabbit_trap_356.pdf", "bytes": 4624232, "sha256_16": "0d86d095b24950c0", "pages": 4, "chars": 4967, "kind": "digital", "pages_without_text": 0, "duplicate_of": "rabbit_trap/rabbit_trap_355.pdf"}
+{"project": "raglan", "file": "raglan_357.pdf", "bytes": 952815, "sha256_16": "40ac0fbdae09e313", "pages": 6, "chars": 11639, "kind": "digital", "pages_without_text": 0}
+{"project": "randalls", "file": "randalls_358.pdf", "bytes": 1376856, "sha256_16": "12c6a706abb47b14", "pages": 6, "chars": 6797, "kind": "digital", "pages_without_text": 0}
+{"project": "ravensthorpe", "file": "ravensthorpe_359.pdf", "bytes": 621690, "sha256_16": "7edd3377f5415122", "pages": 8, "chars": 12545, "kind": "digital", "pages_without_text": 0}
+{"project": "ravensthorpe", "file": "ravensthorpe_360.pdf", "bytes": 2428813, "sha256_16": "e8eb2e6f33b1f657", "pages": 27, "chars": 43125, "kind": "mixed", "pages_without_text": 1}
+{"project": "razorback", "file": "razorback_361.pdf", "bytes": 1601213, "sha256_16": "0a36586ca1a401e9", "pages": 5, "chars": 16022, "kind": "digital", "pages_without_text": 0}
+{"project": "razorback", "file": "razorback_362.pdf", "bytes": 1580101, "sha256_16": "2b72e08ec76d509a", "pages": 6, "chars": 18177, "kind": "digital", "pages_without_text": 0}
+{"project": "redcastle", "file": "redcastle_363.pdf", "bytes": 280807, "sha256_16": "68addd5872bb69e3", "pages": 1, "chars": 4328, "kind": "digital", "pages_without_text": 0}
+{"project": "redcastle", "file": "redcastle_364.pdf", "bytes": 203118, "sha256_16": "2987406a68a0a769", "pages": 1, "chars": 892, "kind": "digital", "pages_without_text": 0}
+{"project": "redcastle", "file": "redcastle_365.pdf", "bytes": 1394199, "sha256_16": "8eaf6063ec141409", "pages": 6, "chars": 7920, "kind": "digital", "pages_without_text": 0}
+{"project": "redcastle", "file": "redcastle_366.pdf", "bytes": 1891815, "sha256_16": "cfec58e7cfdd7a20", "pages": 5, "chars": 23445, "kind": "digital", "pages_without_text": 0}
+{"project": "reedy_creek", "file": "reedy_creek_367.pdf", "bytes": 1218259, "sha256_16": "2cf8425042746cc5", "pages": 3, "chars": 9981, "kind": "digital", "pages_without_text": 0}
+{"project": "reedy_creek", "file": "reedy_creek_368.pdf", "bytes": 313691, "sha256_16": "6b27e0c0bd68c4d3", "pages": 3, "chars": 4929, "kind": "digital", "pages_without_text": 0}
+{"project": "reynolds_range", "file": "reynolds_range_369.pdf", "bytes": 688285, "sha256_16": "ca36a9c99cdd22d5", "pages": 3, "chars": 3619, "kind": "digital", "pages_without_text": 0}
+{"project": "reynolds_range", "file": "reynolds_range_370.pdf", "bytes": 688285, "sha256_16": "ca36a9c99cdd22d5", "pages": 3, "chars": 3619, "kind": "digital", "pages_without_text": 0, "duplicate_of": "reynolds_range/reynolds_range_369.pdf"}
+{"project": "reynolds_range", "file": "reynolds_range_371.pdf", "bytes": 534296, "sha256_16": "a526f45d2f32b7dc", "pages": 3, "chars": 5477, "kind": "digital", "pages_without_text": 0}
+{"project": "reynolds_range", "file": "reynolds_range_372.pdf", "bytes": 534296, "sha256_16": "a526f45d2f32b7dc", "pages": 3, "chars": 5477, "kind": "digital", "pages_without_text": 0, "duplicate_of": "reynolds_range/reynolds_range_371.pdf"}
+{"project": "reynolds_range", "file": "reynolds_range_373.pdf", "bytes": 939250, "sha256_16": "32f0bc640745f01b", "pages": 3, "chars": 5662, "kind": "digital", "pages_without_text": 0}
+{"project": "robe_mesa", "file": "robe_mesa_374.pdf", "bytes": 250231, "sha256_16": "18615942e58c6bbe", "pages": 2, "chars": 5620, "kind": "digital", "pages_without_text": 0}
+{"project": "rockvale", "file": "rockvale_375.pdf", "bytes": 5232657, "sha256_16": "b96f8d8ba79e90e7", "pages": 27, "chars": 54965, "kind": "digital", "pages_without_text": 0}
+{"project": "samphire", "file": "samphire_376.pdf", "bytes": 366899, "sha256_16": "312db26991743ad2", "pages": 3, "chars": 6050, "kind": "digital", "pages_without_text": 0}
+{"project": "sandover_additional_claims", "file": "sandover_additional_claims_377.pdf", "bytes": 250682, "sha256_16": "2876c123347f29dc", "pages": 3, "chars": 7978, "kind": "digital", "pages_without_text": 0}
+{"project": "sandover_additional_claims", "file": "sandover_additional_claims_378.pdf", "bytes": 735469, "sha256_16": "6e26bc71dfca96fb", "pages": 14, "chars": 36089, "kind": "digital", "pages_without_text": 0}
+{"project": "sandover_additional_claims", "file": "sandover_additional_claims_379.pdf", "bytes": 775207, "sha256_16": "d019827f7af81cf8", "pages": 5, "chars": 8077, "kind": "digital", "pages_without_text": 0}
+{"project": "sandover_additional_claims", "file": "sandover_additional_claims_380.pdf", "bytes": 577051, "sha256_16": "1de3b243e7a1628d", "pages": 7, "chars": 15696, "kind": "digital", "pages_without_text": 0}
+{"project": "side_well", "file": "side_well_381.pdf", "bytes": 1737063, "sha256_16": "1dc06770fa8ce0e5", "pages": 13, "chars": 29091, "kind": "digital", "pages_without_text": 0}
+{"project": "silver_spoon", "file": "silver_spoon_382.pdf", "bytes": 573764, "sha256_16": "42719e128b3288ba", "pages": 2, "chars": 8502, "kind": "digital", "pages_without_text": 0}
+{"project": "silver_spoon", "file": "silver_spoon_383.pdf", "bytes": 724958, "sha256_16": "ca34960aa949b799", "pages": 3, "chars": 9519, "kind": "digital", "pages_without_text": 0}
+{"project": "skyline", "file": "skyline_384.pdf", "bytes": 2273243, "sha256_16": "911087d0446e2273", "pages": 5, "chars": 15027, "kind": "digital", "pages_without_text": 0}
+{"project": "sorby_hills", "file": "sorby_hills_385.pdf", "bytes": 222455, "sha256_16": "8fd80d0dda02e467", "pages": 3, "chars": 8065, "kind": "digital", "pages_without_text": 0}
+{"project": "southern_cross", "file": "southern_cross_386.pdf", "bytes": 425728, "sha256_16": "3b40721f5c3421f8", "pages": 2, "chars": 2393, "kind": "digital", "pages_without_text": 0}
+{"project": "southern_cross", "file": "southern_cross_387.pdf", "bytes": 937057, "sha256_16": "662e2eb7e3de3f79", "pages": 6, "chars": 8348, "kind": "digital", "pages_without_text": 0}
+{"project": "spartan", "file": "spartan_388.pdf", "bytes": 736039, "sha256_16": "34101b9a5fc4c126", "pages": 19, "chars": 41659, "kind": "digital", "pages_without_text": 0}
+{"project": "speewah", "file": "speewah_389.pdf", "bytes": 1817448, "sha256_16": "ead9d0bcb3173d1f", "pages": 15, "chars": 29431, "kind": "digital", "pages_without_text": 0}
+{"project": "speewah", "file": "speewah_390.pdf", "bytes": 158207, "sha256_16": "dd7e2030a0aa021d", "pages": 1, "chars": 2803, "kind": "digital", "pages_without_text": 0}
+{"project": "speewah", "file": "speewah_391.pdf", "bytes": 200747, "sha256_16": "78c2bac263cd925d", "pages": 2, "chars": 3390, "kind": "digital", "pages_without_text": 0}
+{"project": "speewah", "file": "speewah_392.pdf", "bytes": 906774, "sha256_16": "dcb7a3fb30761837", "pages": 6, "chars": 7732, "kind": "digital", "pages_without_text": 0}
+{"project": "speewah", "file": "speewah_393.pdf", "bytes": 177215, "sha256_16": "47babf9f32fecd0a", "pages": 1, "chars": 1668, "kind": "digital", "pages_without_text": 0}
+{"project": "speewah", "file": "speewah_394.pdf", "bytes": 170941, "sha256_16": "4d756a1c8e2ee38e", "pages": 2, "chars": 3580, "kind": "digital", "pages_without_text": 0}
+{"project": "speewah", "file": "speewah_395.pdf", "bytes": 114145, "sha256_16": "4bc151168afa7c78", "pages": 1, "chars": 1304, "kind": "digital", "pages_without_text": 0}
+{"project": "springdale", "file": "springdale_396.pdf", "bytes": 355315, "sha256_16": "339a1247d44da17b", "pages": 2, "chars": 2403, "kind": "digital", "pages_without_text": 0}
+{"project": "stavely", "file": "stavely_397.pdf", "bytes": 1196786, "sha256_16": "079507164fee2d97", "pages": 8, "chars": 15284, "kind": "digital", "pages_without_text": 0, "duplicate_of": "gonneville/gonneville_167.pdf"}
+{"project": "stuart_shelf", "file": "stuart_shelf_398.pdf", "bytes": 857878, "sha256_16": "235bc3419ad4e65c", "pages": 2, "chars": 3097, "kind": "digital", "pages_without_text": 0}
+{"project": "stuart_shelf", "file": "stuart_shelf_399.pdf", "bytes": 314602, "sha256_16": "46b6288716d5115d", "pages": 2, "chars": 3374, "kind": "digital", "pages_without_text": 0}
+{"project": "sunday_creek", "file": "sunday_creek_400.pdf", "bytes": 1078275, "sha256_16": "efc43605937ea2a8", "pages": 2, "chars": 7220, "kind": "digital", "pages_without_text": 0}
+{"project": "sunday_iron", "file": "sunday_iron_401.pdf", "bytes": 826372, "sha256_16": "fc7c761269676208", "pages": 8, "chars": 17061, "kind": "digital", "pages_without_text": 0}
+{"project": "sylvania", "file": "sylvania_402.pdf", "bytes": 105831, "sha256_16": "c68edb43c6905353", "pages": 2, "chars": 3025, "kind": "digital", "pages_without_text": 0}
+{"project": "sylvania", "file": "sylvania_403.pdf", "bytes": 533463, "sha256_16": "a0969d6de86b0bf8", "pages": 3, "chars": 5765, "kind": "digital", "pages_without_text": 0}
+{"project": "sylvania", "file": "sylvania_404.pdf", "bytes": 533463, "sha256_16": "a0969d6de86b0bf8", "pages": 3, "chars": 5765, "kind": "digital", "pages_without_text": 0, "duplicate_of": "sylvania/sylvania_403.pdf"}
+{"project": "sylvania", "file": "sylvania_405.pdf", "bytes": 373959, "sha256_16": "ff570ab3e1e77ada", "pages": 4, "chars": 6834, "kind": "digital", "pages_without_text": 0}
+{"project": "sylvania", "file": "sylvania_406.pdf", "bytes": 373959, "sha256_16": "ff570ab3e1e77ada", "pages": 4, "chars": 6834, "kind": "digital", "pages_without_text": 0, "duplicate_of": "sylvania/sylvania_405.pdf"}
+{"project": "talga", "file": "talga_407.pdf", "bytes": 340652, "sha256_16": "7b8f11e5ca56664b", "pages": 3, "chars": 4936, "kind": "digital", "pages_without_text": 0}
+{"project": "talga", "file": "talga_408.pdf", "bytes": 353326, "sha256_16": "4bd0bacdf7c80182", "pages": 3, "chars": 6536, "kind": "digital", "pages_without_text": 0}
+{"project": "talga", "file": "talga_409.pdf", "bytes": 1415706, "sha256_16": "6a334f6498ea1351", "pages": 16, "chars": 33791, "kind": "digital", "pages_without_text": 0}
+{"project": "talga", "file": "talga_410.pdf", "bytes": 284570, "sha256_16": "a948dc68efd6e52f", "pages": 3, "chars": 6157, "kind": "digital", "pages_without_text": 0}
+{"project": "tambina", "file": "tambina_411.pdf", "bytes": 725256, "sha256_16": "441e30fd9e3507f4", "pages": 10, "chars": 22166, "kind": "digital", "pages_without_text": 0}
+{"project": "tangadee", "file": "tangadee_412.pdf", "bytes": 2119606, "sha256_16": "5c879267aeed6161", "pages": 16, "chars": 31465, "kind": "digital", "pages_without_text": 0}
+{"project": "tasmania_rare_earth", "file": "tasmania_rare_earth_413.pdf", "bytes": 1655953, "sha256_16": "2c4de0f99530169f", "pages": 2, "chars": 8178, "kind": "digital", "pages_without_text": 0}
+{"project": "tasmania_rare_earth", "file": "tasmania_rare_earth_414.pdf", "bytes": 1811731, "sha256_16": "d8a5a67895ff19ed", "pages": 3, "chars": 9983, "kind": "digital", "pages_without_text": 0}
+{"project": "taylors_arm", "file": "taylors_arm_415.pdf", "bytes": 935025, "sha256_16": "9af3f83dcdd65777", "pages": 17, "chars": 39184, "kind": "digital", "pages_without_text": 0}
+{"project": "telfer", "file": "telfer_416.pdf", "bytes": 57463, "sha256_16": "4a4b3b33c2ed9f3b", "pages": 2, "chars": 2148, "kind": "digital", "pages_without_text": 0}
+{"project": "telfer", "file": "telfer_417.pdf", "bytes": 1720946, "sha256_16": "84282d139a3d2497", "pages": 3, "chars": 12084, "kind": "digital", "pages_without_text": 0}
+{"project": "thowagee", "file": "thowagee_418.pdf", "bytes": 1252683, "sha256_16": "36da698b1edcc99d", "pages": 14, "chars": 32793, "kind": "digital", "pages_without_text": 0}
+{"project": "thunderstorm", "file": "thunderstorm_419.pdf", "bytes": 688738, "sha256_16": "b1ff2c1849407293", "pages": 6, "chars": 11433, "kind": "digital", "pages_without_text": 0}
+{"project": "tibooburra", "file": "tibooburra_420.pdf", "bytes": 2012247, "sha256_16": "c5b31ff8dd852285", "pages": 7, "chars": 15956, "kind": "digital", "pages_without_text": 0}
+{"project": "tibooburra", "file": "tibooburra_421.pdf", "bytes": 2813686, "sha256_16": "17c5b089889fa787", "pages": 43, "chars": 116308, "kind": "digital", "pages_without_text": 0, "duplicate_of": "john_bull/john_bull_216.pdf"}
+{"project": "tobermorey", "file": "tobermorey_422.pdf", "bytes": 878321, "sha256_16": "f252dc8492e0b445", "pages": 6, "chars": 9374, "kind": "digital", "pages_without_text": 0}
+{"project": "toolunga", "file": "toolunga_423.pdf", "bytes": 2012247, "sha256_16": "c5b31ff8dd852285", "pages": 7, "chars": 15956, "kind": "digital", "pages_without_text": 0, "duplicate_of": "tibooburra/tibooburra_420.pdf"}
+{"project": "toolunga", "file": "toolunga_424.pdf", "bytes": 1111273, "sha256_16": "294af8074615bd10", "pages": 14, "chars": 37207, "kind": "digital", "pages_without_text": 0}
+{"project": "toolunga", "file": "toolunga_425.pdf", "bytes": 4113730, "sha256_16": "6fac72a5410bd687", "pages": 15, "chars": 40209, "kind": "digital", "pages_without_text": 0}
+{"project": "treuer_range", "file": "treuer_range_426.pdf", "bytes": 389133, "sha256_16": "911d099d8fb764be", "pages": 4, "chars": 8835, "kind": "digital", "pages_without_text": 0}
+{"project": "treuer_range", "file": "treuer_range_427.pdf", "bytes": 389641, "sha256_16": "6c5d9a184d531efe", "pages": 4, "chars": 8766, "kind": "digital", "pages_without_text": 0}
+{"project": "treuer_range", "file": "treuer_range_428.pdf", "bytes": 3153694, "sha256_16": "30860c5a0b582472", "pages": 14, "chars": 28261, "kind": "digital", "pages_without_text": 0}
+{"project": "trident", "file": "trident_429.pdf", "bytes": 540115, "sha256_16": "2c240c3559d8e964", "pages": 4, "chars": 6660, "kind": "digital", "pages_without_text": 0}
+{"project": "trident", "file": "trident_430.pdf", "bytes": 1805678, "sha256_16": "d627a29c880f7deb", "pages": 4, "chars": 8144, "kind": "digital", "pages_without_text": 0}
+{"project": "triumph", "file": "triumph_431.pdf", "bytes": 1202801, "sha256_16": "c870ce6c9933b051", "pages": 3, "chars": 5928, "kind": "digital", "pages_without_text": 0}
+{"project": "triumph", "file": "triumph_432.pdf", "bytes": 238418, "sha256_16": "a061acad93e5cf77", "pages": 1, "chars": 2146, "kind": "digital", "pages_without_text": 0}
+{"project": "triumph", "file": "triumph_433.pdf", "bytes": 238418, "sha256_16": "a061acad93e5cf77", "pages": 1, "chars": 2146, "kind": "digital", "pages_without_text": 0, "duplicate_of": "triumph/triumph_432.pdf"}
+{"project": "triumph", "file": "triumph_434.pdf", "bytes": 687881, "sha256_16": "a1a41a63bd764cff", "pages": 5, "chars": 10630, "kind": "digital", "pages_without_text": 0}
+{"project": "tunkillia_north", "file": "tunkillia_north_435.pdf", "bytes": 184466, "sha256_16": "d73099eba3dbeb9a", "pages": 5, "chars": 7788, "kind": "digital", "pages_without_text": 0}
+{"project": "tunkillia_north", "file": "tunkillia_north_436.pdf", "bytes": 7058262, "sha256_16": "8c4725c012c3e96e", "pages": 32, "chars": 44780, "kind": "digital", "pages_without_text": 0}
+{"project": "tunkillia_north", "file": "tunkillia_north_437.pdf", "bytes": 1029039, "sha256_16": "41657eadc7743323", "pages": 25, "chars": 45003, "kind": "mixed", "pages_without_text": 1}
+{"project": "twin_hills", "file": "twin_hills_438.pdf", "bytes": 902113, "sha256_16": "32010fcc0545d264", "pages": 8, "chars": 17774, "kind": "digital", "pages_without_text": 0}
+{"project": "twin_hills", "file": "twin_hills_439.pdf", "bytes": 910813, "sha256_16": "8e291b7b1b93c8cf", "pages": 10, "chars": 22542, "kind": "digital", "pages_without_text": 0}
+{"project": "ularring", "file": "ularring_440.pdf", "bytes": 1550150, "sha256_16": "9f5379eee3178967", "pages": 8, "chars": 15228, "kind": "digital", "pages_without_text": 0}
+{"project": "ularring", "file": "ularring_441.pdf", "bytes": 2939596, "sha256_16": "0a34cf22ad49344b", "pages": 24, "chars": 64148, "kind": "digital", "pages_without_text": 0}
+{"project": "van_uden", "file": "van_uden_442.pdf", "bytes": 4995295, "sha256_16": "206df45d0ef64c9f", "pages": 13, "chars": 15245, "kind": "digital", "pages_without_text": 0}
+{"project": "van_uden", "file": "van_uden_443.pdf", "bytes": 5152260, "sha256_16": "4c3c25551c9ca192", "pages": 163, "chars": 481639, "kind": "digital", "pages_without_text": 0}
+{"project": "wandanya", "file": "wandanya_444.pdf", "bytes": 486696, "sha256_16": "5ff7571927fdd28c", "pages": 4, "chars": 8750, "kind": "digital", "pages_without_text": 0}
+{"project": "weld_range_north", "file": "weld_range_north_445.pdf", "bytes": 426421, "sha256_16": "0d14c974f1077e22", "pages": 6, "chars": 12525, "kind": "digital", "pages_without_text": 0}
+{"project": "west_arunta", "file": "west_arunta_446.pdf", "bytes": 1017680, "sha256_16": "a59d01340d5295ee", "pages": 12, "chars": 20076, "kind": "mixed", "pages_without_text": 1}
+{"project": "whim_creek", "file": "whim_creek_447.pdf", "bytes": 601185, "sha256_16": "4883f4206fcc151a", "pages": 4, "chars": 5479, "kind": "mixed", "pages_without_text": 1}
+{"project": "whiteheads", "file": "whiteheads_448.pdf", "bytes": 524754, "sha256_16": "6da7a9c31d91d259", "pages": 5, "chars": 9496, "kind": "digital", "pages_without_text": 0}
+{"project": "windanya", "file": "windanya_449.pdf", "bytes": 535057, "sha256_16": "f7b2f307244ee4a7", "pages": 3, "chars": 8138, "kind": "digital", "pages_without_text": 0}
+{"project": "wudinna", "file": "wudinna_450.pdf", "bytes": 157210, "sha256_16": "3b89de04fb69fe41", "pages": 1, "chars": 1154, "kind": "digital", "pages_without_text": 0}
+{"project": "yalgoo", "file": "yalgoo_451.pdf", "bytes": 196638, "sha256_16": "7ab02974ac828f60", "pages": 4, "chars": 6005, "kind": "digital", "pages_without_text": 0}
+{"project": "yalgoo", "file": "yalgoo_452.pdf", "bytes": 196638, "sha256_16": "7ab02974ac828f60", "pages": 4, "chars": 6005, "kind": "digital", "pages_without_text": 0, "duplicate_of": "yalgoo/yalgoo_451.pdf"}
+{"project": "yandal_west", "file": "yandal_west_453.pdf", "bytes": 677975, "sha256_16": "43d792f56997d860", "pages": 4, "chars": 4916, "kind": "digital", "pages_without_text": 0}
+{"project": "yandal_west", "file": "yandal_west_454.pdf", "bytes": 2312884, "sha256_16": "dca9530c31dadde5", "pages": 49, "chars": 86456, "kind": "digital", "pages_without_text": 0}
+{"project": "yandal_west", "file": "yandal_west_455.pdf", "bytes": 2312884, "sha256_16": "dca9530c31dadde5", "pages": 49, "chars": 86456, "kind": "digital", "pages_without_text": 0, "duplicate_of": "yandal_west/yandal_west_454.pdf"}
+{"project": "yardilla", "file": "yardilla_456.pdf", "bytes": 681163, "sha256_16": "f6a967191344483b", "pages": 5, "chars": 8694, "kind": "digital", "pages_without_text": 0}
+{"project": "yardilla", "file": "yardilla_457.pdf", "bytes": 866691, "sha256_16": "f21b7df0214a7f9b", "pages": 6, "chars": 11203, "kind": "digital", "pages_without_text": 0}
+{"project": "yarri_bunjarra", "file": "yarri_bunjarra_458.pdf", "bytes": 502191, "sha256_16": "8421a7e754e06693", "pages": 4, "chars": 9678, "kind": "digital", "pages_without_text": 0, "duplicate_of": "pinjin/pinjin_346.pdf"}
+{"project": "yarrol", "file": "yarrol_459.pdf", "bytes": 1917098, "sha256_16": "ab0ef0d122cc47a2", "pages": 4, "chars": 17179, "kind": "digital", "pages_without_text": 0}
+{"project": "yerilgee", "file": "yerilgee_460.pdf", "bytes": 1309778, "sha256_16": "5a06e4088ba10c93", "pages": 25, "chars": 19922, "kind": "mixed", "pages_without_text": 2}
+{"project": "yerilgee", "file": "yerilgee_461.pdf", "bytes": 1309778, "sha256_16": "5a06e4088ba10c93", "pages": 25, "chars": 19922, "kind": "mixed", "pages_without_text": 2, "duplicate_of": "yerilgee/yerilgee_460.pdf"}
+{"project": "yerilgee", "file": "yerilgee_462.pdf", "bytes": 7846172, "sha256_16": "491efecb5e97069b", "pages": 44, "chars": 59709, "kind": "mixed", "pages_without_text": 2}
+{"project": "yerilgee", "file": "yerilgee_463.pdf", "bytes": 7564792, "sha256_16": "dc4837b71c23fc04", "pages": 39, "chars": 50003, "kind": "mixed", "pages_without_text": 2, "duplicate_of": "evanston/evanston_139.pdf"}
+{"project": "yeungroon", "file": "yeungroon_464.pdf", "bytes": 1112308, "sha256_16": "e22a9fc5239e9ade", "pages": 19, "chars": 39043, "kind": "digital", "pages_without_text": 0}

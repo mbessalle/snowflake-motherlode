@@ -62,7 +62,7 @@ CREATE OR REPLACE AGENT MOTHERLODE.CORE.DEAL_ANALYST
 
   instructions:
     response: "Answer briefly. State the currency with every amount and never add amounts in different currencies. If the data does not contain the answer, say so."
-    orchestration: "Use deal_table for counts, sums, averages, rankings and filters over deals. For wording, terms and context that are not columns, read the announcement the way a person uses a table of contents: find_deals to get the doc id, document_outline to see its sections, then read_section for only the section you need. Use find_in_document when you look for an exact word or number. Do not read every section."
+    orchestration: "Use deal_table for counts, sums, averages, rankings and filters over deals. For wording, terms and context that are not columns, read the announcement the way a person uses a table of contents: find_deals to get the doc id (or find_projects, then project_documents to choose one document of a project), document_outline to see its sections, then read_section for only the section you need. Use find_in_document when you look for an exact word or number. Do not read every section."
     sample_questions:
       - question: "Which deals involved an option or earn-in for a gold project?"
       - question: "What are the payment terms of the South Falcon East option?"
@@ -83,6 +83,28 @@ CREATE OR REPLACE AGENT MOTHERLODE.CORE.DEAL_ANALYST
               type: "string"
               description: "A word or name to look for, for example a project or company name."
           required: ["term"]
+    - tool_spec:
+        type: "generic"
+        name: "find_projects"
+        description: "Level 0 for the source PDFs. Projects whose name contains a term, with their number of documents and pages."
+        input_schema:
+          type: "object"
+          properties:
+            term:
+              type: "string"
+              description: "A project name or part of one."
+          required: ["term"]
+    - tool_spec:
+        type: "generic"
+        name: "project_documents"
+        description: "The documents of one project: doc id, pages, sections, whether it has a text layer, and how it starts. Use it to pick the one document worth opening."
+        input_schema:
+          type: "object"
+          properties:
+            project_name:
+              type: "string"
+              description: "The project name from find_projects."
+          required: ["project_name"]
     - tool_spec:
         type: "generic"
         name: "document_outline"
@@ -129,6 +151,18 @@ CREATE OR REPLACE AGENT MOTHERLODE.CORE.DEAL_ANALYST
     find_deals:
       type: "function"
       identifier: "MOTHERLODE.CORE.FIND_DEALS"
+      execution_environment:
+        type: "warehouse"
+        warehouse: "MOTHERLODE_XS"
+    find_projects:
+      type: "function"
+      identifier: "MOTHERLODE.CORE.FIND_PROJECTS"
+      execution_environment:
+        type: "warehouse"
+        warehouse: "MOTHERLODE_XS"
+    project_documents:
+      type: "function"
+      identifier: "MOTHERLODE.CORE.PROJECT_DOCUMENTS"
       execution_environment:
         type: "warehouse"
         warehouse: "MOTHERLODE_XS"

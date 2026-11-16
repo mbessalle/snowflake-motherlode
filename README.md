@@ -101,6 +101,12 @@ long paper: start from the table of contents and go only where the answer is.
 plain SQL function, so each answer can be traced to the rows it read, and the whole index is built by a
 Snowpark procedure with no model call ([`motherlode/outline.py`](motherlode/outline.py)).
 
+At scale, on the source PDFs (see [Documents](#documents)): `BUILD_OUTLINES` cut 443 documents into
+13,075 sections inside Snowflake in about two minutes, and the walk project → its documents → outline →
+section was run for a real project with `FIND_PROJECTS`, `PROJECT_DOCUMENTS` and `DOCUMENT_OUTLINE`. One
+weakness showed up there: the first sentence of a PDF is often letterhead, so those outline entries say
+little until model-written summaries replace them.
+
 Measured on the 33 eval announcements, built inside Snowflake on 16 November 2026:
 
 | | |
@@ -165,6 +171,29 @@ query that computes the true answer from the deal table. An answer passes only i
 
 ## Documents
 
+**Source PDFs, checked for a text layer before anything reads them.** The larger document set is 464
+announcement PDFs filed in 244 project folders. [`scripts/inventory_pdfs.py`](scripts/inventory_pdfs.py)
+reads every file with code, no model, and records the result in
+[`data/pdf_inventory.jsonl`](data/pdf_inventory.jsonl):
+
+| | |
+|---|---|
+| PDFs | 464, of which 54 are byte-identical copies of another file |
+| Distinct documents | 410, with 4,596 pages |
+| Digital (every page has a text layer) | 376 |
+| Mixed (some pages are images only) | 34 |
+| Fully scanned | 0 |
+| Pages that need OCR | 58 |
+
+The check decides the route: a digital document goes to `AI_PARSE_DOCUMENT` in layout mode, and the 58
+image-only pages need its OCR mode. Both wait on the AI features. Until then
+[`scripts/load_source_pdfs.py`](scripts/load_source_pdfs.py) has put all PDFs on the Snowflake stage,
+registered the 410 documents with their project, page count and check result, and stored the text layer
+read with `pypdf` as a labelled stand-in. That stand-in has no OCR, so the 58 image-only pages contribute
+no text yet. The PDFs themselves are not in this repository.
+
+**The 43 eval announcements.**
+
 [`scripts/fetch_documents.py`](scripts/fetch_documents.py) made one plain request per case to the public
 press-release URL. Of 43 cases, 14 were downloaded as published (13 HTML, 1 PDF). The other 29 sites
 refused the request, timed out or served a page without the headline; for those, the text saved by the
@@ -196,7 +225,7 @@ Agent runs and repeated passes come on top. Measured spend will replace this tab
 
 ## Status
 
-Tested, offline, in CI (128 tests, no account or network needed):
+Tested, offline, in CI (130 tests, no account or network needed):
 
 - The validator and schema, with the original pipeline's tests.
 - The extract, validate, retry, quarantine loop, at every exit.
@@ -262,7 +291,7 @@ classifier: project transaction or not). The 43 labelled cases are too few to tr
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 128 tests, offline
+pytest                               # 130 tests, offline
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```
