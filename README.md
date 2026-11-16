@@ -17,6 +17,27 @@ questions over the result.
 > are no Cortex extraction, screening or agent results yet. [What was and was not tested](#status) is listed
 > below and is updated as each part runs.
 
+**What is built and measured so far**
+
+- **A ground truth built from 410 source PDFs**: 236 cases pairing an analyst's deal rows with the PDF that
+  states the deal, with the evidence for each value recorded ([details](#evals)).
+- **Every cell checked in three tiers**: code finds where each value is written, a cheap decision model
+  (TypeSafe's Jev, about 0.00006 USD a question) judges what each passage means, and only the cells those two
+  cannot settle go to a frontier model (a `claude -p` session) that reads the whole document. 1,180 cells
+  checked for 0.05 USD; 425 confirmed, 165 contradicted with a proposed correction ([details](#checking-every-cell-three-tiers)).
+- **Code proposes, a model judges, hand labels decide the threshold**: the decision model's answers were
+  measured against 147 blind labels from labelling agents in an isolated git worktree, with an audit of
+  every file the labellers read, before any threshold was used.
+- **Actor-critic review in isolated worktrees**: critic agents, each in its own git worktree (the last one as
+  its own `claude -p` session), reviewed the code and data; every confirmed finding became a failing test
+  first. Six rounds found and fixed real errors, among them metres read as millions and a rule that
+  accepted invented amounts.
+- **Every decision traceable**: OpenTelemetry spans with the inputs, outputs and evidence of each step, in
+  local files and a Jaeger viewer; logs carry the step's span id.
+- **Findings for the analyst** (the client's own table): share prices rounded to two decimals, rows where
+  the named buyer is the seller, a price that cannot belong to the named company.
+- 285 offline tests; CI on every pull request.
+
 ## Architecture
 
 ```mermaid
@@ -224,6 +245,26 @@ original pipeline's extraction rules, and the case file records which rule expla
   lists separately: two or three amounts of the same kind (dollars for a payment, share counts for shares).
   These count as probable only, and the scorer reports them apart.
 
+**How the review loop works.** The actor builds; critics, each in a git worktree of its own at a fixed
+commit, try to break it; every confirmed finding becomes a failing test before it is fixed. The decision
+model triages first, so a critic reads only what was flagged.
+
+```mermaid
+flowchart LR
+    A["<b>Actor</b><br/>main worktree<br/>builds and fixes"] -->|"commit"| B[("fixed commit")]
+    B --> J{{"Decision model triage<br/>(Jev): rank what<br/>looks doubtful"}}
+    J --> W1["<b>Critic</b><br/>own worktree, own claude -p session<br/>reads only the flagged items<br/>plus a few controls"]
+    B --> W1
+    W1 -->|"one failing test<br/>per confirmed finding<br/>+ a short report"| T[("critic branch")]
+    T -->|"tests taken over"| A
+    A -->|"fix until the tests pass;<br/>measure again"| B
+    L["<b>Blind labellers</b><br/>own worktree with only<br/>questions and texts"] -->|"labels, audited:<br/>no read of the answers"| C["calibrate the<br/>decision model's threshold"]
+    J --- C
+
+    classDef llm fill:#5b4bdb,stroke:#2f2496,color:#ffffff
+    class J,W1,L llm
+```
+
 **How these rules were checked, and what that changed.** Critic agents (their instructions are in
 [`.claude/agents/eval-critic.md`](.claude/agents/eval-critic.md)) ran the builder, validator and scorer
 end to end, read the traces, and checked decisions against the PDF text by hand. Round 1 was one critic in
@@ -378,6 +419,74 @@ field. They go to a local file that [`scripts/traces.py`](scripts/traces.py) que
 (Jaeger) when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Logs carry the id of the step that wrote them. Inside
 Snowflake the same calls are meant to reach the account's event table; that is not deployed or tested yet.
 
+### Checking every cell, three tiers
+
+Each value in the analyst's table is checked against the source documents by the cheapest actor that can
+settle it. Code handles what is exact, a decision model handles meaning, and a frontier model reads a whole
+document only for the cells the first two escalate.
+
+```mermaid
+flowchart TD
+    C(["A cell of the analyst's table<br/>project, field, value"]) --> T1["<b>Tier 1: code</b> (free)<br/>where is the value written, in every PDF of the project?<br/>units, trailing zeros, money or share kind, sums of tranches"]
+    T1 -->|"written somewhere"| T2a{{"<b>Tier 2: decision model</b> (Jev, ~0.00006 USD)<br/>does this passage give the value<br/>as this field of this deal?"}}
+    T1 -->|"not written"| T2b{{"<b>Tier 2</b><br/>which amount of this kind in the PDF<br/>is the field? (or none)"}}
+    T1 -->|"calculated field"| F["<b>Formula, code</b><br/>aggregate = cash + exploration + shares value<br/>shares value = shares × price, or stated"]
+    T2a -->|"P ≥ 0.6"| OK(["confirmed"])
+    T2a -->|"0.4 – 0.6"| U(["unsure"])
+    T2a -->|"P < 0.4"| T2b
+    T2b -->|"picks another value"| X(["contradicted,<br/>with a proposed value"])
+    T2b -->|"none"| N(["not in the document"])
+    F --> OK
+    U --> T3{{"<b>Tier 3: frontier model</b><br/>claude -p in its own worktree<br/>reads every PDF of the case"}}
+    X --> T3
+    T3 --> R(["true value, analyst right or wrong,<br/>proposal right or wrong, quote as proof"])
+
+    classDef llm fill:#5b4bdb,stroke:#2f2496,color:#ffffff
+    classDef code fill:#0f7b6c,stroke:#0a5a4f,color:#ffffff
+    class T2a,T2b,T3 llm
+    class T1,F code
+```
+
+[`scripts/check_cells.py`](scripts/check_cells.py) ran tiers 1 and 2 on all 236 cases (16 Nov 2026):
+1,180 cells in 92 seconds, for 0.05 USD of decision-model calls
+([`evals/cell_checks.jsonl`](evals/cell_checks.jsonl)).
+
+| Verdict | Cells |
+|---|---|
+| Confirmed in the document | 425 |
+| Calculated by formula from confirmed parts | 56 |
+| Formula holds, parts not all confirmed | 147 |
+| Not in the document (138 of them share prices) | 257 |
+| Unsure | 108 |
+| Contradicted, with a proposed value | 165 |
+| Formula fails | 22 |
+
+Cells in the 46 cases whose PDF does not show the analyst's buyer as the buyer (83 escalated cells) are
+one finding per case, a wrong document or a wrong buyer, not one per cell. That leaves 190 cells in 100
+cases for tier 3. A first tier 3 run ([`scripts/escalate_cells.py`](scripts/escalate_cells.py),
+[`.claude/agents/cell-reviewer.md`](.claude/agents/cell-reviewer.md)) reviewed 31 of them in 20 cases,
+reading every PDF of each case ([`evals/cell_review_pilot.jsonl`](evals/cell_review_pilot.jsonl), quotes
+left out):
+
+| Tier 2 said | Cells | Analyst right | Analyst wrong | Undecidable |
+|---|---|---|---|---|
+| Contradicted | 13 | 2 | 9 | 2 |
+| Unsure | 18 | 12 | 5 | 1 |
+
+So "contradicted" is a good error flag (the analyst was wrong in 9 of the 11 decidable cases), but the
+decision model's proposed value was right in only 9 of 17: it proposed a signing tranche instead of the
+total, or a company's total shares on issue instead of the consideration shares. That is why the fix comes
+from tier 3, not tier 2. The other 80 cases have not been through tier 3 yet.
+
+**Share prices.** The analyst's share price is often not in the document, so 20 sampled deals were compared
+with public daily closes on the news date (Yahoo Finance history pages, read in a browser). Yahoo has 15
+of the 20 tickers; the stored price equals the close on the news date in 1 of them. Two reasons are clear in
+the data: prices are stored to two decimals (7 of the 20 are 0.01, so 0.006 becomes 0.01 and shares × price
+cannot reproduce the value), and several are the deal's own issue price (40,000 / 125,000 shares = 0.32,
+the stored price, against a market close of 0.016). Yahoo's closes are adjusted for share consolidations,
+which inflates old prices; a check of the rest needs unadjusted end-of-day data. One row's price (0.13 for
+Ramelius, which closed at A$2.16) cannot belong to the named company.
+
 **Converted amounts.** An earlier sheet holds the same deals converted to US dollars, by the rule
 "amount × the exchange rate on the document date".
 [`scripts/check_conversion.py`](scripts/check_conversion.py) tests that rule with daily public reference
@@ -445,9 +554,12 @@ Agent runs and repeated passes come on top. Measured spend will replace this tab
 
 ## Status
 
-Tested, offline, in CI (133 tests, no account or network needed):
+Tested, offline, in CI (285 tests, no account or network needed):
 
-- The validator and schema, with the original pipeline's tests.
+- The validator and schema, with the original pipeline's tests, and one test per finding of the critics
+  (`tests/test_critic_*.py`).
+- The 236-case builder and scorer, the decision-model judge (with a fake transport: cache, spend cap, the
+  questions sent), the split check, the blind-label audit and the telemetry.
 - The extract, validate, retry, quarantine loop, at every exit.
 - Building each Cortex statement and reading each documented reply shape.
 - The Snowpark steps end to end against a stand-in session that records every statement and its parameters.
@@ -511,7 +623,7 @@ classifier: project transaction or not). The 43 labelled cases are too few to tr
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install ".[dev]"
-pytest                               # 133 tests, offline
+pytest                               # 285 tests, offline
 ruff check .
 python scripts/estimate_cost.py      # needs data/documents; see scripts/fetch_documents.py
 ```
@@ -530,7 +642,12 @@ python scripts/run_pipeline.py export --extractor claude-sonnet-5
 
 | Path | What it holds |
 |---|---|
-| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` was changed after two rounds of critic review, each change marked in the code: a faster sum check with the same answers; units (6 metres is not 6 million; billion added); trailing zeros; physical quantities are no amounts; one kind of amount per sum; a narrower split rule; context words for percentages and metres; cash that is an exploration amount or placement does not count; NaN is no number; the shares value can be a total split between projects, like cash, and the shares value stated in the news is checked. On the original 33 cases it scores 119 of 126 instead of the published 122 (see Evals) |
+| [`motherlode/validate.py`](motherlode/validate.py), [`schema.py`](motherlode/schema.py), [`prompts.py`](motherlode/prompts.py) | Copied from the original pipeline. `schema.py` and `prompts.py` are byte-identical. `validate.py` was changed after two rounds of critic review, each change marked in the code: a faster sum check with the same answers; units (6 metres is not 6 million; billion added); trailing zeros; physical quantities are no amounts; one kind of amount per sum; a narrower split rule; context words for percentages and metres; cash that is an exploration amount or placement does not count; NaN is no number; the shares value is checked like cash and the shares value stated in the news is checked; a total shared between projects counts only when a judge accepts it. On the original 33 cases it scores 116 of 129 by code alone and 123 of 129 with the split judge, against the published 122 of 126 (see Evals) |
+| [`motherlode/judge.py`](motherlode/judge.py) | Closed questions to a decision model (TypeSafe's Jev on OpenRouter's Decisions API), cached, cost-capped and traced |
+| [`motherlode/telemetry.py`](motherlode/telemetry.py), [`scripts/traces.py`](scripts/traces.py) | OpenTelemetry spans and logs for every step; a query tool for the trace files |
+| [`evals/score_pdf.py`](evals/score_pdf.py), [`scripts/build_pdf_cases.py`](scripts/build_pdf_cases.py) | The 236-case ground truth and its scorer, every field with one rule |
+| [`scripts/check_cells.py`](scripts/check_cells.py), [`scripts/escalate_cells.py`](scripts/escalate_cells.py) | The three-tier cell check and its tier 3 hand-off |
+| [`.claude/agents/`](.claude/agents/) | The critic, split critic and cell reviewer agents' instructions |
 | [`motherlode/process.py`](motherlode/process.py) | The extract, validate, retry, quarantine loop |
 | [`motherlode/cortex.py`](motherlode/cortex.py) | Cortex statements and reply parsing |
 | [`motherlode/pipeline.py`](motherlode/pipeline.py) | The Snowpark steps and the stored procedure's handler |
