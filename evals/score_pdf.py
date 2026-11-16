@@ -385,7 +385,9 @@ def _score(cases: list[dict], replies: Path, texts: Path, judgments: dict | None
                 c["model_only"] += 1
             elif a:
                 c["analyst_only"] += 1
-            buyer_ok = case.get("buyer_in_document", True)
+            # a case whose PDF does not name the buyer, or where no PDF of the project announces the deal, has no
+            # document to score against
+            buyer_ok = case.get("buyer_in_document", True) and case.get("announcement_found", True)
             if judgments is not None and case["row_id"] in judgments["buyer"]:
                 buyer_ok = buyer_ok and judgments["buyer"][case["row_id"]] >= JUDGE_THRESHOLD
             if kind == SCRAPED and a and not buyer_ok:

@@ -24,7 +24,10 @@ questions over the result.
 - **Every cell checked in three tiers**: code finds where each value is written, a cheap decision model
   (TypeSafe's Jev, about 0.00006 USD a question) judges what each passage means, and only the cells those two
   cannot settle go to a frontier model (a `claude -p` session) that reads the whole document. 1,180 cells
-  checked for 0.05 USD; 425 confirmed, 165 contradicted with a proposed correction ([details](#checking-every-cell-three-tiers)).
+  checked for 0.05 USD; 427 confirmed, 156 contradicted with a proposed correction ([details](#checking-every-cell-three-tiers)).
+- **The same tiers for choosing the document**: which of a project's PDFs announces the deal is decided by
+  the decision model, with blind labels on every disagreement; it beat the old counting rule 41 to 25 on
+  66 hand-picked cases ([details](#which-pdf-announces-the-deal)).
 - **Code proposes, a model judges, hand labels decide the threshold**: the decision model's answers were
   measured against 147 blind labels from labelling agents in an isolated git worktree, with an audit of
   every file the labellers read, before any threshold was used.
@@ -215,21 +218,26 @@ is market data from the announcement date and is not in the document at all.
 | | |
 |---|---|
 | Rows in the table / without a PDF folder / cases | 249 / 13 / 236 |
-| Case documents: digital / mixed | 213 / 23 |
-| Projects with several PDFs where the chosen one holds every value any of them holds | 89 of 95 |
+| Case documents: digital / mixed | 216 / 20 |
+| Projects with several PDFs where the chosen one holds every value any of them holds | 69 of 95 |
+| Deals for which no PDF of the project announces the deal (flagged, left out of scoring) | 5 |
 | Aggregate equals cash + exploration commitment + shares value | 182 of 182 rows |
 | Shares value, 109 rows: stated in the document / computed as shares × price / both / unexplained | 26 / 21 / 8 / 54 |
 | Chosen PDF names the analyst's buyer, in full or by ticker (rule 1 of the extraction rules: is the document about this deal?) | 226 of 236 |
 
 | Scraped field | Written in the case document | Area given in km² (hectares in the row) | Probably a sum of written amounts |
 |---|---|---|---|
-| Royalty | 75 of 84 (89%) | | |
-| Interest acquired | 153 of 194 (79%) | | |
-| Shares issued | 50 of 77 (65%) | | 18 |
-| Cash payments | 62 of 144 (43%) | | 18 |
+| Royalty | 71 of 84 (85%) | | |
+| Interest acquired | 144 of 194 (74%) | | |
+| Shares issued | 43 of 77 (56%) | | 17 |
+| Cash payments | 58 of 144 (40%) | | 22 |
 | Exploration commitment | 16 of 47 (34%) | | 5 |
-| Project area | 6 of 133 (5%) | 87 | |
-| All scraped values | 362 of 679 (53%) | 87 | 41 |
+| Project area | 5 of 133 (4%) | 87 | |
+| All scraped values | 337 of 679 (50%) | 87 | 44 |
+
+These counts use the PDF that announces the deal (see [Which PDF announces the deal](#which-pdf-announces-the-deal)).
+They are lower than with the earlier choice by counting, 362 of 679, and that is expected: counting picked
+the PDF that matched the analyst's values best, which is circular and hides the analyst's errors.
 
 "Written" means the number is in the text with the checks the validator makes: a royalty or interest
 percentage near a word of its kind, a cash amount that is not followed by "worth of exploration",
@@ -376,8 +384,8 @@ plus five controls, used the decision model itself (140 calls, 0.006 USD) and co
 Inside Snowflake the same question would go to Cortex `AI_CLASSIFY`; that is not built, because Cortex is
 not available on the trial account.
 
-The largest effect is on the buyer: the model reads the analyst's buyer as the buyer in 157 of the 236
-chosen PDFs. In the others the PDF is often a tenement grant notice with no deal in it, or the company named
+The largest effect is on the buyer: the model reads the analyst's buyer as the buyer in 156 of the 236
+chosen PDFs (in 157 when the PDF was still chosen by counting, so the choice of PDF is not the cause). In the others the PDF is often a tenement grant notice with no deal in it, or the company named
 as buyer is selling or farming out the project. That points at the ground truth, not at the extractor, and
 is a question for the analyst: whether the owner column holds the buyer, as its field definition says, or
 the project's holder on the listing site. Not checked yet.
@@ -400,11 +408,11 @@ of the 33 fields the extractor fills. Each field has one rule, and a test fails 
 | No comparable value | deal type, deal period, market cap, resource statement, listing-site stage, exploration currency | Only how often the model fills them. The analyst's deal types are listing-site categories ("Project Acquisition"), not the prompt's "option agreement, JV, sale" |
 
 The headline measure counts the scraped values the analyst has and the PDF confirms (written, or an area
-in km²), in cases whose PDF names the buyer: how many the extractor gets right. By code alone there are 432
-of those, with 40 probable sums reported apart. With the decision model's judgments (the default when
-`evals/judge_results.jsonl` exists) there are 310: 290 confirmed by code and not rejected by the model, and
-20 sums the model accepts amount by amount; 217 values are left out, most because the PDF does not show the
-analyst's buyer as the buyer. Numbers written as text ("70%", "A$600,000",
+in km²), in cases whose PDF names the buyer and announces the deal: how many the extractor gets right. By
+code alone there are 404 of those, with 42 probable sums reported apart. With the decision model's
+judgments (the default when `evals/judge_results.jsonl` exists) there are 296: 274 confirmed by code and not
+rejected by the model, and 22 sums the model accepts amount by amount; 225 values are left out, most because
+the PDF does not show the analyst's buyer as the buyer. Numbers written as text ("70%", "A$600,000",
 "44.5 million") are read; "N/A", "null" or "0" count as no value; an unreadable reply file is reported
 and skipped instead of stopping the run.
 
@@ -449,21 +457,21 @@ flowchart TD
 
 [`scripts/check_cells.py`](scripts/check_cells.py) ran tiers 1 and 2 on all 236 cases (16 Nov 2026):
 1,180 cells in 92 seconds, for 0.05 USD of decision-model calls
-([`evals/cell_checks.jsonl`](evals/cell_checks.jsonl)).
+([`evals/cell_checks.jsonl`](evals/cell_checks.jsonl)). Rerun after the PDF choice below:
 
 | Verdict | Cells |
 |---|---|
-| Confirmed in the document | 425 |
-| Calculated by formula from confirmed parts | 56 |
-| Formula holds, parts not all confirmed | 147 |
-| Not in the document (138 of them share prices) | 257 |
-| Unsure | 108 |
-| Contradicted, with a proposed value | 165 |
+| Confirmed in the document | 427 |
+| Calculated by formula from confirmed parts | 58 |
+| Formula holds, parts not all confirmed | 145 |
+| Not in the document (143 of them share prices) | 271 |
+| Unsure | 101 |
+| Contradicted, with a proposed value | 156 |
 | Formula fails | 22 |
 
-Cells in the 46 cases whose PDF does not show the analyst's buyer as the buyer (83 escalated cells) are
-one finding per case, a wrong document or a wrong buyer, not one per cell. That leaves 190 cells in 100
-cases for tier 3. A first tier 3 run ([`scripts/escalate_cells.py`](scripts/escalate_cells.py),
+Cells in the 45 cases whose PDF does not show the analyst's buyer as the buyer (80 escalated cells) are
+one finding per case, a wrong document or a wrong buyer, not one per cell. That leaves 177 cells in 96
+cases for tier 3. A first tier 3 run, made before the PDF choice changed, ([`scripts/escalate_cells.py`](scripts/escalate_cells.py),
 [`.claude/agents/cell-reviewer.md`](.claude/agents/cell-reviewer.md)) reviewed 31 of them in 20 cases,
 reading every PDF of each case ([`evals/cell_review_pilot.jsonl`](evals/cell_review_pilot.jsonl), quotes
 left out):
@@ -477,6 +485,46 @@ So "contradicted" is a good error flag (the analyst was wrong in 9 of the 11 dec
 decision model's proposed value was right in only 9 of 17: it proposed a signing tranche instead of the
 total, or a company's total shares on issue instead of the consideration shares. That is why the fix comes
 from tier 3, not tier 2. The other 80 cases have not been through tier 3 yet.
+
+### Which PDF announces the deal
+
+A project folder often holds several PDFs: the agreement, a completion notice weeks later, a quarterly
+report, an announcement of another deal. Each case needs the one that announces its deal. The case builder
+used to count: the PDF with the most analyst values written in it. That is a question of meaning answered
+by counting, and a circular one, since it prefers whichever PDF agrees with the analyst. Now it is decided in
+the same three tiers as the cells ([`scripts/choose_pdf.py`](scripts/choose_pdf.py)):
+
+```mermaid
+flowchart LR
+    P(["A deal with several PDFs<br/>(95 of 236)"]) --> C["<b>Count rule, code</b><br/>most analyst values written"]
+    P --> J{{"<b>Decision model</b><br/>reads the start of every PDF:<br/>which one announces this buyer<br/>acquiring this project?"}}
+    C --> Q{"same PDF?"}
+    J --> Q
+    Q -->|"yes (29)"| OK(["that PDF"])
+    Q -->|"no (66)"| L{{"<b>Tier 3</b>: blind labellers<br/>two claude -p sessions in their own worktrees,<br/>never shown either pick; audited"}}
+    L --> OK2(["their pick, or<br/>'no PDF announces this deal' (5)"])
+
+    classDef llm fill:#5b4bdb,stroke:#2f2496,color:#ffffff
+    classDef code fill:#0f7b6c,stroke:#0a5a4f,color:#ffffff
+    class J,L llm
+    class C code
+```
+
+Measured on the 66 cases the labellers read (58 disagreements and 8 agreements as controls):
+
+| Method | Right |
+|---|---|
+| Count rule | 25 of 66 |
+| Decision model, with a "none of these" option | 34 of 66 (its "none" was right 4 times in 19) |
+| Decision model, without that option | **41 of 66** (5 deals have no announcing PDF, so 61 is the most possible) |
+| Decision model, 3,000 characters of each PDF instead of 1,500 | 40 of 66 |
+
+The model is better than counting at every level of its own confidence, but not reliable enough alone (41
+of 61), which is why the disagreements go to tier 3. The PDF changed for 41 cases
+([`evals/pdf_choice.jsonl`](evals/pdf_choice.jsonl), labels in [`evals/pdf_labels.jsonl`](evals/pdf_labels.jsonl)).
+The labellers' instructions are in [`.claude/agents/pdf-labeller.md`](.claude/agents/pdf-labeller.md); their
+worktrees were made from a commit without either method's picks, and the audit of their tool calls found no
+read of them.
 
 **Share prices.** The analyst's share price is often not in the document, so 20 sampled deals were compared
 with public daily closes on the news date (Yahoo Finance history pages, read in a browser). Yahoo has 15
